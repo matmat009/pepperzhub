@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import {
-    IconDashboard,
-    IconDatabase,
-    IconFileDescription,
-    IconInnerShadowTop,
-    IconReport,
-    IconSettings,
-} from '@tabler/icons-vue';
+    Boxes,
+    CreditCard,
+    LayoutDashboard,
+    Package,
+    ShoppingCart,
+    Tags,
+} from '@lucide/vue';
+import { IconInnerShadowTop, IconSettings } from '@tabler/icons-vue';
 import { computed } from 'vue';
-import NavDocuments from '@/components/NavDocuments.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavSecondary from '@/components/NavSecondary.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -24,10 +24,11 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard, home } from '@/routes';
 import { edit as editProfile } from '@/routes/profile';
+import type { NavMainItem } from '@/components/NavMain.vue';
 import type { SidebarProps } from '@/components/ui/sidebar';
 
 withDefaults(defineProps<SidebarProps>(), {
-    collapsible: 'offcanvas',
+    collapsible: 'icon',
     variant: 'inset',
 });
 
@@ -35,11 +36,35 @@ const page = usePage();
 const appName = computed(() => page.props.name);
 const user = computed(() => page.props.auth.user);
 
-const navMain = [
+const navMain: NavMainItem[] = [
     {
         title: 'Dashboard',
         url: dashboard(),
-        icon: IconDashboard,
+        icon: LayoutDashboard,
+    },
+];
+
+// E-commerce destinations have no routes yet — items without a `url` render as
+// inert placeholders. Add the route helper to each one as its page lands.
+const navEcommerce: NavMainItem[] = [
+    {
+        title: 'Products',
+        icon: Package,
+        items: [
+            // No icon was specified for All Products; it reuses the Products
+            // icon so the three children stay aligned.
+            { title: 'All Products', icon: Package },
+            { title: 'Categories', icon: Tags },
+            { title: 'Inventory', icon: Boxes },
+        ],
+    },
+    {
+        title: 'Orders',
+        icon: ShoppingCart,
+    },
+    {
+        title: 'Payments',
+        icon: CreditCard,
     },
 ];
 
@@ -48,26 +73,6 @@ const navSecondary = [
         title: 'Settings',
         url: editProfile(),
         icon: IconSettings,
-    },
-];
-
-// Placeholder group from the dashboard-01 block. Swap these for real
-// destinations once the Order / PaymentProof screens exist.
-const documents = [
-    {
-        name: 'Data Library',
-        url: '#',
-        icon: IconDatabase,
-    },
-    {
-        name: 'Reports',
-        url: '#',
-        icon: IconReport,
-    },
-    {
-        name: 'Word Assistant',
-        url: '#',
-        icon: IconFileDescription,
     },
 ];
 </script>
@@ -93,7 +98,7 @@ const documents = [
         </SidebarHeader>
         <SidebarContent>
             <NavMain :items="navMain" />
-            <NavDocuments :items="documents" />
+            <NavMain label="E-commerce" :items="navEcommerce" />
             <NavSecondary :items="navSecondary" class="mt-auto" />
         </SidebarContent>
         <SidebarFooter>

@@ -20,10 +20,16 @@ withDefaults(defineProps<Props>(), {
         variant="sidebar"
         class="[--header-height:calc(var(--spacing)*12)] [--sidebar-width:calc(var(--spacing)*72)]"
     >
-        <AppSidebar collapsible="offcanvas" variant="inset" />
-        <AppContent variant="sidebar" class="overflow-x-hidden">
+        <AppSidebar collapsible="icon" variant="inset" />
+        <!-- Keep the horizontal-overflow guard *below* the header: any ancestor
+             with a non-visible overflow becomes the sticky containing block, and
+             SidebarInset never scrolls (the document does), which would pin the
+             header to a scrollport that never moves. -->
+        <AppContent variant="sidebar">
             <SiteHeader :breadcrumbs="breadcrumbs" />
-            <slot />
+            <div class="flex flex-1 flex-col overflow-x-hidden">
+                <slot />
+            </div>
         </AppContent>
         <Toaster />
     </AppShell>
