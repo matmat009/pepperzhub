@@ -1,9 +1,17 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid } from '@lucide/vue';
-import AppLogo from '@/components/AppLogo.vue';
-import NavFooter from '@/components/NavFooter.vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import {
+    IconDashboard,
+    IconDatabase,
+    IconFileDescription,
+    IconInnerShadowTop,
+    IconReport,
+    IconSettings,
+} from '@tabler/icons-vue';
+import { computed } from 'vue';
+import NavDocuments from '@/components/NavDocuments.vue';
 import NavMain from '@/components/NavMain.vue';
+import NavSecondary from '@/components/NavSecondary.vue';
 import NavUser from '@/components/NavUser.vue';
 import {
     Sidebar,
@@ -14,53 +22,82 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
-import type { NavItem } from '@/types';
+import { dashboard, home } from '@/routes';
+import { edit as editProfile } from '@/routes/profile';
+import type { SidebarProps } from '@/components/ui/sidebar';
 
-const mainNavItems: NavItem[] = [
+withDefaults(defineProps<SidebarProps>(), {
+    collapsible: 'offcanvas',
+    variant: 'inset',
+});
+
+const page = usePage();
+const appName = computed(() => page.props.name);
+const user = computed(() => page.props.auth.user);
+
+const navMain = [
     {
         title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
+        url: dashboard(),
+        icon: IconDashboard,
     },
 ];
 
-const footerNavItems: NavItem[] = [
+const navSecondary = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: FolderGit2,
+        title: 'Settings',
+        url: editProfile(),
+        icon: IconSettings,
+    },
+];
+
+// Placeholder group from the dashboard-01 block. Swap these for real
+// destinations once the Order / PaymentProof screens exist.
+const documents = [
+    {
+        name: 'Data Library',
+        url: '#',
+        icon: IconDatabase,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
+        name: 'Reports',
+        url: '#',
+        icon: IconReport,
+    },
+    {
+        name: 'Word Assistant',
+        url: '#',
+        icon: IconFileDescription,
     },
 ];
 </script>
 
 <template>
-    <Sidebar collapsible="icon" variant="inset">
+    <Sidebar :collapsible="collapsible" :variant="variant">
         <SidebarHeader>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton size="lg" as-child>
-                        <Link :href="dashboard()">
-                            <AppLogo />
+                    <SidebarMenuButton
+                        as-child
+                        class="data-[slot=sidebar-menu-button]:!p-1.5"
+                    >
+                        <Link :href="home()">
+                            <IconInnerShadowTop class="!size-5" />
+                            <span class="text-base font-semibold">{{
+                                appName
+                            }}</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
         </SidebarHeader>
-
         <SidebarContent>
-            <NavMain :items="mainNavItems" />
+            <NavMain :items="navMain" />
+            <NavDocuments :items="documents" />
+            <NavSecondary :items="navSecondary" class="mt-auto" />
         </SidebarContent>
-
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
-            <NavUser />
+            <NavUser :user="user" />
         </SidebarFooter>
     </Sidebar>
-    <slot />
 </template>

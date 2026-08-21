@@ -2,7 +2,7 @@
 import AppContent from '@/components/AppContent.vue';
 import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
-import AppSidebarHeader from '@/components/AppSidebarHeader.vue';
+import SiteHeader from '@/components/SiteHeader.vue';
 import { Toaster } from '@/components/ui/sonner';
 import type { BreadcrumbItem } from '@/types';
 
@@ -16,10 +16,13 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-    <AppShell variant="sidebar">
-        <AppSidebar />
+    <AppShell
+        variant="sidebar"
+        class="[--header-height:calc(var(--spacing)*12)] [--sidebar-width:calc(var(--spacing)*72)]"
+    >
+        <AppSidebar collapsible="offcanvas" variant="inset" />
         <AppContent variant="sidebar" class="overflow-x-hidden">
-            <AppSidebarHeader :breadcrumbs="breadcrumbs" />
+            <SiteHeader :breadcrumbs="breadcrumbs" />
             <slot />
         </AppContent>
         <Toaster />

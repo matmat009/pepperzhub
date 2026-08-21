@@ -4,8 +4,13 @@ import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
+import {
+    Field,
+    FieldDescription,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
@@ -29,11 +34,10 @@ defineOptions({
         v-bind="store.form()"
         :reset-on-success="['password', 'password_confirmation']"
         v-slot="{ errors, processing }"
-        class="flex flex-col gap-6"
     >
-        <div class="grid gap-6">
-            <div class="grid gap-2">
-                <Label for="name">Name</Label>
+        <FieldGroup>
+            <Field>
+                <FieldLabel for="name">Name</FieldLabel>
                 <Input
                     id="name"
                     type="text"
@@ -45,10 +49,10 @@ defineOptions({
                     placeholder="Full name"
                 />
                 <InputError :message="errors.name" />
-            </div>
+            </Field>
 
-            <div class="grid gap-2">
-                <Label for="email">Email address</Label>
+            <Field>
+                <FieldLabel for="email">Email address</FieldLabel>
                 <Input
                     id="email"
                     type="email"
@@ -59,10 +63,10 @@ defineOptions({
                     placeholder="email@example.com"
                 />
                 <InputError :message="errors.email" />
-            </div>
+            </Field>
 
-            <div class="grid gap-2">
-                <Label for="password">Password</Label>
+            <Field>
+                <FieldLabel for="password">Password</FieldLabel>
                 <PasswordInput
                     id="password"
                     required
@@ -73,10 +77,12 @@ defineOptions({
                     :passwordrules="passwordRules"
                 />
                 <InputError :message="errors.password" />
-            </div>
+            </Field>
 
-            <div class="grid gap-2">
-                <Label for="password_confirmation">Confirm password</Label>
+            <Field>
+                <FieldLabel for="password_confirmation">
+                    Confirm password
+                </FieldLabel>
                 <PasswordInput
                     id="password_confirmation"
                     required
@@ -87,28 +93,24 @@ defineOptions({
                     :passwordrules="passwordRules"
                 />
                 <InputError :message="errors.password_confirmation" />
-            </div>
+            </Field>
 
-            <Button
-                type="submit"
-                class="mt-2 w-full"
-                tabindex="5"
-                :disabled="processing"
-                data-test="register-user-button"
-            >
-                <Spinner v-if="processing" />
-                Create account
-            </Button>
-        </div>
+            <Field>
+                <Button
+                    type="submit"
+                    tabindex="5"
+                    :disabled="processing"
+                    data-test="register-user-button"
+                >
+                    <Spinner v-if="processing" />
+                    Create account
+                </Button>
+            </Field>
 
-        <div class="text-center text-sm text-muted-foreground">
-            Already have an account?
-            <TextLink
-                :href="login()"
-                class="underline underline-offset-4"
-                :tabindex="6"
-                >Log in</TextLink
-            >
-        </div>
+            <FieldDescription class="text-center">
+                Already have an account?
+                <TextLink :href="login()" :tabindex="6">Log in</TextLink>
+            </FieldDescription>
+        </FieldGroup>
     </Form>
 </template>

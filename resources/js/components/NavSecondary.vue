@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import type { InertiaLinkProps } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
+import type { Component } from 'vue';
 import {
     SidebarGroup,
     SidebarGroupContent,
@@ -6,36 +9,34 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { toUrl } from '@/lib/utils';
-import type { NavItem } from '@/types';
+import { useCurrentUrl } from '@/composables/useCurrentUrl';
 
-type Props = {
+interface NavItem {
+    title: string;
+    url: NonNullable<InertiaLinkProps['href']>;
+    icon?: Component;
+}
+
+defineProps<{
     items: NavItem[];
-    class?: string;
-};
+}>();
 
-defineProps<Props>();
+const { isCurrentOrParentUrl } = useCurrentUrl();
 </script>
 
 <template>
-    <SidebarGroup
-        :class="`group-data-[collapsible=icon]:p-0 ${$props.class || ''}`"
-    >
+    <SidebarGroup>
         <SidebarGroupContent>
             <SidebarMenu>
                 <SidebarMenuItem v-for="item in items" :key="item.title">
                     <SidebarMenuButton
-                        class="text-neutral-600 hover:text-neutral-800 dark:text-neutral-300 dark:hover:text-neutral-100"
                         as-child
+                        :is-active="isCurrentOrParentUrl(item.url)"
                     >
-                        <a
-                            :href="toUrl(item.href)"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            <component :is="item.icon" />
+                        <Link :href="item.url">
+                            <component :is="item.icon" v-if="item.icon" />
                             <span>{{ item.title }}</span>
-                        </a>
+                        </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
