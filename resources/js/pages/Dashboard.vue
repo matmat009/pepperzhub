@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import ChartAreaInteractive from '@/components/ChartAreaInteractive.vue';
-import DataTable from '@/components/DataTable.vue';
+import DocumentsTable from '@/components/DocumentsTable.vue';
 import SectionCards from '@/components/SectionCards.vue';
 import { dashboardDemoData } from '@/lib/dashboardDemoData';
 import { dashboard } from '@/routes';
@@ -28,7 +28,7 @@ defineOptions({
                 <div class="px-4 lg:px-6">
                     <ChartAreaInteractive />
                 </div>
-                <DataTable :data="dashboardDemoData" />
+                <DocumentsTable :data="dashboardDemoData" />
             </div>
         </div>
     </div>

@@ -23,6 +23,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard, home } from '@/routes';
+import { index as productsIndex } from '@/routes/admin/products';
 import { edit as editProfile } from '@/routes/profile';
 import type { NavMainItem } from '@/components/NavMain.vue';
 import type { SidebarProps } from '@/components/ui/sidebar';
@@ -44,8 +45,8 @@ const navMain: NavMainItem[] = [
     },
 ];
 
-// E-commerce destinations have no routes yet — items without a `url` render as
-// inert placeholders. Add the route helper to each one as its page lands.
+// Items without a `url` have no route yet and render as inert placeholders.
+// Add the route helper to each one as its page lands.
 const navEcommerce: NavMainItem[] = [
     {
         title: 'Products',
@@ -53,7 +54,7 @@ const navEcommerce: NavMainItem[] = [
         items: [
             // No icon was specified for All Products; it reuses the Products
             // icon so the three children stay aligned.
-            { title: 'All Products', icon: Package },
+            { title: 'All Products', icon: Package, url: productsIndex() },
             { title: 'Categories', icon: Tags },
             { title: 'Inventory', icon: Boxes },
         ],

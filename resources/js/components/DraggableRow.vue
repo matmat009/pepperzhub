@@ -1,14 +1,12 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="TData extends { id: number | string }">
 import type { Row } from '@tanstack/vue-table';
-import type { z } from 'zod';
 import { FlexRender } from '@tanstack/vue-table';
 import { useSortable } from 'dnd-kit-vue';
 import { TableCell, TableRow } from '@/components/ui/table';
 import type { Features } from './features';
-import type { schema } from './DataTable.vue';
 
 const props = defineProps<{
-    row: Row<Features, z.infer<typeof schema>>;
+    row: Row<Features, TData>;
     index: number;
 }>();
 
