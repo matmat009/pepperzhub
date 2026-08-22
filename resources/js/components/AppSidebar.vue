@@ -24,6 +24,8 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard, home } from '@/routes';
 import { index as productsIndex } from '@/routes/admin/products';
+import { index as categoriesIndex } from '@/routes/admin/products/categories';
+import { index as inventoryIndex } from '@/routes/admin/products/inventory';
 import { edit as editProfile } from '@/routes/profile';
 import type { NavMainItem } from '@/components/NavMain.vue';
 import type { SidebarProps } from '@/components/ui/sidebar';
@@ -55,8 +57,8 @@ const navEcommerce: NavMainItem[] = [
             // No icon was specified for All Products; it reuses the Products
             // icon so the three children stay aligned.
             { title: 'All Products', icon: Package, url: productsIndex() },
-            { title: 'Categories', icon: Tags },
-            { title: 'Inventory', icon: Boxes },
+            { title: 'Categories', icon: Tags, url: categoriesIndex() },
+            { title: 'Inventory', icon: Boxes, url: inventoryIndex() },
         ],
     },
     {
