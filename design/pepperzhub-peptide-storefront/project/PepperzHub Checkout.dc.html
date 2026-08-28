@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap">
+  <script src="./image-slot.js"></script>
+  <style>
+    html,body{margin:0;padding:0;background:#fff}
+    body{font-family:'Lora',serif;color:oklch(0.28 0.02 264)}
+    a{color:oklch(0.56 0.145 264);text-decoration:none}
+    a:hover{color:oklch(0.48 0.145 264)}
+    ::selection{background:oklch(0.9 0.05 264)}
+    .ph-minislot image-slot::part(empty){display:none}
+    input::placeholder,textarea::placeholder{color:oklch(0.62 0.02 264);font-family:'Lora',serif}
+  </style>
+</helmet>
+<div style="min-height:100vh;background:#fff;display:flex;flex-direction:column">
+  <header style="position:sticky;top:0;z-index:30;padding:14px 0 8px">
+    <div style="max-width:1680px;margin:0 auto;padding:0 40px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px;background:rgba(255,255,255,0.92);backdrop-filter:blur(10px);border:1px solid oklch(0.94 0.008 264);border-radius:999px;box-shadow:0 10px 30px rgba(30,35,60,0.08);padding:0 12px 0 22px">
+        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+          <img src="uploads/4e8981a7-eb26-4b08-bb75-5f6dbdcb047c.jpg" alt="PepperzzHub logo" style="width:38px;height:38px;border-radius:50%;object-fit:cover">
+          <span style="font-family:'Lora',serif;font-weight:600;font-size:18px;letter-spacing:-0.02em;white-space:nowrap"><span style="color:oklch(0.8 0.105 14)">Pepperzz</span><span style="color:oklch(0.56 0.145 264)">Hub</span></span>
+        </div>
+        <nav style="{{ navStyle }}">
+          <a href="PepperzHub Home.dc.html" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">Home</a>
+          <a href="PepperzHub Catalog.dc.html" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">Products</a>
+          <a href="PepperzHub Track Order.dc.html" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">Track Order</a>
+          <a href="#" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">FAQ</a>
+          <a href="#" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">Protocols</a>
+          <a href="#" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">Reviews</a>
+          <a href="#contact" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">Contact</a>
+        </nav>
+        <div style="display:flex;align-items:center;justify-content:flex-end;flex:1;gap:8px">
+          <button onClick="{{ toggleMenu }}" aria-label="Menu" style="{{ menuBtnStyle }}" style-focus="outline:2px solid oklch(0.56 0.145 264);outline-offset:2px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="18" x2="20" y2="18"></line></svg>
+          </button>
+          <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:fixed;top:88px;left:20px;right:20px;z-index:90;background:#fff;border:1px solid oklch(0.94 0.008 264);border-radius:0.75rem;box-shadow:0 24px 56px rgba(30,35,60,0.18);padding:10px;display:flex;flex-direction:column">
+              <a href="PepperzHub Home.dc.html" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Home</a>
+              <a href="PepperzHub Catalog.dc.html" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Products</a>
+              <a href="PepperzHub Track Order.dc.html" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Track Order</a>
+              <a href="#" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">FAQ</a>
+              <a href="#" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Protocols</a>
+              <a href="#" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Reviews</a>
+              <a href="#contact" onClick="{{ toggleMenu }}" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Contact</a>
+            </div>
+          </sc-if>
+          <a href="PepperzHub Cart.dc.html" aria-label="Cart" style="position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:1px solid oklch(0.92 0.01 264);border-radius:50%;background:#fff;color:oklch(0.32 0.02 264)" style-hover="color:oklch(0.56 0.145 264);border-color:oklch(0.56 0.145 264)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+            <sc-if value="{{ hasItems }}" hint-placeholder-val="{{ false }}">
+              <span style="position:absolute;top:-3px;right:-3px;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:999px;background:oklch(0.8 0.105 14);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;border:2px solid #fff">{{ cartCount }}</span>
+            </sc-if>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section style="max-width:1480px;width:100%;box-sizing:border-box;margin:0 auto;padding:{{ sectionPad }};flex:1">
+    <button onClick="{{ goBack }}" style="font-family:'Lora',serif;display:flex;align-items:center;gap:9px;font-size:16px;color:oklch(0.4 0.02 264);background:none;border:none;cursor:pointer;padding:6px 0" style-hover="color:oklch(0.56 0.145 264)" style-focus="outline:2px solid oklch(0.56 0.145 264);outline-offset:2px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      Back
+    </button>
+    <h1 style="font-family:'Lora',serif;font-weight:600;font-size:38px;letter-spacing:-0.02em;color:oklch(0.24 0.02 264);margin:20px 0 0">Checkout</h1>
+
+    <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ toggleMobileSummary }}" style="font-family:'Lora',serif;width:100%;display:flex;align-items:center;justify-content:space-between;margin-top:22px;padding:16px 20px;border:1px solid oklch(0.9 0.01 264);border-radius:0.5rem;background:oklch(0.98 0.005 264);font-size:16px;color:oklch(0.28 0.02 264);cursor:pointer" style-focus="outline:2px solid oklch(0.56 0.145 264);outline-offset:2px">
+        <span style="font-weight:600">Order Summary ({{ total }})</span>
+        <span style="color:oklch(0.56 0.145 264)">{{ mobileSummaryArrow }}</span>
+      </button>
+    </sc-if>
+
+    <div style="display:grid;grid-template-columns:{{ pageCols }};gap:{{ gridGap }};align-items:start;margin-top:26px">
+      <div style="display:flex;flex-direction:column;gap:44px;order:{{ formOrder }}">
+
+        <div>
+          <div style="display:flex;align-items:center;gap:13px">
+            <span style="width:30px;height:30px;border-radius:50%;background:oklch(0.56 0.145 264);color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</span>
+            <h2 style="font-family:'Lora',serif;font-weight:600;font-size:22px;color:oklch(0.24 0.02 264);margin:0">Customer Details</h2>
+          </div>
+          <div style="display:grid;grid-template-columns:{{ fieldCols }};gap:18px;margin-top:20px">
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <label style="font-size:14px;font-weight:500;color:oklch(0.35 0.02 264)">Full Name <span style="color:oklch(0.55 0.17 14)">*</span></label>
+              <input type="text" value="{{ fName }}" onChange="{{ onFName }}" placeholder="Juan Dela Cruz" style="font-family:'Lora',serif;font-size:15px;padding:14px 18px;border:1px solid oklch(0.88 0.012 264);border-radius:0.25rem;color:oklch(0.28 0.02 264);outline:none" style-focus="border-color:oklch(0.56 0.145 264)">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <label style="font-size:14px;font-weight:500;color:oklch(0.35 0.02 264)">Facebook or WhatsApp Name <span style="color:oklch(0.55 0.17 14)">*</span></label>
+              <input type="text" value="{{ fSocial }}" onChange="{{ onFSocial }}" placeholder="fb.com/juandc or +63 917…" style="font-family:'Lora',serif;font-size:15px;padding:14px 18px;border:1px solid oklch(0.88 0.012 264);border-radius:0.25rem;color:oklch(0.28 0.02 264);outline:none" style-focus="border-color:oklch(0.56 0.145 264)">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <label style="font-size:14px;font-weight:500;color:oklch(0.35 0.02 264)">Phone Number <span style="color:oklch(0.55 0.17 14)">*</span></label>
+              <input type="tel" value="{{ fPhone }}" onChange="{{ onFPhone }}" placeholder="0917 123 4567" style="font-family:'Lora',serif;font-size:15px;padding:14px 18px;border:1px solid oklch(0.88 0.012 264);border-radius:0.25rem;color:oklch(0.28 0.02 264);outline:none" style-focus="border-color:oklch(0.56 0.145 264)">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:flex;align-items:center;gap:13px">
+            <span style="width:30px;height:30px;border-radius:50%;background:oklch(0.56 0.145 264);color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</span>
+            <h2 style="font-family:'Lora',serif;font-weight:600;font-size:22px;color:oklch(0.24 0.02 264);margin:0">Shipping Address</h2>
+          </div>
+          <div style="display:grid;grid-template-columns:{{ fieldCols }};gap:18px;margin-top:20px">
+            <div style="display:flex;flex-direction:column;gap:7px;grid-column:{{ fullSpan }}">
+              <label style="font-size:14px;font-weight:500;color:oklch(0.35 0.02 264)">Street Address <span style="color:oklch(0.55 0.17 14)">*</span></label>
+              <input type="text" value="{{ fStreet }}" onChange="{{ onFStreet }}" placeholder="Unit / house no., street" style="font-family:'Lora',serif;font-size:15px;padding:14px 18px;border:1px solid oklch(0.88 0.012 264);border-radius:0.25rem;color:oklch(0.28 0.02 264);outline:none" style-focus="border-color:oklch(0.56 0.145 264)">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <label style="font-size:14px;font-weight:500;color:oklch(0.35 0.02 264)">Barangay <span style="color:oklch(0.55 0.17 14)">*</span></label>
+              <input type="text" value="{{ fBrgy }}" onChange="{{ onFBrgy }}" placeholder="Barangay" style="font-family:'Lora',serif;font-size:15px;padding:14px 18px;border:1px solid oklch(0.88 0.012 264);border-radius:0.25rem;color:oklch(0.28 0.02 264);outline:none" style-focus="border-color:oklch(0.56 0.145 264)">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <label style="font-size:14px;font-weight:500;color:oklch(0.35 0.02 264)">City <span style="color:oklch(0.55 0.17 14)">*</span></label>
+              <input type="text" value="{{ fCity }}" onChange="{{ onFCity }}" placeholder="City / municipality" style="font-family:'Lora',serif;font-size:15px;padding:14px 18px;border:1px solid oklch(0.88 0.012 264);border-radius:0.25rem;color:oklch(0.28 0.02 264);outline:none" style-focus="border-color:oklch(0.56 0.145 264)">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <label style="font-size:14px;font-weight:500;color:oklch(0.35 0.02 264)">Province <span style="color:oklch(0.55 0.17 14)">*</span></label>
+              <input type="text" value="{{ fProv }}" onChange="{{ onFProv }}" placeholder="Province" style="font-family:'Lora',serif;font-size:15px;padding:14px 18px;border:1px solid oklch(0.88 0.012 264);border-radius:0.25rem;color:oklch(0.28 0.02 264);outline:none" style-focus="border-color:oklch(0.56 0.145 264)">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <label style="font-size:14px;font-weight:500;color:oklch(0.35 0.02 264)">ZIP / Postal Code <span style="color:oklch(0.55 0.17 14)">*</span></label>
+              <input type="text" value="{{ fZip }}" onChange="{{ onFZip }}" placeholder="e.g. 1100" style="font-family:'Lora',serif;font-size:15px;padding:14px 18px;border:1px solid oklch(0.88 0.012 264);border-radius:0.25rem;color:oklch(0.28 0.02 264);outline:none" style-focus="border-color:oklch(0.56 0.145 264)">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:flex;align-items:center;gap:13px">
+            <span style="width:30px;height:30px;border-radius:50%;background:oklch(0.56 0.145 264);color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</span>
+            <h2 style="font-family:'Lora',serif;font-weight:600;font-size:22px;color:oklch(0.24 0.02 264);margin:0">Select Courier Provider</h2>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-top:20px;max-width:420px">
+            <label style="font-size:14px;font-weight:500;color:oklch(0.35 0.02 264)">Courier <span style="color:oklch(0.55 0.17 14)">*</span></label>
+            <select value="{{ courier }}" onChange="{{ onCourier }}" style="font-family:'Lora',serif;font-size:15px;padding:14px 18px;border:1px solid oklch(0.88 0.012 264);border-radius:0.25rem;color:oklch(0.28 0.02 264);outline:none;background:#fff;cursor:pointer" style-focus="border-color:oklch(0.56 0.145 264)">
+              <option value="">Choose a courier…</option>
+              <option value="jnt">J&amp;T Express</option>
+            </select>
+          </div>
+          <sc-if value="{{ courierChosen }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:26px">
+            <div style="font-family:'Lora',serif;font-weight:600;font-size:17px;color:oklch(0.24 0.02 264)">Choose Shipping Region</div>
+            <div style="font-style:italic;font-size:14px;color:oklch(0.5 0.03 264);margin-top:5px">Select the rate applicable to your location.</div>
+          <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">
+            <sc-for list="{{ shipOptions }}" as="so" hint-placeholder-count="3">
+              <button onClick="{{ so.onPick }}" style="font-family:'Lora',serif;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 22px;border:2px solid {{ so.border }};border-radius:0.5rem;background:{{ so.bg }};cursor:pointer;text-align:left" style-hover="border-color:oklch(0.56 0.145 264)" style-focus="outline:2px solid oklch(0.56 0.145 264);outline-offset:2px">
+                <span style="display:flex;align-items:center;gap:14px">
+                  <span style="width:18px;height:18px;border-radius:50%;border:2px solid {{ so.dotBorder }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <sc-if value="{{ so.active }}" hint-placeholder-val="{{ false }}">
+                      <span style="width:9px;height:9px;border-radius:50%;background:oklch(0.56 0.145 264)"></span>
+                    </sc-if>
+                  </span>
+                  <span style="display:flex;flex-direction:column;gap:2px">
+                    <span style="font-weight:600;font-size:16px;color:oklch(0.24 0.02 264)">{{ so.name }}</span>
+                    <span style="font-size:14px;color:oklch(0.5 0.03 264)">{{ so.eta }}</span>
+                  </span>
+                </span>
+                <span style="font-family:'Lora',serif;font-weight:600;font-size:16px;color:oklch(0.42 0.1 264);white-space:nowrap">{{ so.rate }}</span>
+              </button>
+            </sc-for>
+          </div>
+          </div>
+          </sc-if>
+        </div>
+
+        <div>
+          <div style="display:flex;align-items:center;gap:13px">
+            <span style="width:30px;height:30px;border-radius:50%;background:oklch(0.56 0.145 264);color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</span>
+            <h2 style="font-family:'Lora',serif;font-weight:600;font-size:22px;color:oklch(0.24 0.02 264);margin:0">Select Payment Method</h2>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-top:20px;max-width:420px">
+            <label style="font-size:14px;font-weight:500;color:oklch(0.35 0.02 264)">Payment Method <span style="color:oklch(0.55 0.17 14)">*</span></label>
+            <select value="{{ payMethod }}" onChange="{{ onPayMethod }}" style="font-family:'Lora',serif;font-size:15px;padding:14px 18px;border:1px solid oklch(0.88 0.012 264);border-radius:0.25rem;color:oklch(0.28 0.02 264);outline:none;background:#fff;cursor:pointer" style-focus="border-color:oklch(0.56 0.145 264)">
+              <option value="">Choose a payment method…</option>
+              <option value="gotyme">GOtyme Bank</option>
+            </select>
+          </div>
+          <sc-if value="{{ payChosen }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:20px;border:1px solid oklch(0.9 0.01 264);border-radius:0.5rem;padding:26px 28px;display:flex;gap:32px;flex-wrap:wrap;align-items:center;background:oklch(0.98 0.005 264)">
+            <div style="flex:1;min-width:240px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;justify-content:space-between;gap:16px;font-size:15px;border-bottom:1px solid oklch(0.93 0.01 264);padding-bottom:10px">
+                <span style="color:oklch(0.5 0.04 264)">Bank</span><span style="font-weight:600;color:oklch(0.24 0.02 264)">GOtyme Bank</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;gap:16px;font-size:15px;border-bottom:1px solid oklch(0.93 0.01 264);padding-bottom:10px">
+                <span style="color:oklch(0.5 0.04 264)">Account Number</span><span style="font-weight:600;color:oklch(0.24 0.02 264)">0012 3456 7890</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;gap:16px;font-size:15px">
+                <span style="color:oklch(0.5 0.04 264)">Account Name</span><span style="font-weight:600;color:oklch(0.24 0.02 264)">PepperzzHub Trading</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+              <div class="ph-minislot" style="width:150px;height:150px;background:#fff;border:1px solid oklch(0.9 0.01 264);border-radius:0.25rem;overflow:hidden">
+                <image-slot id="checkout-qr" shape="rect" fit="contain" placeholder="QR code"></image-slot>
+              </div>
+              <span style="font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:oklch(0.5 0.06 264)">Payment QR</span>
+            </div>
+            <div style="width:100%;font-style:italic;font-size:14px;color:oklch(0.48 0.03 264)">Scan to pay, or transfer manually using the details above.</div>
+          </div>
+          </sc-if>
+        </div>
+
+        <div>
+          <div style="display:flex;align-items:center;gap:13px">
+            <span style="width:30px;height:30px;border-radius:50%;background:oklch(0.56 0.145 264);color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0">5</span>
+            <h2 style="font-family:'Lora',serif;font-weight:600;font-size:22px;color:oklch(0.24 0.02 264);margin:0">Upload Proof of Payment</h2>
+          </div>
+          <button onClick="{{ pickProof }}" style="font-family:'Lora',serif;margin-top:20px;width:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:12px;padding:38px 24px;border:2px dashed {{ proofBorder }};border-radius:0.5rem;background:{{ proofBg }};cursor:pointer;text-align:center" style-hover="border-color:oklch(0.56 0.145 264)" style-focus="outline:2px solid oklch(0.56 0.145 264);outline-offset:2px">
+            <span style="color:{{ proofIconColor }}">{{ proofIcon }}</span>
+            <span style="font-size:15px;color:oklch(0.4 0.03 264)">{{ proofLabel }}</span>
+            <span style="font-size:13px;font-style:italic;color:oklch(0.58 0.02 264)">PNG or JPG · GCash / bank transfer receipt</span>
+          </button>
+        </div>
+
+        <div>
+          <div style="display:flex;align-items:center;gap:13px">
+            <span style="width:30px;height:30px;border-radius:50%;background:oklch(0.56 0.145 264);color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0">6</span>
+            <h2 style="font-family:'Lora',serif;font-weight:600;font-size:22px;color:oklch(0.24 0.02 264);margin:0">Additional Notes <span style="font-weight:400;font-style:italic;font-size:16px;color:oklch(0.55 0.03 264)">(optional)</span></h2>
+          </div>
+          <textarea value="{{ fNotes }}" onChange="{{ onFNotes }}" placeholder="Delivery instructions, preferred contact time…" rows="4" style="font-family:'Lora',serif;margin-top:20px;width:100%;box-sizing:border-box;font-size:15px;padding:16px 18px;border:1px solid oklch(0.88 0.012 264);border-radius:0.25rem;color:oklch(0.28 0.02 264);outline:none;resize:vertical" style-focus="border-color:oklch(0.56 0.145 264)"></textarea>
+        </div>
+
+        <div>
+          <button onClick="{{ placeOrder }}" disabled="{{ orderDisabled }}" style="font-family:'Lora',serif;width:100%;font-size:17px;font-weight:500;padding:16px 0;border:none;border-radius:999px;background:{{ orderBg }};color:#fff;cursor:{{ orderCursor }};box-shadow:{{ orderShadow }}" style-hover="background:oklch(0.74 0.115 14)" style-focus="outline:2px solid oklch(0.8 0.105 14);outline-offset:2px">Complete Order</button>
+          <sc-if value="{{ orderDisabled }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:13px;font-style:italic;color:oklch(0.55 0.04 264);text-align:center;margin-top:12px">{{ disabledHint }}</div>
+          </sc-if>
+          <sc-if value="{{ orderPlaced }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:9px;justify-content:center;margin-top:14px;font-size:14px;color:oklch(0.55 0.12 155)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Order received — we'll confirm via Facebook/WhatsApp.
+            </div>
+          </sc-if>
+        </div>
+      </div>
+
+      <sc-if value="{{ summaryVisible }}" hint-placeholder-val="{{ true }}">
+        <div style="{{ summaryStyle }}">
+          <h2 style="font-family:'Lora',serif;font-weight:600;font-size:24px;letter-spacing:-0.02em;color:oklch(0.24 0.02 264);margin:0">Order Summary</h2>
+          <div style="margin-top:16px">
+            <sc-for list="{{ items }}" as="it" hint-placeholder-count="2">
+              <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid oklch(0.95 0.005 264)">
+                <div class="ph-minislot" style="width:58px;height:58px;flex-shrink:0;background:{{ it.thumbBg }};border-radius:0.25rem;overflow:hidden">
+                  <image-slot id="{{ it.thumbId }}" shape="rect" fit="contain" placeholder=" "></image-slot>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:2px;min-width:0">
+                  <span style="font-family:'Lora',serif;font-weight:600;font-size:15px;color:oklch(0.24 0.02 264)">{{ it.name }}</span>
+                  <span style="font-size:13px;color:oklch(0.5 0.04 264)">{{ it.format }} · × {{ it.qty }}</span>
+                </div>
+                <span style="font-family:'Lora',serif;font-weight:600;font-size:15px;color:oklch(0.42 0.1 264);white-space:nowrap">{{ it.linePrice }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;margin-top:18px">
+            <span style="color:oklch(0.45 0.03 264)">Subtotal</span>
+            <span style="font-weight:500;color:oklch(0.24 0.02 264)">{{ subtotal }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:15px;margin-top:12px">
+            <span style="color:oklch(0.45 0.03 264)">Shipping</span>
+            <span style="{{ shippingValStyle }}">{{ shippingVal }}</span>
+          </div>
+          <div style="border-top:1px solid oklch(0.92 0.01 264);margin:18px 0"></div>
+          <div style="display:flex;justify-content:space-between;font-size:18px">
+            <span style="font-family:'Lora',serif;font-weight:600;color:oklch(0.24 0.02 264)">Total</span>
+            <span style="font-family:'Lora',serif;font-weight:600;color:oklch(0.24 0.02 264)">{{ total }}</span>
+          </div>
+
+        </div>
+      </sc-if>
+    </div>
+  </section>
+
+  <footer id="contact" style="background:oklch(0.98 0.005 264);border-top:1px solid oklch(0.93 0.01 264)">
+    <div style="max-width:1680px;margin:0 auto;padding:64px 40px 56px;display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:48px">
+      <div style="max-width:360px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <img src="uploads/4e8981a7-eb26-4b08-bb75-5f6dbdcb047c.jpg" alt="PepperzzHub logo" style="width:44px;height:44px;border-radius:50%;object-fit:cover">
+          <span style="font-family:'Lora',serif;font-weight:600;font-size:19px;letter-spacing:-0.02em"><span style="color:oklch(0.8 0.105 14)">Pepperzz</span><span style="color:oklch(0.56 0.145 264)">Hub</span></span>
+        </div>
+        <p style="font-size:15px;line-height:1.7;color:oklch(0.46 0.03 264);margin:20px 0 0">Peptides that work. Results that matter.</p>
+        <div style="display:flex;gap:12px;margin-top:24px">
+          <a href="#" aria-label="Facebook" style="width:46px;height:46px;border:1px solid oklch(0.9 0.01 264);border-radius:50%;display:flex;align-items:center;justify-content:center;color:oklch(0.56 0.145 264);background:#fff" style-hover="border-color:oklch(0.56 0.145 264);color:oklch(0.48 0.145 264)"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path></svg></a>
+          <a href="#" aria-label="Instagram" style="width:46px;height:46px;border:1px solid oklch(0.9 0.01 264);border-radius:50%;display:flex;align-items:center;justify-content:center;color:oklch(0.56 0.145 264);background:#fff" style-hover="border-color:oklch(0.56 0.145 264);color:oklch(0.48 0.145 264)"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></a>
+          <a href="#" aria-label="TikTok" style="width:46px;height:46px;border:1px solid oklch(0.9 0.01 264);border-radius:50%;display:flex;align-items:center;justify-content:center;color:oklch(0.56 0.145 264);background:#fff" style-hover="border-color:oklch(0.56 0.145 264);color:oklch(0.48 0.145 264)"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"></path></svg></a>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'Lora',serif;font-weight:600;font-size:18px;color:oklch(0.24 0.02 264)">Quick Links</div>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:22px;font-size:15px">
+          <a href="PepperzHub Home.dc.html" style="color:oklch(0.45 0.03 264)" style-hover="color:oklch(0.56 0.145 264)">Home</a>
+          <a href="PepperzHub Catalog.dc.html" style="color:oklch(0.45 0.03 264)" style-hover="color:oklch(0.56 0.145 264)">Products</a>
+          <a href="mailto:support@pepperzhub.ph" style="color:oklch(0.45 0.03 264)" style-hover="color:oklch(0.56 0.145 264)">Contact</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'Lora',serif;font-weight:600;font-size:18px;color:oklch(0.24 0.02 264)">Contact Us</div>
+        <div style="display:flex;flex-direction:column;gap:16px;margin-top:22px;font-size:15px">
+          <a href="mailto:support@pepperzhub.ph" style="display:flex;align-items:center;gap:12px;color:oklch(0.45 0.03 264)" style-hover="color:oklch(0.56 0.145 264)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="oklch(0.56 0.145 264)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>support@pepperzhub.ph</a>
+          <span style="display:flex;align-items:center;gap:12px;color:oklch(0.45 0.03 264)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="oklch(0.72 0.11 14)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>0917 123 4567</span>
+          <span style="display:flex;align-items:center;gap:12px;color:oklch(0.45 0.03 264)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="oklch(0.56 0.145 264)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>Metro Manila, Philippines</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'Lora',serif;font-weight:600;font-size:18px;color:oklch(0.24 0.02 264)">Order Support Hours</div>
+        <div style="display:flex;flex-direction:column;gap:16px;margin-top:22px;font-size:15px">
+          <span style="display:flex;align-items:center;gap:12px;color:oklch(0.45 0.03 264)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="oklch(0.56 0.145 264)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>9:00 AM – 6:00 PM</span>
+          <span style="display:flex;align-items:center;gap:12px;color:oklch(0.45 0.03 264)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="oklch(0.72 0.11 14)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>Monday – Saturday</span>
+          <span style="display:flex;align-items:center;gap:12px;color:oklch(0.45 0.03 264)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="oklch(0.72 0.11 14)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="10" y1="14" x2="14" y2="18"></line><line x1="14" y1="14" x2="10" y2="18"></line></svg>Closed: Sundays &amp; holidays</span>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid oklch(0.93 0.01 264)">
+      <div style="max-width:1680px;margin:0 auto;padding:20px 40px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;font-size:14px;color:oklch(0.55 0.02 264)">
+        <span>© 2026 <span style="font-weight:600"><span style="color:oklch(0.8 0.105 14)">Pepperzz</span><span style="color:oklch(0.56 0.145 264)">Hub</span></span>. All rights reserved.</span>
+        <span style="display:flex;align-items:center;gap:18px">
+          <button onClick="{{ openPrivacy }}" style="font-family:'Lora',serif;font-size:14px;border:none;background:none;padding:0;cursor:pointer;color:oklch(0.5 0.03 264)" style-hover="color:oklch(0.56 0.145 264)" style-focus="outline:2px solid oklch(0.56 0.145 264);outline-offset:2px">Privacy Policy</button>
+          <span style="width:4px;height:4px;border-radius:50%;background:oklch(0.8 0.02 264)"></span>
+          <button onClick="{{ openTerms }}" style="font-family:'Lora',serif;font-size:14px;border:none;background:none;padding:0;cursor:pointer;color:oklch(0.5 0.03 264)" style-hover="color:oklch(0.56 0.145 264)" style-focus="outline:2px solid oklch(0.56 0.145 264);outline-offset:2px">Terms of Service</button>
+        </span>
+        <span style="font-style:italic;color:oklch(0.6 0.02 264)">For laboratory research use only. Not for human consumption.</span>
+      </div>
+    </div>
+  </footer>
+  <sc-if value="{{ legalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeLegal }}" style="position:fixed;inset:0;z-index:100;background:rgba(20,22,35,0.45);display:flex;align-items:center;justify-content:center;padding:24px">
+      <div onClick="{{ stopClick }}" style="width:100%;max-width:520px;background:#fff;border:1px solid oklch(0.94 0.008 264);border-radius:0.75rem;box-shadow:0 24px 64px rgba(30,35,60,0.25);padding:30px 32px;box-sizing:border-box">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+          <h2 style="font-family:'Lora',serif;font-weight:600;font-size:22px;letter-spacing:-0.02em;color:oklch(0.24 0.02 264);margin:0">{{ legalTitle }}</h2>
+          <button onClick="{{ closeLegal }}" aria-label="Close" style="width:34px;height:34px;border:1px solid oklch(0.92 0.01 264);border-radius:50%;background:#fff;color:oklch(0.4 0.02 264);cursor:pointer;font-size:14px;line-height:1;flex-shrink:0" style-hover="border-color:oklch(0.56 0.145 264);color:oklch(0.56 0.145 264)">✕</button>
+        </div>
+        <p style="font-size:15px;line-height:1.7;color:oklch(0.42 0.03 264);margin:18px 0 0">Our {{ legalTitle }} is being finalized and will be published here soon.</p>
+        <p style="font-size:15px;line-height:1.7;color:oklch(0.42 0.03 264);margin:12px 0 0">Questions in the meantime? Reach us at <a href="mailto:support@pepperzhub.ph" style="font-weight:600">support@pepperzhub.ph</a>.</p>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    fName: '', fSocial: '', fPhone: '', fStreet: '', fBrgy: '', fCity: '', fProv: '', fZip: '', fNotes: '',
+    ship: null, courier: '', payMethod: '', proof: false, mobileSummaryOpen: false, orderPlaced: false, cartRev: 0,
+    vw: typeof window !== 'undefined' ? window.innerWidth : 1440
+  };
+  componentDidMount() {
+    this._onResize = () => this.setState({ vw: window.innerWidth });
+    window.addEventListener('resize', this._onResize);
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this._onResize); }
+  loadCart() { try { return JSON.parse(localStorage.getItem('pepperzhub-cart') || '[]'); } catch (e) { return []; } }
+  renderVals() {
+    const s = this.state;
+    const peso = n => '₱' + n.toLocaleString('en-PH');
+    const isMobile = s.vw < 1000;
+    const SHIP = [
+      { name: 'J&T – Luzon & Visayas', eta: 'Standard pouch', rate: 150 },
+      { name: 'J&T – Mindanao (Small)', eta: 'Max. 2 kits', rate: 100 },
+      { name: 'J&T – Mindanao (Large Pouch)', eta: 'Min. 5 kits', rate: 200 }
+    ];
+    const cart = this.loadCart();
+    const cartCount = cart.reduce((n, i) => n + i.qty, 0);
+    const subtotalN = cart.reduce((n, i) => n + i.price * i.qty, 0);
+    const shipRate = s.ship != null ? SHIP[s.ship].rate : 0;
+    const bgs = ['oklch(0.92 0.02 240)', 'oklch(0.95 0.003 264)', 'oklch(0.93 0.035 20)'];
+    const required = [s.fName, s.fSocial, s.fPhone, s.fStreet, s.fBrgy, s.fCity, s.fProv, s.fZip];
+    const fieldsDone = required.every(v => v.trim().length > 0);
+    const ready = fieldsDone && s.ship != null && !!s.payMethod && s.proof;
+    const set = k => e => this.setState({ [k]: e.target.value });
+    const missing = [];
+    if (!fieldsDone) missing.push('required fields');
+    if (!s.courier) missing.push('courier');
+    else if (s.ship == null) missing.push('shipping region');
+    if (!s.payMethod) missing.push('payment method');
+    if (!s.proof) missing.push('proof of payment');
+    const upIcon = React.createElement('svg', { width: 34, height: 34, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: s.proof ? '<polyline points="20 6 9 17 4 12"/>' : '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>' } });
+    return {
+      isMobile,
+      cartCount, hasItems: cartCount > 0,
+      goBack: () => history.back(),
+      legalOpen: !!s.legalModal,
+      legalTitle: s.legalModal === 'terms' ? 'Terms of Service' : 'Privacy Policy',
+      openPrivacy: () => this.setState({ legalModal: 'privacy' }),
+      openTerms: () => this.setState({ legalModal: 'terms' }),
+      closeLegal: () => this.setState({ legalModal: null }),
+      stopClick: e => e.stopPropagation(),
+      navStyle: s.vw < 1100 ? { display: 'none' } : { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '16px' },
+      menuBtnStyle: { display: s.vw < 1100 ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', border: '1px solid oklch(0.92 0.01 264)', borderRadius: '50%', background: '#fff', color: 'oklch(0.32 0.02 264)', cursor: 'pointer', padding: 0 },
+      menuOpen: !!s.menuOpen && s.vw < 1100,
+      toggleMenu: () => this.setState(st => ({ menuOpen: !st.menuOpen })),
+      sectionPad: s.vw < 700 ? '24px 20px 80px' : '32px 40px 110px',
+      pageCols: isMobile ? '1fr' : '1fr 420px',
+      gridGap: isMobile ? '32px' : '72px',
+      fieldCols: s.vw < 640 ? '1fr' : '1fr 1fr',
+      fullSpan: s.vw < 640 ? 'auto' : '1 / -1',
+      formOrder: 0,
+      fName: s.fName, onFName: set('fName'),
+      fSocial: s.fSocial, onFSocial: set('fSocial'),
+      fPhone: s.fPhone, onFPhone: set('fPhone'),
+      fStreet: s.fStreet, onFStreet: set('fStreet'),
+      fBrgy: s.fBrgy, onFBrgy: set('fBrgy'),
+      fCity: s.fCity, onFCity: set('fCity'),
+      fProv: s.fProv, onFProv: set('fProv'),
+      fZip: s.fZip, onFZip: set('fZip'),
+      fNotes: s.fNotes, onFNotes: set('fNotes'),
+      courier: s.courier,
+      onCourier: e => this.setState({ courier: e.target.value, ship: null }),
+      courierChosen: !!s.courier,
+      payMethod: s.payMethod,
+      onPayMethod: e => this.setState({ payMethod: e.target.value }),
+      payChosen: !!s.payMethod,
+      shipOptions: SHIP.map((o, i) => ({
+        name: o.name, eta: o.eta, rate: peso(o.rate),
+        active: s.ship === i,
+        onPick: () => this.setState({ ship: i }),
+        border: s.ship === i ? 'oklch(0.56 0.145 264)' : 'oklch(0.9 0.01 264)',
+        bg: s.ship === i ? 'oklch(0.97 0.015 250)' : '#fff',
+        dotBorder: s.ship === i ? 'oklch(0.56 0.145 264)' : 'oklch(0.8 0.015 264)'
+      })),
+      pickProof: () => this.setState(st => ({ proof: !st.proof })),
+      proofBorder: s.proof ? 'oklch(0.62 0.13 155)' : 'oklch(0.85 0.02 264)',
+      proofBg: s.proof ? 'oklch(0.97 0.02 155)' : 'oklch(0.99 0.002 264)',
+      proofIconColor: s.proof ? 'oklch(0.55 0.12 155)' : 'oklch(0.56 0.145 264)',
+      proofIcon: upIcon,
+      proofLabel: s.proof ? 'Receipt attached — click to remove' : 'Click to upload screenshot — GCash / Bank transfer receipt',
+      items: cart.map((it, i) => ({
+        name: it.name, format: it.format, qty: it.qty,
+        linePrice: peso(it.price * it.qty),
+        thumbId: 'prod-' + it.slug, thumbBg: bgs[i % 3]
+      })),
+      subtotal: peso(subtotalN),
+      shippingVal: s.ship != null ? peso(shipRate) : 'Select a region',
+      shippingValStyle: s.ship != null
+        ? { fontWeight: '500', color: 'oklch(0.24 0.02 264)' }
+        : { fontStyle: 'italic', color: 'oklch(0.58 0.03 264)' },
+      total: peso(subtotalN + shipRate),
+      summaryVisible: !isMobile || s.mobileSummaryOpen,
+      toggleMobileSummary: () => this.setState(st => ({ mobileSummaryOpen: !st.mobileSummaryOpen })),
+      mobileSummaryArrow: s.mobileSummaryOpen ? '▴' : '▾',
+      summaryStyle: isMobile
+        ? { background: '#fff', border: '1px solid oklch(0.93 0.01 264)', borderRadius: '0.75rem', padding: '26px 24px', boxSizing: 'border-box', boxShadow: '0 12px 36px rgba(30,35,60,0.07)' }
+        : { position: 'sticky', top: '104px', background: '#fff', border: '1px solid oklch(0.93 0.01 264)', borderRadius: '0.75rem', padding: '30px 32px', boxSizing: 'border-box', boxShadow: '0 12px 36px rgba(30,35,60,0.07)' },
+      orderDisabled: !ready || cartCount === 0,
+      orderBg: ready && cartCount > 0 ? 'oklch(0.8 0.105 14)' : 'oklch(0.78 0.02 264)',
+      orderCursor: ready && cartCount > 0 ? 'pointer' : 'not-allowed',
+      orderShadow: ready && cartCount > 0 ? '0 8px 22px rgba(220,130,140,0.35)' : 'none',
+      disabledHint: cartCount === 0 ? 'Your cart is empty' : 'Complete ' + missing.join(', ') + ' to place your order',
+      orderPlaced: s.orderPlaced,
+      placeOrder: () => {
+        if (!ready || cartCount === 0) return;
+        const orderNo = 'PZH-' + String(Math.floor(10000 + Math.random() * 90000));
+        const order = {
+          orderNo,
+          items: cart,
+          subtotal: subtotalN,
+          shipRate,
+          shipName: SHIP[s.ship].name,
+          total: subtotalN + shipRate,
+          customer: { name: s.fName, social: s.fSocial, phone: s.fPhone },
+          address: { street: s.fStreet, brgy: s.fBrgy, city: s.fCity, prov: s.fProv, zip: s.fZip },
+          notes: s.fNotes,
+          placedAt: new Date().toISOString()
+        };
+        try {
+          localStorage.setItem('pepperzhub-last-order', JSON.stringify(order));
+          localStorage.setItem('pepperzhub-cart', '[]');
+        } catch (e) {}
+        location.href = 'PepperzHub Order Confirmation.dc.html';
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

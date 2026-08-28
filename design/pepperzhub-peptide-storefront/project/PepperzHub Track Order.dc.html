@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap">
+  <script src="./image-slot.js"></script>
+  <style>
+    html,body{margin:0;padding:0;background:#fff}
+    body{font-family:'Lora',serif;color:oklch(0.28 0.02 264)}
+    a{color:oklch(0.56 0.145 264);text-decoration:none}
+    a:hover{color:oklch(0.48 0.145 264)}
+    ::selection{background:oklch(0.9 0.05 264)}
+    .ph-minislot image-slot::part(empty){display:none}
+    input::placeholder{color:oklch(0.62 0.02 264);font-family:'Lora',serif}
+    @keyframes ph-pulse{0%,100%{box-shadow:0 0 0 0 rgba(90,110,200,0.35)}50%{box-shadow:0 0 0 8px rgba(90,110,200,0)}}
+  </style>
+</helmet>
+<div style="min-height:100vh;background:#fff;display:flex;flex-direction:column">
+  <header style="position:sticky;top:0;z-index:30;padding:14px 0 8px">
+    <div style="max-width:1680px;margin:0 auto;padding:0 40px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px;background:rgba(255,255,255,0.92);backdrop-filter:blur(10px);border:1px solid oklch(0.94 0.008 264);border-radius:999px;box-shadow:0 10px 30px rgba(30,35,60,0.08);padding:0 12px 0 22px">
+        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+          <img src="uploads/4e8981a7-eb26-4b08-bb75-5f6dbdcb047c.jpg" alt="PepperzzHub logo" style="width:38px;height:38px;border-radius:50%;object-fit:cover">
+          <span style="font-family:'Lora',serif;font-weight:600;font-size:18px;letter-spacing:-0.02em;white-space:nowrap"><span style="color:oklch(0.8 0.105 14)">Pepperzz</span><span style="color:oklch(0.56 0.145 264)">Hub</span></span>
+        </div>
+        <nav style="{{ navStyle }}">
+          <a href="PepperzHub Home.dc.html" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">Home</a>
+          <a href="PepperzHub Catalog.dc.html" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">Products</a>
+          <a href="#" style="color:oklch(0.56 0.145 264);font-weight:600;background:oklch(0.95 0.025 250);padding:9px 18px;border-radius:999px">Track Order</a>
+          <a href="#" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">FAQ</a>
+          <a href="#" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">Protocols</a>
+          <a href="#" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">Reviews</a>
+          <a href="#contact" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">Contact</a>
+        </nav>
+        <div style="display:flex;align-items:center;justify-content:flex-end;flex:1;gap:8px">
+          <button onClick="{{ toggleMenu }}" aria-label="Menu" style="{{ menuBtnStyle }}" style-focus="outline:2px solid oklch(0.56 0.145 264);outline-offset:2px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="18" x2="20" y2="18"></line></svg>
+          </button>
+          <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:fixed;top:88px;left:20px;right:20px;z-index:90;background:#fff;border:1px solid oklch(0.94 0.008 264);border-radius:0.75rem;box-shadow:0 24px 56px rgba(30,35,60,0.18);padding:10px;display:flex;flex-direction:column">
+              <a href="PepperzHub Home.dc.html" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Home</a>
+              <a href="PepperzHub Catalog.dc.html" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Products</a>
+              <a href="#" style="font-size:16px;font-weight:600;color:oklch(0.56 0.145 264);padding:13px 16px;border-radius:0.5rem;background:oklch(0.97 0.015 250)">Track Order</a>
+              <a href="#" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">FAQ</a>
+              <a href="#" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Protocols</a>
+              <a href="#" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Reviews</a>
+              <a href="#contact" onClick="{{ toggleMenu }}" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Contact</a>
+            </div>
+          </sc-if>
+          <a href="PepperzHub Cart.dc.html" aria-label="Cart" style="position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:1px solid oklch(0.92 0.01 264);border-radius:50%;background:#fff;color:oklch(0.32 0.02 264)" style-hover="color:oklch(0.56 0.145 264);border-color:oklch(0.56 0.145 264)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section style="max-width:860px;width:100%;box-sizing:border-box;margin:0 auto;padding:{{ sectionPad }};flex:1">
+    <sc-if value="{{ lookupMode }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;justify-content:center;padding-top:34px">
+        <div style="width:100%;max-width:480px;background:#fff;border:1px solid oklch(0.93 0.01 264);border-radius:0.75rem;box-shadow:0 12px 36px rgba(30,35,60,0.07);padding:38px 36px;display:flex;flex-direction:column;box-sizing:border-box">
+          <span style="width:58px;height:58px;border-radius:50%;background:oklch(0.95 0.025 250);display:flex;align-items:center;justify-content:center;color:oklch(0.56 0.145 264);align-self:center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path><path d="M15 18h-5"></path><path d="M14 8h5.6a1 1 0 0 1 .9.55L22 12v5a1 1 0 0 1-1 1h-1"></path><circle cx="7" cy="18" r="2"></circle><circle cx="17" cy="18" r="2"></circle></svg>
+          </span>
+          <h1 style="font-family:'Lora',serif;font-weight:600;font-size:28px;letter-spacing:-0.02em;color:oklch(0.24 0.02 264);margin:20px 0 0;text-align:center">Track Your Order</h1>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-top:28px">
+            <label style="font-size:14px;font-weight:500;color:oklch(0.35 0.02 264)">Order Number</label>
+            <input type="text" value="{{ qOrder }}" onChange="{{ onQOrder }}" placeholder="e.g. PZH-00231" style="font-family:'Lora',serif;font-size:15px;padding:14px 18px;border:1px solid oklch(0.88 0.012 264);border-radius:0.25rem;color:oklch(0.28 0.02 264);outline:none" style-focus="border-color:oklch(0.56 0.145 264)">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-top:18px">
+            <label style="font-size:14px;font-weight:500;color:oklch(0.35 0.02 264)">Phone Number</label>
+            <input type="tel" value="{{ qPhone }}" onChange="{{ onQPhone }}" placeholder="Phone used at checkout" style="font-family:'Lora',serif;font-size:15px;padding:14px 18px;border:1px solid oklch(0.88 0.012 264);border-radius:0.25rem;color:oklch(0.28 0.02 264);outline:none" style-focus="border-color:oklch(0.56 0.145 264)">
+          </div>
+          <sc-if value="{{ lookupError }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:16px;font-size:14px;color:oklch(0.5 0.14 14);background:oklch(0.96 0.025 14);border:1px solid oklch(0.88 0.05 14);border-radius:0.25rem;padding:12px 16px">No order found with that number and phone. Double-check both and try again.</div>
+          </sc-if>
+          <button onClick="{{ doLookup }}" style="font-family:'Lora',serif;margin-top:26px;width:100%;font-size:16px;font-weight:500;padding:15px 0;border:none;border-radius:999px;background:oklch(0.56 0.145 264);color:#fff;cursor:pointer;box-shadow:0 8px 22px rgba(50,70,160,0.25)" style-hover="background:oklch(0.5 0.145 264)" style-focus="outline:2px solid oklch(0.56 0.145 264);outline-offset:2px">Track Order</button>
+          <span style="font-size:13px;font-style:italic;color:oklch(0.55 0.04 264);text-align:center;margin-top:18px">Can't find your order number? Check your confirmation message.</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ statusMode }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ backToLookup }}" style="font-family:'Lora',serif;display:flex;align-items:center;gap:9px;font-size:16px;color:oklch(0.4 0.02 264);background:none;border:none;cursor:pointer;padding:6px 0" style-hover="color:oklch(0.56 0.145 264)" style-focus="outline:2px solid oklch(0.56 0.145 264);outline-offset:2px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Track another order
+      </button>
+
+      <div style="margin-top:24px;background:#fff;border:1px solid oklch(0.93 0.01 264);border-radius:0.75rem;padding:26px 30px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap">
+          <h1 style="font-family:'Lora',serif;font-weight:600;font-size:26px;letter-spacing:-0.02em;color:oklch(0.24 0.02 264);margin:0">Order #{{ orderNo }}</h1>
+          <span style="font-family:'Lora',serif;font-weight:600;font-size:19px;color:oklch(0.42 0.1 264)">{{ total }}</span>
+        </div>
+        <div style="margin-top:10px">
+          <sc-for list="{{ items }}" as="it" hint-placeholder-count="2">
+            <div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid oklch(0.95 0.005 264)">
+              <div class="ph-minislot" style="width:48px;height:48px;flex-shrink:0;background:{{ it.thumbBg }};border-radius:0.25rem;overflow:hidden">
+                <image-slot id="{{ it.thumbId }}" shape="rect" fit="contain" placeholder=" "></image-slot>
+              </div>
+              <span style="flex:1;font-family:'Lora',serif;font-weight:600;font-size:15px;color:oklch(0.24 0.02 264)">{{ it.name }}</span>
+              <span style="font-size:14px;color:oklch(0.5 0.04 264)">× {{ it.qty }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="margin-top:28px;background:#fff;border:1px solid oklch(0.93 0.01 264);border-radius:0.75rem;padding:30px 34px">
+        <h2 style="font-family:'Lora',serif;font-weight:600;font-size:20px;color:oklch(0.24 0.02 264);margin:0 0 6px">Order Status</h2>
+        <sc-for list="{{ stages }}" as="st" hint-placeholder-count="5">
+          <div style="display:flex;gap:18px">
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <span style="{{ st.badgeStyle }}">{{ st.badgeInner }}</span>
+              <sc-if value="{{ st.hasLine }}" hint-placeholder-val="{{ true }}">
+                <span style="width:2px;flex:1;min-height:34px;background:{{ st.lineColor }}"></span>
+              </sc-if>
+            </div>
+            <div style="padding:6px 0 26px;display:flex;flex-direction:column;gap:4px">
+              <span style="font-size:16px;font-weight:{{ st.labelWeight }};color:{{ st.labelColor }}">{{ st.label }}</span>
+              <sc-if value="{{ st.hasTime }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:13px;color:oklch(0.58 0.02 264)">{{ st.time }}</span>
+              </sc-if>
+              <sc-if value="{{ st.showCourier }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:10px;background:oklch(0.98 0.005 264);border:1px solid oklch(0.93 0.01 264);border-radius:0.5rem;padding:16px 20px;display:flex;flex-direction:column;gap:8px;max-width:420px">
+                  <span style="font-size:14px;color:oklch(0.45 0.03 264)">Courier: <span style="font-weight:600;color:oklch(0.24 0.02 264)">{{ courierName }}</span></span>
+                  <span style="font-size:14px;color:oklch(0.45 0.03 264)">Tracking No: <span style="font-weight:600;color:oklch(0.24 0.02 264)">{{ trackingNo }}</span></span>
+                  <a href="{{ courierUrl }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:9px;margin-top:6px;font-family:'Lora',serif;font-size:14px;font-weight:500;padding:11px 22px;border:2px solid oklch(0.56 0.145 264);border-radius:999px;color:oklch(0.56 0.145 264);background:#fff;width:fit-content" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.48 0.145 264)">Track with {{ courierName }}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                  </a>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+  </section>
+
+  <footer id="contact" style="background:oklch(0.98 0.005 264);border-top:1px solid oklch(0.93 0.01 264)">
+    <div style="max-width:1680px;margin:0 auto;padding:20px 40px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;font-size:14px;color:oklch(0.55 0.02 264)">
+      <span>© 2026 <span style="font-weight:600"><span style="color:oklch(0.8 0.105 14)">Pepperzz</span><span style="color:oklch(0.56 0.145 264)">Hub</span></span>. All rights reserved.</span>
+      <span style="font-style:italic;color:oklch(0.6 0.02 264)">For laboratory research use only. Not for human consumption.</span>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    qOrder: '', qPhone: '', found: null, error: false, menuOpen: false,
+    vw: typeof window !== 'undefined' ? window.innerWidth : 1440
+  };
+  componentDidMount() {
+    this._onResize = () => this.setState({ vw: window.innerWidth });
+    window.addEventListener('resize', this._onResize);
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this._onResize); }
+  renderVals() {
+    const s = this.state;
+    const peso = n => '₱' + Number(n || 0).toLocaleString('en-PH');
+    const digits = v => String(v || '').replace(/\D/g, '');
+    const bgs = ['oklch(0.92 0.02 240)', 'oklch(0.95 0.003 264)', 'oklch(0.93 0.035 20)'];
+    const BLUE = 'oklch(0.56 0.145 264)';
+    const o = s.found;
+    const fmtTime = d => d.toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    let stages = [];
+    let courierName = 'J&T Express', trackingNo = '';
+    if (o) {
+      const placed = new Date(o.placedAt || Date.now());
+      const hrs = (Date.now() - placed.getTime()) / 36e5;
+      // simulated progression: verified after 2h, preparing after 6h, shipped after 24h, delivered after 96h
+      const current = hrs >= 96 ? 4 : hrs >= 24 ? 3 : hrs >= 6 ? 2 : hrs >= 2 ? 1 : 1;
+      const done = i => (current === 4 ? i <= 4 : i < current);
+      const times = [placed, new Date(placed.getTime() + 2 * 36e5), new Date(placed.getTime() + 6 * 36e5), new Date(placed.getTime() + 24 * 36e5), new Date(placed.getTime() + 96 * 36e5)];
+      trackingNo = 'JT' + digits(o.orderNo).padStart(4, '0') + '84920PH';
+      const labels = ['Order Placed', 'Payment Verified', 'Preparing Order', 'Shipped', 'Delivered'];
+      const check = React.createElement('svg', { width: 15, height: 15, viewBox: '0 0 24 24', fill: 'none', stroke: '#fff', strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: '<polyline points="20 6 9 17 4 12"/>' } });
+      stages = labels.map((label, i) => {
+        const isDone = done(i) || i === 0;
+        const isCurrent = i === current && current !== 4;
+        const reached = isDone || isCurrent;
+        return {
+          label,
+          badgeStyle: isDone && !isCurrent
+            ? { width: '32px', height: '32px', borderRadius: '50%', background: BLUE, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }
+            : isCurrent
+              ? { width: '32px', height: '32px', borderRadius: '50%', background: '#fff', border: '2px solid ' + BLUE, boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, animation: 'ph-pulse 1.8s ease infinite' }
+              : { width: '32px', height: '32px', borderRadius: '50%', background: 'oklch(0.96 0.005 264)', border: '2px solid oklch(0.9 0.01 264)', boxSizing: 'border-box', flexShrink: 0 },
+          badgeInner: isDone && !isCurrent ? check : isCurrent ? React.createElement('span', { style: { width: '10px', height: '10px', borderRadius: '50%', background: BLUE } }) : null,
+          labelWeight: reached ? '600' : '400',
+          labelColor: isCurrent ? BLUE : reached ? 'oklch(0.28 0.02 264)' : 'oklch(0.6 0.02 264)',
+          hasTime: reached,
+          time: reached ? fmtTime(times[i]) : '',
+          hasLine: i < 4,
+          lineColor: done(i + 1) || i + 1 === current || i === 0 && current >= 1 ? 'oklch(0.8 0.06 260)' : 'oklch(0.92 0.01 264)',
+          showCourier: label === 'Shipped' && current >= 3
+        };
+      });
+    }
+    return {
+      navStyle: s.vw < 1100 ? { display: 'none' } : { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '16px' },
+      menuBtnStyle: { display: s.vw < 1100 ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', border: '1px solid oklch(0.92 0.01 264)', borderRadius: '50%', background: '#fff', color: 'oklch(0.32 0.02 264)', cursor: 'pointer', padding: 0 },
+      menuOpen: !!s.menuOpen && s.vw < 1100,
+      toggleMenu: () => this.setState(st => ({ menuOpen: !st.menuOpen })),
+      sectionPad: s.vw < 700 ? '28px 20px 80px' : '40px 40px 110px',
+      lookupMode: !o,
+      statusMode: !!o,
+      qOrder: s.qOrder, onQOrder: e => this.setState({ qOrder: e.target.value }),
+      qPhone: s.qPhone, onQPhone: e => this.setState({ qPhone: e.target.value }),
+      lookupError: s.error,
+      doLookup: () => {
+        let saved = null;
+        try { saved = JSON.parse(localStorage.getItem('pepperzhub-last-order') || 'null'); } catch (e) {}
+        const qNo = s.qOrder.trim().toUpperCase().replace(/^#/, '').replace(/^PZH-?/, '');
+        const match = saved
+          && digits(saved.customer && saved.customer.phone) === digits(s.qPhone)
+          && String(saved.orderNo).toUpperCase().replace(/^PZH-?/, '') === qNo
+          && qNo.length > 0;
+        if (match) { this.setState({ found: saved, error: false }); return; }
+        // demo combination (no backend yet): PZH-00231 + 09171234567, shown at the "Shipped" stage
+        if (qNo === '00231' && digits(s.qPhone) === '09171234567') {
+          this.setState({
+            found: {
+              orderNo: 'PZH-00231',
+              items: [
+                { slug: 'bpc-157', name: 'BPC-157', format: '5mg vial', qty: 2, price: 2450 },
+                { slug: 'ipamorelin', name: 'Ipamorelin', format: '10mg vial', qty: 1, price: 5100 }
+              ],
+              subtotal: 10000, shipRate: 150, shipName: 'J&T – Luzon & Visayas', total: 10150,
+              customer: { name: 'Juan Dela Cruz', social: 'fb.com/juandc', phone: '0917 123 4567' },
+              placedAt: new Date(Date.now() - 30 * 36e5).toISOString()
+            },
+            error: false
+          });
+          return;
+        }
+        this.setState({ error: true });
+      },
+      backToLookup: () => this.setState({ found: null, error: false, qOrder: '', qPhone: '' }),
+      orderNo: o ? String(o.orderNo).replace(/^PZH-?/, 'PZH-') : '',
+      total: o ? peso(o.total) : '',
+      items: o ? (o.items || []).map((it, i) => ({
+        name: it.name, qty: it.qty,
+        thumbId: 'prod-' + it.slug, thumbBg: bgs[i % 3]
+      })) : [],
+      stages, courierName, trackingNo,
+      courierUrl: 'https://www.jtexpress.ph/trajectoryQuery?waybillNo=' + trackingNo
+    };
+  }
+}
+</script>
+</body>
+</html>

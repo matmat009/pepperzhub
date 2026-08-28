@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap">
+  <script src="./image-slot.js"></script>
+  <style>
+    html,body{margin:0;padding:0;background:#fff}
+    body{font-family:'Lora',serif;color:oklch(0.28 0.02 264)}
+    a{color:oklch(0.56 0.145 264);text-decoration:none}
+    a:hover{color:oklch(0.48 0.145 264)}
+    ::selection{background:oklch(0.9 0.05 264)}
+    .ph-minislot image-slot::part(empty){display:none}
+    @keyframes ph-pulse{0%,100%{box-shadow:0 0 0 0 rgba(90,110,200,0.35)}50%{box-shadow:0 0 0 8px rgba(90,110,200,0)}}
+  </style>
+</helmet>
+<div style="min-height:100vh;background:#fff;display:flex;flex-direction:column">
+  <header style="position:sticky;top:0;z-index:30;padding:14px 0 8px">
+    <div style="max-width:1680px;margin:0 auto;padding:0 40px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px;background:rgba(255,255,255,0.92);backdrop-filter:blur(10px);border:1px solid oklch(0.94 0.008 264);border-radius:999px;box-shadow:0 10px 30px rgba(30,35,60,0.08);padding:0 12px 0 22px">
+        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+          <img src="uploads/4e8981a7-eb26-4b08-bb75-5f6dbdcb047c.jpg" alt="PepperzzHub logo" style="width:38px;height:38px;border-radius:50%;object-fit:cover">
+          <span style="font-family:'Lora',serif;font-weight:600;font-size:18px;letter-spacing:-0.02em;white-space:nowrap"><span style="color:oklch(0.8 0.105 14)">Pepperzz</span><span style="color:oklch(0.56 0.145 264)">Hub</span></span>
+        </div>
+        <nav style="{{ navStyle }}">
+          <a href="PepperzHub Home.dc.html" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">Home</a>
+          <a href="PepperzHub Catalog.dc.html" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">Products</a>
+          <a href="PepperzHub Track Order.dc.html" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">Track Order</a>
+          <a href="#" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">FAQ</a>
+          <a href="#" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">Protocols</a>
+          <a href="#" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">Reviews</a>
+          <a href="#contact" style="color:oklch(0.4 0.02 264);padding:9px 18px;border-radius:999px" style-hover="color:oklch(0.56 0.145 264)">Contact</a>
+        </nav>
+        <div style="display:flex;align-items:center;justify-content:flex-end;flex:1;gap:8px">
+          <button onClick="{{ toggleMenu }}" aria-label="Menu" style="{{ menuBtnStyle }}" style-focus="outline:2px solid oklch(0.56 0.145 264);outline-offset:2px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="18" x2="20" y2="18"></line></svg>
+          </button>
+          <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:fixed;top:88px;left:20px;right:20px;z-index:90;background:#fff;border:1px solid oklch(0.94 0.008 264);border-radius:0.75rem;box-shadow:0 24px 56px rgba(30,35,60,0.18);padding:10px;display:flex;flex-direction:column">
+              <a href="PepperzHub Home.dc.html" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Home</a>
+              <a href="PepperzHub Catalog.dc.html" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Products</a>
+              <a href="PepperzHub Track Order.dc.html" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Track Order</a>
+              <a href="#" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">FAQ</a>
+              <a href="#" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Protocols</a>
+              <a href="#" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Reviews</a>
+              <a href="#contact" onClick="{{ toggleMenu }}" style="font-size:16px;color:oklch(0.4 0.02 264);padding:13px 16px;border-radius:0.5rem" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Contact</a>
+            </div>
+          </sc-if>
+          <a href="PepperzHub Cart.dc.html" aria-label="Cart" style="position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:1px solid oklch(0.92 0.01 264);border-radius:50%;background:#fff;color:oklch(0.32 0.02 264)" style-hover="color:oklch(0.56 0.145 264);border-color:oklch(0.56 0.145 264)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section style="max-width:980px;width:100%;box-sizing:border-box;margin:0 auto;padding:{{ sectionPad }};flex:1">
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center">
+      <span style="width:84px;height:84px;border-radius:50%;background:oklch(0.95 0.025 250);border:1px solid oklch(0.88 0.05 260);display:flex;align-items:center;justify-content:center;color:oklch(0.56 0.145 264)">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      </span>
+      <h1 style="font-family:'Lora',serif;font-weight:600;font-size:{{ h1Size }};letter-spacing:-0.02em;color:oklch(0.24 0.02 264);margin:26px 0 0;text-wrap:pretty">Order Placed — Pending Verification</h1>
+      <p style="font-size:17px;line-height:1.7;color:oklch(0.45 0.03 264);margin:16px 0 0;max-width:600px;text-wrap:pretty">We've received your order and payment proof. We'll verify your payment and reach out via <span style="font-weight:600;color:oklch(0.3 0.02 264)">{{ social }}</span> or <span style="font-weight:600;color:oklch(0.3 0.02 264)">{{ phone }}</span> shortly.</p>
+
+      <div style="display:flex;align-items:flex-start;gap:0;margin-top:40px;max-width:100%">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:{{ stepW }}">
+          <span style="width:34px;height:34px;border-radius:50%;background:oklch(0.56 0.145 264);color:#fff;display:flex;align-items:center;justify-content:center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </span>
+          <span style="font-size:{{ stepFont }};font-weight:600;color:oklch(0.3 0.02 264)">Order Placed</span>
+        </div>
+        <span style="flex:none;width:{{ connW }};height:2px;background:oklch(0.56 0.145 264);margin-top:16px"></span>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:{{ stepW }}">
+          <span style="width:34px;height:34px;border-radius:50%;background:#fff;border:2px solid oklch(0.56 0.145 264);box-sizing:border-box;display:flex;align-items:center;justify-content:center;animation:ph-pulse 1.8s ease infinite">
+            <span style="width:11px;height:11px;border-radius:50%;background:oklch(0.56 0.145 264)"></span>
+          </span>
+          <span style="font-size:{{ stepFont }};font-weight:600;color:oklch(0.56 0.145 264)">Verifying Payment</span>
+        </div>
+        <span style="flex:none;width:{{ connW }};height:2px;background:oklch(0.9 0.01 264);margin-top:16px"></span>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:{{ stepW }}">
+          <span style="width:34px;height:34px;border-radius:50%;background:oklch(0.96 0.005 264);border:2px solid oklch(0.9 0.01 264);box-sizing:border-box"></span>
+          <span style="font-size:{{ stepFont }};color:oklch(0.6 0.02 264)">Confirmed &amp; Processing</span>
+        </div>
+      </div>
+
+      <div style="margin-top:38px;background:oklch(0.98 0.005 264);border:1px dashed oklch(0.85 0.03 264);border-radius:0.5rem;padding:18px 34px;display:flex;flex-direction:column;gap:5px;max-width:100%;box-sizing:border-box">
+        <span style="font-family:'Lora',serif;font-weight:600;font-size:{{ orderNoSize }};letter-spacing:0.02em;color:oklch(0.24 0.02 264)">Order #{{ orderNo }}</span>
+        <span style="font-size:13px;font-style:italic;color:oklch(0.55 0.04 264)">Save this number for your reference</span>
+      </div>
+
+      <div style="margin-top:30px;width:100%;max-width:620px;box-sizing:border-box;background:oklch(0.96 0.025 14);border:1px solid oklch(0.89 0.05 14);border-radius:0.75rem;padding:24px 28px;display:flex;flex-direction:column;align-items:center;gap:16px">
+        <span style="font-size:15px;font-weight:500;color:oklch(0.35 0.06 14);text-align:center">Speed up verification — message us your order number now</span>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+          <a href="{{ messengerHref }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:10px;font-family:'Lora',serif;font-size:15px;font-weight:500;padding:12px 24px;border:2px solid oklch(0.56 0.145 264);border-radius:999px;color:oklch(0.56 0.145 264);background:#fff" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.48 0.145 264)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.17.16.15.26.35.27.57l.05 1.78c.02.57.6.94 1.12.71l1.98-.87c.17-.08.36-.09.53-.05.91.25 1.88.39 2.91.39 5.64 0 10-4.13 10-9.7S17.64 2 12 2zm6 7.46-2.94 4.66c-.47.74-1.47.93-2.17.4l-2.34-1.75a.6.6 0 0 0-.72 0l-3.16 2.4c-.42.32-.97-.18-.69-.63l2.94-4.66c.47-.74 1.47-.93 2.17-.4l2.34 1.75c.21.16.51.16.72 0l3.16-2.4c.42-.32.97.18.69.63z"></path></svg>
+            Message us on Facebook
+          </a>
+          <a href="{{ whatsappHref }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:10px;font-family:'Lora',serif;font-size:15px;font-weight:500;padding:12px 24px;border:2px solid oklch(0.72 0.11 14);border-radius:999px;color:oklch(0.55 0.14 14);background:#fff" style-hover="background:oklch(0.97 0.02 14);color:oklch(0.5 0.14 14)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.89 1.22 3.09.15.2 2.11 3.22 5.1 4.51.71.31 1.27.49 1.7.63.72.23 1.37.2 1.88.12.57-.09 1.76-.72 2.01-1.42.25-.7.25-1.29.17-1.42-.07-.13-.27-.2-.57-.35zM12.05 21.79h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.85 9.85 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.9-9.88a9.83 9.83 0 0 1 7 2.9 9.83 9.83 0 0 1 2.89 7c0 5.45-4.44 9.87-9.9 9.87zm8.42-18.29A11.8 11.8 0 0 0 12.05 0C5.5 0 .16 5.33.16 11.89c0 2.1.55 4.14 1.59 5.94L.06 24l6.31-1.65a11.9 11.9 0 0 0 5.68 1.44h.01c6.55 0 11.89-5.33 11.89-11.89 0-3.18-1.24-6.16-3.48-8.4z"></path></svg>
+            Message us on WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:{{ recapCols }};gap:28px;margin-top:56px;align-items:start">
+      <div style="background:#fff;border:1px solid oklch(0.93 0.01 264);border-radius:0.75rem;padding:28px 30px">
+        <h2 style="font-family:'Lora',serif;font-weight:600;font-size:20px;color:oklch(0.24 0.02 264);margin:0">Order Recap</h2>
+        <div style="margin-top:8px">
+          <sc-for list="{{ items }}" as="it" hint-placeholder-count="2">
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid oklch(0.95 0.005 264)">
+              <div class="ph-minislot" style="width:56px;height:56px;flex-shrink:0;background:{{ it.thumbBg }};border-radius:0.25rem;overflow:hidden">
+                <image-slot id="{{ it.thumbId }}" shape="rect" fit="contain" placeholder=" "></image-slot>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:2px;min-width:0">
+                <span style="font-family:'Lora',serif;font-weight:600;font-size:15px;color:oklch(0.24 0.02 264)">{{ it.name }}</span>
+                <span style="font-size:13px;color:oklch(0.5 0.04 264)">{{ it.format }} · × {{ it.qty }}</span>
+              </div>
+              <span style="font-family:'Lora',serif;font-weight:600;font-size:15px;color:oklch(0.42 0.1 264);white-space:nowrap">{{ it.linePrice }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:15px;margin-top:16px">
+          <span style="color:oklch(0.45 0.03 264)">Subtotal</span>
+          <span style="font-weight:500;color:oklch(0.24 0.02 264)">{{ subtotal }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:15px;margin-top:10px">
+          <span style="color:oklch(0.45 0.03 264)">Shipping · {{ shipName }}</span>
+          <span style="font-weight:500;color:oklch(0.24 0.02 264)">{{ shipRate }}</span>
+        </div>
+        <div style="border-top:1px solid oklch(0.92 0.01 264);margin:16px 0"></div>
+        <div style="display:flex;justify-content:space-between;font-size:17px">
+          <span style="font-family:'Lora',serif;font-weight:600;color:oklch(0.24 0.02 264)">Total</span>
+          <span style="font-family:'Lora',serif;font-weight:600;color:oklch(0.24 0.02 264)">{{ total }}</span>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid oklch(0.93 0.01 264);border-radius:0.75rem;padding:28px 30px">
+        <h2 style="font-family:'Lora',serif;font-weight:600;font-size:20px;color:oklch(0.24 0.02 264);margin:0">Shipping To</h2>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:20px;font-size:15px;line-height:1.6;color:oklch(0.38 0.02 264)">
+          <span style="font-weight:600;color:oklch(0.24 0.02 264)">{{ custName }}</span>
+          <span>{{ street }}</span>
+          <span>{{ cityLine }}</span>
+          <span>{{ provLine }}</span>
+          <span style="display:flex;align-items:center;gap:10px;margin-top:8px;color:oklch(0.45 0.03 264)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="oklch(0.56 0.145 264)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>{{ phone }}
+          </span>
+          <span style="font-size:13px;font-style:italic;color:oklch(0.55 0.04 264);margin-top:6px">Spot an error? Message us right away with your order number.</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:center;margin-top:48px">
+      <a href="PepperzHub Catalog.dc.html" style="display:inline-flex;align-items:center;gap:11px;font-family:'Lora',serif;font-size:16px;font-weight:500;padding:15px 40px;border:2px solid oklch(0.56 0.145 264);border-radius:999px;color:oklch(0.56 0.145 264);background:#fff" style-hover="background:oklch(0.97 0.012 264);color:oklch(0.56 0.145 264)">Continue Shopping
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </a>
+    </div>
+  </section>
+
+  <footer id="contact" style="background:oklch(0.98 0.005 264);border-top:1px solid oklch(0.93 0.01 264)">
+    <div style="max-width:1680px;margin:0 auto;padding:20px 40px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;font-size:14px;color:oklch(0.55 0.02 264)">
+      <span>© 2026 <span style="font-weight:600"><span style="color:oklch(0.8 0.105 14)">Pepperzz</span><span style="color:oklch(0.56 0.145 264)">Hub</span></span>. All rights reserved.</span>
+      <span style="font-style:italic;color:oklch(0.6 0.02 264)">For laboratory research use only. Not for human consumption.</span>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { vw: typeof window !== 'undefined' ? window.innerWidth : 1440 };
+  componentDidMount() {
+    this._onResize = () => this.setState({ vw: window.innerWidth });
+    window.addEventListener('resize', this._onResize);
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this._onResize); }
+  renderVals() {
+    const s = this.state;
+    const peso = n => '₱' + Number(n || 0).toLocaleString('en-PH');
+    let order = null;
+    try { order = JSON.parse(localStorage.getItem('pepperzhub-last-order') || 'null'); } catch (e) {}
+    const o = order || {
+      orderNo: 'PZH-00231',
+      items: [{ slug: 'bpc-157', name: 'BPC-157', format: '5mg vial', qty: 1, price: 2450 }],
+      subtotal: 2450, shipRate: 150, shipName: 'J&T – Luzon & Visayas', total: 2600,
+      customer: { name: 'Juan Dela Cruz', social: 'fb.com/juandc', phone: '0917 123 4567' },
+      address: { street: '12 Sampaguita St.', brgy: 'Brgy. San Isidro', city: 'Quezon City', prov: 'Metro Manila', zip: '1100' }
+    };
+    const bgs = ['oklch(0.92 0.02 240)', 'oklch(0.95 0.003 264)', 'oklch(0.93 0.035 20)'];
+    return {
+      navStyle: s.vw < 1100 ? { display: 'none' } : { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '16px' },
+      menuBtnStyle: { display: s.vw < 1100 ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center', width: '44px', height: '44px', border: '1px solid oklch(0.92 0.01 264)', borderRadius: '50%', background: '#fff', color: 'oklch(0.32 0.02 264)', cursor: 'pointer', padding: 0 },
+      menuOpen: !!s.menuOpen && s.vw < 1100,
+      toggleMenu: () => this.setState(st => ({ menuOpen: !st.menuOpen })),
+      orderNo: o.orderNo.replace(/^PZH-/, ''),
+      messengerHref: 'https://m.me/pepperzzhub?text=' + encodeURIComponent('Hi! I just placed Order #' + o.orderNo + ", here's my payment proof"),
+      whatsappHref: 'https://wa.me/639171234567?text=' + encodeURIComponent('Hi! I just placed Order #' + o.orderNo + ", here's my payment proof"),
+      social: o.customer.social || 'your Facebook/WhatsApp',
+      phone: o.customer.phone || 'your phone number',
+      custName: o.customer.name,
+      street: o.address.street,
+      cityLine: (o.address.brgy ? o.address.brgy + ', ' : '') + o.address.city,
+      provLine: o.address.prov + (o.address.zip ? ' ' + o.address.zip : ''),
+      items: (o.items || []).map((it, i) => ({
+        name: it.name, format: it.format, qty: it.qty,
+        linePrice: peso(it.price * it.qty),
+        thumbId: 'prod-' + it.slug, thumbBg: bgs[i % 3]
+      })),
+      subtotal: peso(o.subtotal),
+      shipRate: peso(o.shipRate),
+      shipName: o.shipName,
+      total: peso(o.total),
+      recapCols: s.vw < 860 ? '1fr' : '1.4fr 1fr',
+      sectionPad: s.vw < 700 ? '36px 20px 80px' : '56px 40px 110px',
+      h1Size: s.vw < 700 ? '28px' : '38px',
+      orderNoSize: s.vw < 700 ? '20px' : '24px',
+      stepW: s.vw < 700 ? '92px' : '150px',
+      connW: s.vw < 700 ? '24px' : '70px',
+      stepFont: s.vw < 700 ? '12px' : '14px'
+    };
+  }
+}
+</script>
+</body>
+</html>
