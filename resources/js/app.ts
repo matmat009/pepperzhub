@@ -4,6 +4,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import AuthSplitCardLayout from '@/layouts/auth/AuthSplitCardLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
+import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
@@ -12,8 +13,8 @@ createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => {
         switch (true) {
-            case name === 'Welcome':
-                return null;
+            case name.startsWith('storefront/'):
+                return StorefrontLayout;
             case name === 'auth/Login':
             case name === 'auth/Register':
                 return AuthSplitCardLayout;

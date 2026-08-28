@@ -8,8 +8,13 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    /*
+     * Admin face — Space Grotesk, applied app-wide through `font-sans` on
+     * <body>. The storefront opts out of it via `font-body` on
+     * StorefrontLayout, which resolves to Lora.
+     */
     --font-sans:
-        Instrument Sans, ui-sans-serif, system-ui, sans-serif,
+        'Space Grotesk', ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 
@@ -70,6 +75,51 @@
      */
     --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
     --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+    /*
+     * Storefront brand.
+     *
+     * The public storefront is a light-only surface with its own palette and
+     * type, separate from the admin theme above. Values come from the Claude
+     * Design artboards in design/pepperzhub-peptide-storefront/ — a blue at
+     * hue 264 (Serenity Blue) and a rose at hue 14 (Rose Quartz), both
+     * deepened from the pastel brand swatches so they clear contrast as text.
+     */
+    /*
+     * Storefront face — one family, Lora, exactly as the artboards set it.
+     * Both tokens resolve to the same stack; the display/body split survives
+     * so weight and size intent stays legible at each call site (headings and
+     * wordmark at 500-600, body copy at 400).
+     */
+    --font-display: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-body: 'Lora', Georgia, 'Times New Roman', serif;
+
+    --color-sf-primary: var(--sf-primary);
+    --color-sf-primary-hover: var(--sf-primary-hover);
+    --color-sf-primary-deep: var(--sf-primary-deep);
+    --color-sf-primary-soft: var(--sf-primary-soft);
+
+    --color-sf-rose: var(--sf-rose);
+    --color-sf-rose-mid: var(--sf-rose-mid);
+    --color-sf-rose-deep: var(--sf-rose-deep);
+    --color-sf-rose-tint: var(--sf-rose-tint);
+    --color-sf-rose-line: var(--sf-rose-line);
+
+    --color-sf-ink: var(--sf-ink);
+    --color-sf-text: var(--sf-text);
+    --color-sf-muted: var(--sf-muted);
+    --color-sf-subtle: var(--sf-subtle);
+
+    --color-sf-line: var(--sf-line);
+    --color-sf-line-strong: var(--sf-line-strong);
+    --color-sf-rule: var(--sf-rule);
+    --color-sf-tint: var(--sf-tint);
+    --color-sf-surface: var(--sf-surface);
+    --color-sf-success: var(--sf-success);
+
+    /* Hero wash — the two ends of the Home banner's diagonal gradient. */
+    --color-sf-hero-blue: var(--sf-hero-blue);
+    --color-sf-hero-rose: var(--sf-hero-rose);
 }
 
 /*
@@ -94,7 +144,7 @@
     body,
     html {
         --font-sans:
-            'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
+            'Space Grotesk', ui-sans-serif, system-ui, sans-serif,
             'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
             'Noto Color Emoji';
     }
@@ -135,6 +185,44 @@
     --sidebar-border: hsl(0 0% 91%);
     --sidebar-ring: hsl(217.2 91.2% 59.8%);
     --sidebar: hsl(0 0% 98%);
+}
+
+/*
+ * Storefront palette — deliberately declared once, outside the `.dark` block
+ * below, so the public pages keep one light appearance no matter what the
+ * admin theme toggle is set to. StorefrontLayout paints an explicit white
+ * ground for the same reason.
+ */
+:root {
+    --sf-primary: oklch(0.56 0.145 264);
+    --sf-primary-hover: oklch(0.48 0.145 264);
+    --sf-primary-deep: oklch(0.5 0.145 264);
+    --sf-primary-soft: oklch(0.42 0.1 264);
+
+    --sf-rose: oklch(0.8 0.105 14);
+    --sf-rose-mid: oklch(0.72 0.11 14);
+    --sf-rose-deep: oklch(0.55 0.17 14);
+    --sf-rose-tint: oklch(0.95 0.035 14);
+    --sf-rose-line: oklch(0.88 0.05 14);
+
+    --sf-ink: oklch(0.24 0.02 264);
+    --sf-text: oklch(0.4 0.02 264);
+    --sf-muted: oklch(0.45 0.03 264);
+    --sf-subtle: oklch(0.55 0.03 264);
+
+    --sf-line: oklch(0.94 0.008 264);
+    --sf-line-strong: oklch(0.9 0.01 264);
+    /* Slightly darker than --sf-line-strong; for hairline rules that have to
+       read on their own rather than bound a filled surface. */
+    --sf-rule: oklch(0.85 0.02 264);
+    --sf-tint: oklch(0.97 0.012 264);
+    --sf-surface: oklch(0.98 0.005 264);
+    --sf-success: oklch(0.62 0.13 155);
+
+    /* Tinted ends of the Home hero wash. Lighter and less saturated than the
+       brand pair so headline copy still clears contrast over them. */
+    --sf-hero-blue: oklch(0.89 0.07 250);
+    --sf-hero-rose: oklch(0.89 0.075 20);
 }
 
 .dark {

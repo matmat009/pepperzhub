@@ -78,6 +78,9 @@ export default defineConfigWithVueTs(
             'node_modules',
             'public',
             'bootstrap/ssr',
+            // Exported Claude Design prototypes — reference material, not
+            // source. They ship their own bundled runtime and are never built.
+            'design/**',
             'tailwind.config.js',
             'vite.config.ts',
             'resources/js/actions/**',
