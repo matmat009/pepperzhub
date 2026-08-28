@@ -77,7 +77,7 @@ const hasActiveChild = (item: NavMainItem) =>
                                     />
                                     <span>{{ item.title }}</span>
                                     <ChevronRight
-                                        class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+                                        class="ml-auto transition-transform duration-200 ease-in-out group-data-[state=open]/collapsible:rotate-90 motion-reduce:transition-none"
                                     />
                                 </SidebarMenuButton>
                             </CollapsibleTrigger>

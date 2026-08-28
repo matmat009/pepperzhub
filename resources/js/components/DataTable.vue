@@ -1,5 +1,10 @@
 <script setup lang="ts" generic="TData extends { id: number | string }">
-import type { Cell, ColumnDef, RowSelectionState } from '@tanstack/vue-table';
+import type {
+    Cell,
+    ColumnDef,
+    ExpandedState,
+    RowSelectionState,
+} from '@tanstack/vue-table';
 import { RestrictToVerticalAxis } from '@dnd-kit/abstract/modifiers';
 import { ArrowDown, ArrowUp, ChevronsUpDown } from '@lucide/vue';
 import {
@@ -10,7 +15,7 @@ import {
 } from '@tabler/icons-vue';
 import { FlexRender, useTable } from '@tanstack/vue-table';
 import { DragDropProvider } from 'dnd-kit-vue';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -56,6 +61,11 @@ const props = withDefaults(
         draggable?: boolean;
         rowClickable?: boolean;
         emptyMessage?: string;
+        /**
+         * Rows with detail worth revealing. Omit it and no row expands — these
+         * rows have no sub-rows, so TanStack cannot infer expandability.
+         */
+        canExpandRow?: (row: TData) => boolean;
     }>(),
     {
         draggable: false,
@@ -72,6 +82,9 @@ const rowSelection = defineModel<RowSelectionState>('rowSelection', {
     default: () => ({}),
 });
 
+/** Keyed by row id, so several rows stay open at once. */
+const expanded = ref<ExpandedState>({});
+
 const table = useTable({
     features,
     get data() {
@@ -84,12 +97,20 @@ const table = useTable({
         get rowSelection() {
             return rowSelection.value;
         },
+        get expanded() {
+            return expanded.value;
+        },
     },
+    getRowCanExpand: (row) => props.canExpandRow?.(row.original) ?? false,
     onRowSelectionChange: (updater) => {
         rowSelection.value =
             typeof updater === 'function'
                 ? updater(rowSelection.value)
                 : updater;
+    },
+    onExpandedChange: (updater) => {
+        expanded.value =
+            typeof updater === 'function' ? updater(expanded.value) : updater;
     },
 });
 
@@ -192,29 +213,60 @@ defineExpose({ table });
                                     :index="row.index"
                                 />
                             </template>
-                            <TableRow
+                            <template
                                 v-for="row in table.getRowModel().rows"
                                 v-else
                                 :key="row.id"
-                                :data-state="row.getIsSelected() && 'selected'"
-                                :class="[
-                                    'transition-colors',
-                                    rowClickable && 'cursor-pointer',
-                                ]"
                             >
-                                <TableCell
-                                    v-for="cell in row.getVisibleCells()"
-                                    :key="cell.id"
-                                    class="py-3"
-                                    @click="onCellClick(cell, row.original)"
+                                <TableRow
+                                    :data-state="
+                                        row.getIsSelected() && 'selected'
+                                    "
+                                    :class="[
+                                        'transition-colors',
+                                        rowClickable && 'cursor-pointer',
+                                    ]"
                                 >
-                                    <FlexRender :cell="cell" />
-                                </TableCell>
-                            </TableRow>
+                                    <TableCell
+                                        v-for="cell in row.getVisibleCells()"
+                                        :key="cell.id"
+                                        class="py-3"
+                                        @click="onCellClick(cell, row.original)"
+                                    >
+                                        <FlexRender :cell="cell" />
+                                    </TableCell>
+                                </TableRow>
+
+                                <!--
+                                    Detail row. The row itself appears at once —
+                                    a <tr> cannot animate its height reliably —
+                                    while its content settles in on transform
+                                    and opacity only.
+                                -->
+                                <TableRow
+                                    v-if="row.getIsExpanded()"
+                                    :key="`${row.id}-detail`"
+                                    class="bg-muted/30 hover:bg-muted/30"
+                                >
+                                    <TableCell
+                                        :colspan="row.getVisibleCells().length"
+                                        class="p-0"
+                                    >
+                                        <div
+                                            class="motion-safe:animate-in motion-safe:duration-200 motion-safe:ease-out motion-safe:fade-in-0 motion-safe:slide-in-from-top-1"
+                                        >
+                                            <slot
+                                                name="expanded"
+                                                :row="row.original"
+                                            />
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            </template>
                         </template>
                         <TableRow v-else class="hover:bg-transparent">
                             <TableCell
-                                :colspan="columns.length"
+                                :colspan="table.getVisibleLeafColumns().length"
                                 class="h-32 text-center text-sm text-muted-foreground"
                             >
                                 <slot name="empty">{{ emptyMessage }}</slot>

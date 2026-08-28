@@ -1,13 +1,15 @@
 import type { ColumnDef } from '@tanstack/vue-table';
 import { createColumnHelper } from '@tanstack/vue-table';
 import { h } from 'vue';
+import { ChevronRight } from '@lucide/vue';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Features } from '@/components/features';
 import ProductCell from './partials/ProductCell.vue';
 import RowActions from './partials/RowActions.vue';
 import StatusBadge from './partials/StatusBadge.vue';
-import { formatDate, formatPrice, formatPurity } from './types';
+import { formatDate, primaryPurity, priceRange, totalStock } from './types';
 import type { Product } from './types';
 
 const columnHelper = createColumnHelper<Features, Product>();
@@ -52,6 +54,46 @@ export const createProductColumns = (
             enableSorting: false,
             enableHiding: false,
         }),
+        // No sub-rows to infer from, so expandability comes from the page via
+        // DataTable's `canExpandRow`. Rows with one format have nothing to show.
+        columnHelper.display({
+            id: 'expander',
+            meta: { ...NO_ROW_CLICK, headerClass: 'w-8' },
+            header: () => null,
+            cell: ({ row }) =>
+                row.getCanExpand()
+                    ? h(
+                          Button,
+                          {
+                              variant: 'ghost',
+                              size: 'icon',
+                              class: 'size-7 text-muted-foreground',
+                              // Distinct from the row-actions trigger, which
+                              // also carries aria-expanded.
+                              'data-slot': 'row-expander',
+                              'aria-expanded': row.getIsExpanded(),
+                              onClick: (event: MouseEvent) => {
+                                  event.stopPropagation();
+                                  row.toggleExpanded();
+                              },
+                          },
+                          () => [
+                              h(ChevronRight, {
+                                  class: [
+                                      'size-4 transition-transform duration-200 ease-in-out motion-reduce:transition-none',
+                                      row.getIsExpanded() ? 'rotate-90' : '',
+                                  ],
+                              }),
+                              h(
+                                  'span',
+                                  { class: 'sr-only' },
+                                  `${row.getIsExpanded() ? 'Hide' : 'Show'} formats for ${row.original.name}`,
+                              ),
+                          ],
+                      )
+                    : null,
+            enableHiding: false,
+        }),
         columnHelper.accessor('name', {
             id: 'product',
             header: 'Product',
@@ -70,19 +112,23 @@ export const createProductColumns = (
             cell: ({ row }) => h(ProductCell, { product: row.original }),
             enableHiding: false,
         }),
-        columnHelper.accessor('type', {
-            header: 'Type',
-            filterFn: (row, columnId, filterValue) =>
-                !filterValue || row.getValue(columnId) === filterValue,
-            cell: ({ row }) =>
-                h(
+        // Replaces the old flat Kit/Vial "Type" column: a product now carries a
+        // list of purchasable formats rather than being one of two kinds.
+        columnHelper.accessor((row) => row.variants.length, {
+            id: 'formats',
+            header: 'Formats',
+            cell: ({ row }) => {
+                const count = row.original.variants.length;
+
+                return h(
                     Badge,
                     {
                         variant: 'secondary',
                         class: 'rounded-md font-normal text-muted-foreground',
                     },
-                    () => row.original.type,
-                ),
+                    () => `${count} format${count === 1 ? '' : 's'}`,
+                );
+            },
         }),
         columnHelper.accessor('category', {
             header: 'Category',
@@ -101,15 +147,37 @@ export const createProductColumns = (
                     () => row.original.category,
                 ),
         }),
-        columnHelper.accessor('purity', {
+        // One entry reads as the figure itself; several collapse to a count,
+        // because no single value would represent the set honestly. The full
+        // label/value breakdown lives on the product's Technical Details.
+        columnHelper.accessor((row) => primaryPurity(row.purity_entries), {
+            id: 'purity',
             header: 'Purity',
             meta: { headerClass: 'text-right' },
-            cell: ({ row }) =>
-                h(
+            cell: ({ row }) => {
+                const entries = row.original.purity_entries;
+
+                if (entries.length > 1) {
+                    return h(
+                        'div',
+                        { class: 'flex justify-end' },
+                        h(
+                            Badge,
+                            {
+                                variant: 'secondary',
+                                class: 'rounded-md font-normal text-muted-foreground',
+                            },
+                            () => `${entries.length} entries`,
+                        ),
+                    );
+                }
+
+                return h(
                     'div',
-                    { class: 'text-right tabular-nums' },
-                    formatPurity(row.original.purity),
-                ),
+                    { class: 'text-right whitespace-nowrap tabular-nums' },
+                    primaryPurity(entries),
+                );
+            },
         }),
         columnHelper.accessor('status', {
             header: 'Status',
@@ -117,11 +185,13 @@ export const createProductColumns = (
                 !filterValue || row.getValue(columnId) === filterValue,
             cell: ({ row }) => h(StatusBadge, { status: row.original.status }),
         }),
-        columnHelper.accessor('stock', {
+        // Stock and price are now aggregates across the product's formats.
+        columnHelper.accessor((row) => totalStock(row.variants), {
+            id: 'stock',
             header: 'Stock',
             meta: { headerClass: 'text-right' },
             cell: ({ row }) => {
-                const stock = row.original.stock;
+                const stock = totalStock(row.original.variants);
 
                 return h(
                     'div',
@@ -139,16 +209,22 @@ export const createProductColumns = (
                 );
             },
         }),
-        columnHelper.accessor('price', {
-            header: 'Price',
-            meta: { headerClass: 'text-right' },
-            cell: ({ row }) =>
-                h(
-                    'div',
-                    { class: 'text-right font-medium tabular-nums' },
-                    formatPrice(row.original.price),
-                ),
-        }),
+        columnHelper.accessor(
+            (row) => Math.min(...row.variants.map((v) => v.price)),
+            {
+                id: 'price',
+                header: 'Price',
+                meta: { headerClass: 'text-right' },
+                cell: ({ row }) =>
+                    h(
+                        'div',
+                        {
+                            class: 'text-right font-medium whitespace-nowrap tabular-nums',
+                        },
+                        priceRange(row.original.variants),
+                    ),
+            },
+        ),
         columnHelper.accessor('created_at', {
             id: 'created',
             header: 'Created',

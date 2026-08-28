@@ -81,7 +81,7 @@ onMounted(async () => {
             </div>
             <div
                 :class="[
-                    'relative overflow-hidden transition-all duration-300',
+                    'relative overflow-hidden transition-[height,opacity] duration-300 ease-out motion-reduce:transition-opacity',
                     isRecoveryCodesVisible
                         ? 'h-auto opacity-100'
                         : 'h-0 opacity-0',

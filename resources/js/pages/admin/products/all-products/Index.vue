@@ -30,7 +30,8 @@ import type { Features } from '@/components/features';
 import { create, index, show } from '@/routes/admin/products';
 import { createProductColumns } from './columns';
 import DeleteDialog from './partials/DeleteDialog.vue';
-import { PRODUCT_CATEGORIES, PRODUCT_STATUSES } from './types';
+import FormatBreakdown from './partials/FormatBreakdown.vue';
+import { PRODUCT_STATUSES } from './types';
 import type { Product, ProductStatus } from './types';
 
 defineOptions({
@@ -61,6 +62,9 @@ const requestDelete = (product: Product) => {
     deleteOpen.value = true;
 };
 
+/** Only products with more than one format have a breakdown worth revealing. */
+const canExpandRow = (product: Product) => product.variants.length > 1;
+
 const columns = createProductColumns({
     onView: goToProduct,
     onEdit: (product) => router.visit(`${show(product.id).url}?edit=1`),
@@ -68,6 +72,11 @@ const columns = createProductColumns({
         router.visit(`${create().url}?from=${product.id}`),
     onDelete: requestDelete,
 });
+
+/** Category filter options come from the data, so they cannot drift. */
+const categories = computed(() =>
+    [...new Set(props.products.map((product) => product.category))].sort(),
+);
 
 /** Counts sit on the tabs, so they reflect the catalog rather than the filter. */
 const statusCounts = computed(() => {
@@ -137,6 +146,7 @@ const hideableColumns = (table: ProductTable) =>
             v-model:row-selection="rowSelection"
             :data="products"
             :columns="columns"
+            :can-expand-row="canExpandRow"
             row-clickable
             empty-message="No products match these filters."
             @row-click="goToProduct"
@@ -213,7 +223,7 @@ const hideableColumns = (table: ProductTable) =>
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuCheckboxItem
-                                v-for="category in PRODUCT_CATEGORIES"
+                                v-for="category in categories"
                                 :key="category"
                                 :model-value="
                                     selectedCategories(
@@ -275,13 +285,19 @@ const hideableColumns = (table: ProductTable) =>
             </template>
 
             <template #bulk="{ table, selected }">
+                <!--
+                    Selecting a row is occasional, and the bar would otherwise
+                    pop into the layout above the table — this is the
+                    "prevent a jarring change" case. Exit is faster than enter:
+                    the user has already decided by then.
+                -->
                 <Transition
-                    enter-active-class="transition duration-200 ease-out"
-                    enter-from-class="-translate-y-1 opacity-0"
+                    enter-active-class="transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity"
+                    enter-from-class="-translate-y-1 opacity-0 motion-reduce:translate-y-0"
                     enter-to-class="translate-y-0 opacity-100"
-                    leave-active-class="transition duration-150 ease-in"
+                    leave-active-class="transition-[opacity,transform] duration-150 ease-out motion-reduce:transition-opacity"
                     leave-from-class="translate-y-0 opacity-100"
-                    leave-to-class="-translate-y-1 opacity-0"
+                    leave-to-class="-translate-y-1 opacity-0 motion-reduce:translate-y-0"
                 >
                     <div
                         v-if="selected.length"
@@ -317,6 +333,10 @@ const hideableColumns = (table: ProductTable) =>
                         </Button>
                     </div>
                 </Transition>
+            </template>
+
+            <template #expanded="{ row }">
+                <FormatBreakdown :product="row" />
             </template>
 
             <template #empty>

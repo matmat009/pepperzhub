@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { FlaskConical } from '@lucide/vue';
+import { computed } from 'vue';
 import type { Product } from '../types';
 
-defineProps<{
+const props = defineProps<{
     product: Product;
 }>();
+
+/** The gallery's first image doubles as the list thumbnail. */
+const thumbnail = computed(() => props.product.images[0]?.url ?? null);
 </script>
 
 <template>
@@ -13,8 +17,8 @@ defineProps<{
             class="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted/60"
         >
             <img
-                v-if="product.thumbnail"
-                :src="product.thumbnail"
+                v-if="thumbnail"
+                :src="thumbnail"
                 :alt="product.name"
                 class="size-full object-cover"
             />
@@ -23,7 +27,7 @@ defineProps<{
         <div class="min-w-0">
             <div class="truncate text-sm font-medium">{{ product.name }}</div>
             <div class="truncate text-xs text-muted-foreground">
-                {{ product.description }}
+                {{ product.short_description }}
             </div>
         </div>
     </div>

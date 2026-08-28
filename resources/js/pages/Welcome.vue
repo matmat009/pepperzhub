@@ -154,7 +154,7 @@ import { register } from '@/routes';
                 >
                     <!-- Laravel Logo -->
                     <svg
-                        class="w-full max-w-none translate-y-0 text-[#F53003] opacity-100 transition-all duration-750 dark:text-[#F61500] starting:opacity-0 motion-safe:starting:translate-y-6"
+                        class="w-full max-w-none translate-y-0 text-[#F53003] opacity-100 transition-[opacity,transform] duration-750 ease-out dark:text-[#F61500] starting:opacity-0 motion-safe:starting:translate-y-6"
                         viewBox="0 0 438 104"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
@@ -197,7 +197,7 @@ import { register } from '@/routes';
                         xmlns="http://www.w3.org/2000/svg"
                     >
                         <g
-                            class="text-[#1B1B18] opacity-100 mix-blend-darken transition-all delay-300 duration-750 dark:text-black dark:mix-blend-normal starting:opacity-0"
+                            class="text-[#1B1B18] opacity-100 mix-blend-darken transition-opacity delay-300 duration-750 ease-out dark:text-black dark:mix-blend-normal starting:opacity-0"
                         >
                             <mask
                                 id="path-1-mask"
@@ -245,7 +245,7 @@ import { register } from '@/routes';
                         </g>
 
                         <g
-                            class="text-[#F3BEC7] opacity-100 transition-all delay-400 duration-750 dark:text-[#4B0600] starting:opacity-0 motion-safe:starting:-translate-x-[26px]"
+                            class="text-[#F3BEC7] opacity-100 transition-[opacity,transform] delay-400 duration-750 ease-out dark:text-[#4B0600] starting:opacity-0 motion-safe:starting:-translate-x-[26px]"
                         >
                             <mask
                                 id="path-2-mask"
@@ -293,7 +293,7 @@ import { register } from '@/routes';
                         </g>
 
                         <g
-                            class="text-[#F8B803] opacity-100 mix-blend-color transition-all delay-400 duration-750 dark:text-[#391800] dark:mix-blend-hard-light starting:opacity-0 motion-safe:starting:-translate-x-[51px]"
+                            class="text-[#F8B803] opacity-100 mix-blend-color transition-[opacity,transform] delay-400 duration-750 ease-out dark:text-[#391800] dark:mix-blend-hard-light starting:opacity-0 motion-safe:starting:-translate-x-[51px]"
                         >
                             <mask
                                 id="path-3-mask"
@@ -341,7 +341,7 @@ import { register } from '@/routes';
                         </g>
 
                         <g
-                            class="text-[#F3BEC7] opacity-100 mix-blend-multiply transition-all delay-400 duration-750 dark:text-[#733000] dark:mix-blend-normal starting:opacity-0 motion-safe:starting:-translate-x-[78px]"
+                            class="text-[#F3BEC7] opacity-100 mix-blend-multiply transition-[opacity,transform] delay-400 duration-750 ease-out dark:text-[#733000] dark:mix-blend-normal starting:opacity-0 motion-safe:starting:-translate-x-[78px]"
                         >
                             <mask
                                 id="path-4-mask"
@@ -389,7 +389,7 @@ import { register } from '@/routes';
                         </g>
 
                         <g
-                            class="text-[#F3BEC7] opacity-100 mix-blend-hard-light transition-all delay-400 duration-750 dark:text-[#4B0600] starting:opacity-0 motion-safe:starting:-translate-x-[102px]"
+                            class="text-[#F3BEC7] opacity-100 mix-blend-hard-light transition-[opacity,transform] delay-400 duration-750 ease-out dark:text-[#4B0600] starting:opacity-0 motion-safe:starting:-translate-x-[102px]"
                         >
                             <mask
                                 id="path-5-mask"

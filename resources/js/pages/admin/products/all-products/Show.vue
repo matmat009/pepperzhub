@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ArrowLeft, Pencil } from '@lucide/vue';
-import { ref, watch } from 'vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ChevronLeft, Pencil } from '@lucide/vue';
+import { computed, ref, watch } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { index, update } from '@/routes/admin/products';
 import ProductForm from './partials/ProductForm.vue';
 import StatusBadge from './partials/StatusBadge.vue';
-import { formatPrice, toProductForm } from './types';
-import type { Product, ProductFormFields } from './types';
+import { priceRange, toProductForm, toSubmitPayload } from './types';
+import type { CategoryOption, Product, ProductFormFields } from './types';
 
 defineOptions({
     layout: {
@@ -27,11 +27,10 @@ defineOptions({
 
 const props = defineProps<{
     product: Product;
+    categories: CategoryOption[];
 }>();
 
-const fields = ref<ProductFormFields>(toProductForm(props.product));
-const errors = ref<Partial<Record<keyof ProductFormFields, string>>>({});
-const processing = ref(false);
+const form = useForm<ProductFormFields>(toProductForm(props.product));
 
 /**
  * Readonly by default; `?edit=1` (used by the table's row menu) opens straight
@@ -42,47 +41,41 @@ const editing = ref(
         new URLSearchParams(window.location.search).get('edit') === '1',
 );
 
-// A successful save re-renders with fresh props; rebase the fields on them so a
+// A successful save re-renders with fresh props; rebase the form on them so a
 // later Cancel reverts to the saved values rather than the ones first loaded.
 watch(
     () => props.product,
     (product) => {
-        fields.value = toProductForm(product);
+        form.defaults(toProductForm(product));
+        form.reset();
     },
 );
+
+const formatCount = computed(() => props.product.variants.length);
 
 const startEditing = () => {
     editing.value = true;
 };
 
+/** Reverts fields, formats and images in one call. */
 const cancel = () => {
-    fields.value = toProductForm(props.product);
-    errors.value = {};
+    form.clearErrors();
+    form.reset();
     editing.value = false;
 };
 
 const submit = () => {
-    processing.value = true;
-
-    router.put(
-        update(props.product.id).url,
-        { ...fields.value },
-        {
-            preserveScroll: true,
-            onError: (formErrors) => {
-                errors.value = formErrors as Partial<
-                    Record<keyof ProductFormFields, string>
-                >;
-            },
-            onSuccess: () => {
-                errors.value = {};
-                editing.value = false;
-            },
-            onFinish: () => {
-                processing.value = false;
-            },
+    // FormData cannot ride a real PUT, so the update is spoofed over POST —
+    // required as soon as image files are in the payload.
+    form.transform((fields) => ({
+        ...toSubmitPayload(fields),
+        _method: 'put',
+    })).post(update(props.product.id).url, {
+        preserveScroll: true,
+        onSuccess: () => {
+            editing.value = false;
         },
-    );
+    });
 };
 </script>
 
@@ -99,7 +92,7 @@ const submit = () => {
                     class="-ml-2 h-7 px-2 text-muted-foreground"
                 >
                     <Link :href="index()">
-                        <ArrowLeft class="size-3.5" />
+                        <ChevronLeft class="size-3.5" />
                         Products
                     </Link>
                 </Button>
@@ -110,8 +103,10 @@ const submit = () => {
                     <StatusBadge :status="product.status" />
                 </div>
                 <p class="text-sm text-muted-foreground">
-                    {{ product.type }} &middot; {{ product.category }} &middot;
-                    {{ formatPrice(product.price) }}
+                    {{ product.category }} &middot; {{ formatCount }} format{{
+                        formatCount === 1 ? '' : 's'
+                    }}
+                    &middot; {{ priceRange(product.variants) }}
                 </p>
             </div>
 
@@ -119,14 +114,14 @@ const submit = () => {
                 <template v-if="editing">
                     <Button
                         variant="outline"
-                        :disabled="processing"
+                        :disabled="form.processing"
                         @click="cancel"
                     >
                         Cancel
                     </Button>
-                    <Button :disabled="processing" @click="submit">
-                        <Spinner v-if="processing" />
-                        Save changes
+                    <Button :disabled="form.processing" @click="submit">
+                        <Spinner v-if="form.processing" />
+                        Save
                     </Button>
                 </template>
                 <Button v-else @click="startEditing">
@@ -136,12 +131,11 @@ const submit = () => {
             </div>
         </header>
 
-        <div class="max-w-4xl">
-            <ProductForm
-                v-model="fields"
-                :errors="errors"
-                :readonly="!editing"
-            />
-        </div>
+        <ProductForm
+            :model-value="form"
+            :categories="categories"
+            :errors="form.errors as Record<string, string>"
+            :readonly="!editing"
+        />
     </div>
 </template>

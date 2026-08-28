@@ -22,7 +22,7 @@ import {
                 <CardTitle
                     class="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl"
                 >
-                    $1,250.00
+                    ₱1,250.00
                 </CardTitle>
                 <CardAction>
                     <Badge variant="outline">

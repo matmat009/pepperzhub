@@ -107,6 +107,8 @@ class InventoryController extends Controller
      */
     public function adjust(Request $request, int $product): RedirectResponse
     {
-        return back()->with('success', 'Stock adjusted.');
+        $this->toast('Stock adjusted.');
+
+        return back();
     }
 }
