@@ -10,10 +10,12 @@ use App\Models\ProductVariant;
 use App\Models\ShippingCourier;
 use App\Models\ShippingRegion;
 use App\Models\User;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class OrderWorkflowTest extends TestCase
@@ -254,14 +256,189 @@ class OrderWorkflowTest extends TestCase
         $this->assertSame(10, (int) $this->variant->fresh()->stock, 'stock was restored twice');
     }
 
-    public function test_cancelling_a_shipped_order_still_restores_stock(): void
+    /**
+     * Replaces an earlier test that asserted the opposite.
+     *
+     * A shipped parcel is with the courier. Returning its units to available
+     * stock would let them be sold a second time while still in transit, so
+     * cancellation stops at 'processing'. Recording a physical return is a
+     * separate workflow that does not exist yet.
+     */
+    public function test_a_shipped_order_cannot_be_cancelled(): void
     {
         $order = $this->order(['payment_status' => 'verified', 'order_status' => 'shipped'], quantity: 2);
         $this->assertSame(8, (int) $this->variant->fresh()->stock);
 
         $this->post(route('admin.orders.cancel', $order));
 
+        $this->assertSame('shipped', $order->fresh()->order_status);
+        $this->assertSame(8, (int) $this->variant->fresh()->stock, 'shipped stock must not return');
+        $this->assertStringContainsString(
+            'record a return',
+            session('inertia.flash_data.toast.message', ''),
+        );
+    }
+
+    public function test_a_processing_order_can_still_be_cancelled(): void
+    {
+        // Narrowing the cancel guard must not over-restrict: everything short
+        // of shipping is still cancellable.
+        $order = $this->order(['payment_status' => 'verified', 'order_status' => 'processing'], quantity: 2);
+        $this->assertSame(8, (int) $this->variant->fresh()->stock);
+
+        $this->post(route('admin.orders.cancel', $order));
+
+        $this->assertSame('cancelled', $order->fresh()->order_status);
         $this->assertSame(10, (int) $this->variant->fresh()->stock);
+    }
+
+    // ----- cross-action stock restoration ------------------------------------
+
+    /**
+     * The defect this phase closes.
+     *
+     * Cancelling leaves payment_status at 'unverified', so a rejectPayment
+     * guard that looked only at the payment axis would pass on an
+     * already-cancelled order and hand the same units back a second time.
+     */
+    public function test_a_cancelled_orders_payment_cannot_be_rejected(): void
+    {
+        $order = $this->order(quantity: 3);
+        $this->assertSame(7, (int) $this->variant->fresh()->stock);
+
+        $this->post(route('admin.orders.cancel', $order));
+        $this->assertSame(10, (int) $this->variant->fresh()->stock, 'cancel should restore once');
+
+        $this->post(route('admin.orders.reject-payment', $order), ['reason' => 'late reject']);
+
+        $this->assertSame(10, (int) $this->variant->fresh()->stock, 'stock was restored twice');
+        $this->assertSame('unverified', $order->fresh()->payment_status);
+        $this->assertStringContainsString(
+            'already',
+            session('inertia.flash_data.toast.message', ''),
+        );
+    }
+
+    public function test_a_cancelled_orders_payment_cannot_be_verified(): void
+    {
+        $order = $this->order(quantity: 3);
+
+        $this->post(route('admin.orders.cancel', $order));
+        $this->post(route('admin.orders.verify-payment', $order));
+
+        $order->refresh();
+
+        $this->assertSame('unverified', $order->payment_status);
+        $this->assertNull($order->payment_verified_at);
+        $this->assertSame('cancelled', $order->order_status);
+    }
+
+    /**
+     * This direction already worked, because rejectPayment sets order_status to
+     * 'cancelled' and cancel refuses a cancelled order. Pinned so it is a
+     * guarantee rather than a coincidence of which action ran first.
+     */
+    public function test_rejecting_then_cancelling_restores_stock_exactly_once(): void
+    {
+        $order = $this->order(quantity: 3);
+
+        $this->post(route('admin.orders.reject-payment', $order), ['reason' => 'no proof']);
+        $this->assertSame(10, (int) $this->variant->fresh()->stock);
+
+        $this->post(route('admin.orders.cancel', $order));
+
+        $this->assertSame(10, (int) $this->variant->fresh()->stock, 'stock was restored twice');
+        $this->assertSame('rejected', $order->fresh()->payment_status);
+    }
+
+    /**
+     * The honest single-connection version of a concurrency check.
+     *
+     * PHPUnit with RefreshDatabase runs on one connection inside one
+     * transaction, so a genuine race cannot be reproduced here — this asserts
+     * the guard is re-read from the locked row on every attempt, which is the
+     * property that makes the real lock in transition() sufficient. A true race
+     * would need a second connection and is not worth the flakiness.
+     */
+    public function test_two_sequential_cancellations_restore_stock_exactly_once(): void
+    {
+        $order = $this->order(['payment_status' => 'verified'], quantity: 4);
+        $this->assertSame(6, (int) $this->variant->fresh()->stock);
+
+        $this->post(route('admin.orders.cancel', $order));
+        $this->post(route('admin.orders.cancel', $order));
+
+        $this->assertSame(10, (int) $this->variant->fresh()->stock, 'stock was restored twice');
+        $this->assertStringContainsString(
+            'cannot be cancelled',
+            session('inertia.flash_data.toast.message', ''),
+        );
+    }
+
+    /**
+     * Every terminal sequence lands back at the starting stock, whichever order
+     * the two restore-bearing actions are attempted in.
+     *
+     * @return array<string, array{list<string>}>
+     */
+    public static function terminalSequences(): array
+    {
+        return [
+            'cancel then reject' => [['cancel', 'reject-payment']],
+            'cancel then verify' => [['cancel', 'verify-payment']],
+            'reject then cancel' => [['reject-payment', 'cancel']],
+            'cancel then cancel' => [['cancel', 'cancel']],
+            'processing, cancel then reject' => [['processing', 'cancel', 'reject-payment']],
+        ];
+    }
+
+    /**
+     * @param  list<string>  $actions
+     */
+    #[DataProvider('terminalSequences')]
+    public function test_every_terminal_sequence_restores_stock_exactly_once(array $actions): void
+    {
+        // 'processing' needs a verified payment to be reachable at all.
+        $needsVerified = in_array('processing', $actions, true);
+
+        $order = $this->order(
+            $needsVerified ? ['payment_status' => 'verified'] : [],
+            quantity: 3,
+        );
+
+        $this->assertSame(7, (int) $this->variant->fresh()->stock);
+
+        foreach ($actions as $action) {
+            $this->post(route("admin.orders.{$action}", $order), ['reason' => 'sequence test']);
+        }
+
+        $this->assertSame(
+            10,
+            (int) $this->variant->fresh()->stock,
+            'sequence ['.implode(' -> ', $actions).'] did not restore stock exactly once',
+        );
+    }
+
+    public function test_shipping_requires_a_verified_payment(): void
+    {
+        // Not reachable through the other guards — nothing reaches 'processing'
+        // unverified. Asserted anyway so the conjunct cannot be dropped silently.
+        $order = $this->order(['payment_status' => 'unverified', 'order_status' => 'processing']);
+
+        $this->post(route('admin.orders.ship', $order), ['tracking_number' => 'JT1']);
+
+        $this->assertSame('processing', $order->fresh()->order_status);
+        $this->assertNull($order->fresh()->shipped_at);
+    }
+
+    public function test_completing_requires_a_verified_payment(): void
+    {
+        $order = $this->order(['payment_status' => 'unverified', 'order_status' => 'shipped']);
+
+        $this->post(route('admin.orders.complete', $order));
+
+        $this->assertSame('shipped', $order->fresh()->order_status);
+        $this->assertNull($order->fresh()->completed_at);
     }
 
     public function test_restoring_skips_an_item_whose_variant_was_deleted(): void
@@ -291,6 +468,70 @@ class OrderWorkflowTest extends TestCase
 
         $response->assertOk();
         $this->assertStringContainsString('inline', $response->headers->get('content-disposition'));
+    }
+
+    /**
+     * All four properties together, because they only work as a set: inline
+     * display of user-uploaded content is what makes nosniff necessary, and
+     * no-store is what keeps a customer's bank receipt off a shared machine's
+     * disk. The adapter's default Cache-Control is `no-cache, private`, which
+     * still permits storage — this asserts the override actually took.
+     */
+    public function test_the_payment_proof_sends_hardened_headers(): void
+    {
+        Storage::fake('local');
+        $order = $this->order();
+
+        Storage::disk('local')->put(
+            $order->payment_proof_path,
+            UploadedFile::fake()->image('receipt.jpg')->getContent(),
+        );
+
+        $response = $this->get(route('admin.orders.payment-proof', $order));
+
+        $response->assertOk();
+        $this->assertSame('image/jpeg', $response->headers->get('content-type'));
+        $this->assertStringContainsString('inline', $response->headers->get('content-disposition'));
+
+        $cacheControl = $response->headers->get('cache-control');
+        $this->assertStringContainsString('no-store', $cacheControl);
+        $this->assertStringContainsString('private', $cacheControl);
+
+        $this->assertSame('nosniff', $response->headers->get('x-content-type-options'));
+    }
+
+    /**
+     * Asserts the intended boundary, and is skipped because it does not hold.
+     *
+     * The admin routes carry `verified`, but App\Models\User does not implement
+     * MustVerifyEmail — its import is commented out in the model. Laravel's
+     * EnsureEmailIsVerified only redirects when the user implements that
+     * contract, so today the middleware passes every authenticated user
+     * through and this route answers 200 to an unverified account.
+     *
+     * The one-line fix (implementing MustVerifyEmail) would immediately lock
+     * out the live operator, whose email_verified_at is null, so it needs a
+     * deliberate decision rather than being bundled into this phase. Skipped
+     * rather than deleted or inverted: the suite must not report protection it
+     * does not have, and this passes the moment the contract is added.
+     */
+    public function test_an_unverified_admin_cannot_read_a_payment_proof(): void
+    {
+        if (! app(User::class) instanceof MustVerifyEmail) {
+            $this->markTestSkipped(
+                'User does not implement MustVerifyEmail, so the `verified` middleware is inert. '
+                .'See the Phase 2.2 report — enabling it locks out the unverified live admin.',
+            );
+        }
+
+        Storage::fake('local');
+        $order = $this->order();
+        Storage::disk('local')->put($order->payment_proof_path, 'x');
+
+        $this->actingAs(User::factory()->create(['email_verified_at' => null]));
+
+        $this->get(route('admin.orders.payment-proof', $order))
+            ->assertRedirect(route('verification.notice'));
     }
 
     public function test_the_payment_proof_404s_when_the_file_is_missing(): void

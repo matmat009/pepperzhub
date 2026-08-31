@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { ArrowRight, Check, Clock, MessageCircle, Phone } from '@lucide/vue';
+import { ArrowRight, Check, Clock } from '@lucide/vue';
 import { computed } from 'vue';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
 import { index as catalog } from '@/routes/storefront/products';
@@ -22,6 +22,7 @@ const props = defineProps<{
         shipping_fee: number;
         total: number;
         shipping_region_label: string;
+        /** Resolved snapshot (shipped_via, else the checkout-time courier name) — not a live join. */
         courier: string | null;
         payment_method: string | null;
         items: OrderItemLine[];
@@ -166,31 +167,6 @@ const cancelledMessage = computed(() => cancellationMessage(props.tracker));
                         >{{ formatPrice(order.total) }}</span
                     >
                 </div>
-            </div>
-        </div>
-
-        <div class="mt-10 text-center">
-            <h2 class="font-display text-xl font-semibold text-sf-ink">
-                Notify Us
-            </h2>
-            <p class="mt-2 text-[15px] text-sf-muted italic">
-                Send your payment screenshot to speed up verification.
-            </p>
-            <div class="mt-5 flex flex-wrap justify-center gap-3">
-                <a
-                    href="#"
-                    class="inline-flex items-center gap-2.5 rounded-full border-2 border-sf-primary bg-white px-7 py-3.5 font-display font-medium text-sf-primary transition-colors duration-200 ease-out hover:bg-sf-tint"
-                >
-                    <MessageCircle class="size-4" />
-                    Message on Facebook
-                </a>
-                <a
-                    href="#"
-                    class="inline-flex items-center gap-2.5 rounded-full border-2 border-sf-primary bg-white px-7 py-3.5 font-display font-medium text-sf-primary transition-colors duration-200 ease-out hover:bg-sf-tint"
-                >
-                    <Phone class="size-4" />
-                    Message on WhatsApp
-                </a>
             </div>
         </div>
 

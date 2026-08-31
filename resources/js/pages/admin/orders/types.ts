@@ -94,6 +94,44 @@ export const orderTone: Record<AdminOrderStatus, string> = {
     cancelled: 'border-red-200 bg-red-50 text-red-700',
 };
 
+/**
+ * The state machine, client-side.
+ *
+ * One statement of the rules rather than a computed per button on Show.vue —
+ * five independent computeds drift, and a button the server would refuse is
+ * worse than no button at all. These mirror the guards in
+ * App\Http\Controllers\Admin\OrderController exactly; change them together.
+ *
+ * Narrow inputs (not the whole OrderDetail) so the row shape can use them too.
+ */
+type OrderState = {
+    payment_status: OrderPaymentStatus;
+    order_status: AdminOrderStatus;
+};
+
+/** Both payment decisions need a still-pending order, not just an unresolved payment. */
+export const canVerifyPayment = (order: OrderState): boolean =>
+    order.payment_status === 'unverified' && order.order_status === 'pending';
+
+export const canRejectPayment = (order: OrderState): boolean =>
+    order.payment_status === 'unverified' && order.order_status === 'pending';
+
+export const canMarkProcessing = (order: OrderState): boolean =>
+    order.payment_status === 'verified' && order.order_status === 'pending';
+
+export const canMarkShipped = (order: OrderState): boolean =>
+    order.order_status === 'processing' && order.payment_status === 'verified';
+
+export const canMarkCompleted = (order: OrderState): boolean =>
+    order.order_status === 'shipped' && order.payment_status === 'verified';
+
+/**
+ * Shipped is deliberately absent: the parcel is already with the courier, so
+ * returning its units to available stock would let them be sold twice.
+ */
+export const canCancel = (order: OrderState): boolean =>
+    order.order_status === 'pending' || order.order_status === 'processing';
+
 export const formatDateTime = (value: string | null): string =>
     value
         ? new Intl.DateTimeFormat('en-PH', {

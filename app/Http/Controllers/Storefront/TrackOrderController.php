@@ -40,7 +40,7 @@ class TrackOrderController extends Controller
         // identical to the client's, across whatever collation is in play.
         if ($reference !== '' && $phone !== '') {
             $order = Order::query()
-                ->with(['items', 'courier'])
+                ->with('items')
                 ->where('id', (int) $reference)
                 ->get()
                 ->first(fn (Order $candidate): bool => Order::normalizePhone($candidate->phone) === $phone);
@@ -63,7 +63,19 @@ class TrackOrderController extends Controller
                 'shipping_fee' => (float) $order->shipping_fee,
                 'total' => (float) $order->total,
                 'shipping_region_label' => $order->shipping_region_label,
-                'courier' => $order->courier?->name,
+                /*
+                 * Snapshot only, never the live courier relation. The FK is
+                 * nullOnDelete, so a join would blank the courier on every
+                 * historical order the day one is retired, and renaming one
+                 * would silently rewrite what the customer was told.
+                 *
+                 * shipped_via wins once it is set: the courier chosen at
+                 * checkout was a rate quote, and what actually carried the
+                 * parcel is what the customer needs when chasing it.
+                 */
+                'courier' => filled($order->shipped_via)
+                    ? $order->shipped_via
+                    : $order->shipping_courier_name,
                 'tracking_number' => $order->tracking_number,
                 'items' => $order->items
                     ->map(fn ($item) => [

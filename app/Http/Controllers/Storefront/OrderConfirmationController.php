@@ -27,7 +27,7 @@ class OrderConfirmationController extends Controller
     public function show(string $token): Response|RedirectResponse
     {
         $order = Order::query()
-            ->with(['items', 'courier', 'paymentMethod'])
+            ->with('items')
             ->where('confirmation_token', $token)
             ->first();
 
@@ -45,10 +45,18 @@ class OrderConfirmationController extends Controller
                 'shipping_fee' => (float) $order->shipping_fee,
                 'total' => (float) $order->total,
                 'shipping_region_label' => $order->shipping_region_label,
-                // Snapshots, so this still reads correctly after the courier or
-                // method is renamed or deleted.
-                'courier' => $order->shipping_courier_name ?: $order->courier?->name,
-                'payment_method' => $order->payment_method_name ?: $order->paymentMethod?->name,
+                /*
+                 * Snapshots only — no fallback to the live relation, which
+                 * would reintroduce exactly the drift the snapshot exists to
+                 * prevent once a courier or method is renamed or retired.
+                 *
+                 * shipped_via is checked for symmetry with Track Order; on this
+                 * page it is always null, since nothing has shipped yet.
+                 */
+                'courier' => filled($order->shipped_via)
+                    ? $order->shipped_via
+                    : $order->shipping_courier_name,
+                'payment_method' => $order->payment_method_name,
                 'items' => $order->items
                     ->map(fn ($item) => [
                         'product_name' => $item->product_name,

@@ -166,21 +166,66 @@ class OrderController extends Controller
             $order->payment_proof_path,
             // A stable, readable filename if the admin does save it.
             'payment-proof-'.$order->order_number.'.'.pathinfo($order->payment_proof_path, PATHINFO_EXTENSION),
-            // inline, so an image or PDF previews rather than downloading.
-            ['Content-Disposition' => 'inline'],
+            [
+                // inline, so an image or PDF previews rather than downloading.
+                'Content-Disposition' => 'inline',
+                /*
+                 * no-store, not the adapter's default no-cache: this is a
+                 * customer's bank receipt, and no-cache still permits a shared
+                 * or office machine to write it to disk — it only requires
+                 * revalidation on reuse.
+                 */
+                'Cache-Control' => 'private, no-store',
+                /*
+                 * User-uploaded content served inline is the classic sniffing
+                 * target. The upload's mimes rule already narrows this to
+                 * jpg/png/pdf; this makes the browser honour the Content-Type
+                 * rather than leaving that restriction to carry it alone.
+                 */
+                'X-Content-Type-Options' => 'nosniff',
+            ],
         );
+    }
+
+    /**
+     * Why a payment decision is refused, or null when it is allowed.
+     *
+     * Both axes are checked, and the message names whichever one actually
+     * blocked: an admin asking "why won't this let me reject" needs to know
+     * whether the payment is already resolved or the order has been cancelled
+     * out from under it. Collapsing the two into one message hides that.
+     *
+     * The order_status conjunct is what stops a cancelled order's payment from
+     * being rejected a second time — rejectPayment restores stock, and cancel
+     * leaves payment_status untouched at 'unverified', so without it the two
+     * actions would each hand the same units back.
+     */
+    private function paymentDecisionBlocker(Order $locked, string $verb): ?string
+    {
+        if ($locked->payment_status !== 'unverified') {
+            return sprintf(
+                'Payment is already %s — only an unverified payment can be %s.',
+                OrderStatuses::paymentLabel($locked->payment_status),
+                $verb,
+            );
+        }
+
+        if ($locked->order_status !== 'pending') {
+            return sprintf(
+                'This order is already %s — its payment can no longer be %s.',
+                OrderStatuses::orderLabel($locked->order_status),
+                $verb,
+            );
+        }
+
+        return null;
     }
 
     public function verifyPayment(Order $order): RedirectResponse
     {
         return $this->transition(
             $order,
-            fn (Order $locked): ?string => $locked->payment_status === 'unverified'
-                ? null
-                : sprintf(
-                    'Payment is already %s — only an unverified payment can be verified.',
-                    OrderStatuses::paymentLabel($locked->payment_status),
-                ),
+            fn (Order $locked): ?string => $this->paymentDecisionBlocker($locked, 'verified'),
             fn (Order $locked) => $locked->forceFill([
                 'payment_status' => 'verified',
                 'payment_verified_at' => now(),
@@ -195,12 +240,7 @@ class OrderController extends Controller
 
         return $this->transition(
             $order,
-            fn (Order $locked): ?string => $locked->payment_status === 'unverified'
-                ? null
-                : sprintf(
-                    'Payment is already %s — only an unverified payment can be rejected.',
-                    OrderStatuses::paymentLabel($locked->payment_status),
-                ),
+            fn (Order $locked): ?string => $this->paymentDecisionBlocker($locked, 'rejected'),
             function (Order $locked) use ($reason) {
                 $locked->forceFill([
                     'payment_status' => 'rejected',
@@ -248,12 +288,22 @@ class OrderController extends Controller
 
         return $this->transition(
             $order,
-            fn (Order $locked): ?string => $locked->order_status === 'processing'
-                ? null
-                : sprintf(
-                    'Only an order being prepared can be shipped — this one is %s.',
-                    OrderStatuses::orderLabel($locked->order_status),
-                ),
+            function (Order $locked): ?string {
+                if ($locked->order_status !== 'processing') {
+                    return sprintf(
+                        'Only an order being prepared can be shipped — this one is %s.',
+                        OrderStatuses::orderLabel($locked->order_status),
+                    );
+                }
+
+                // Not reachable through the other guards — nothing can reach
+                // 'processing' without a verified payment. Stated anyway so
+                // this file enforces the invariant everywhere rather than
+                // relying on the reader to trace why it holds.
+                return $locked->payment_status === 'verified'
+                    ? null
+                    : 'Verify the payment before shipping this order.';
+            },
             fn (Order $locked) => $locked->forceFill([
                 'order_status' => 'shipped',
                 'shipped_at' => now(),
@@ -271,12 +321,19 @@ class OrderController extends Controller
     {
         return $this->transition(
             $order,
-            fn (Order $locked): ?string => $locked->order_status === 'shipped'
-                ? null
-                : sprintf(
-                    'Only a shipped order can be completed — this one is %s.',
-                    OrderStatuses::orderLabel($locked->order_status),
-                ),
+            function (Order $locked): ?string {
+                if ($locked->order_status !== 'shipped') {
+                    return sprintf(
+                        'Only a shipped order can be completed — this one is %s.',
+                        OrderStatuses::orderLabel($locked->order_status),
+                    );
+                }
+
+                // Defensive, same reasoning as markShipped.
+                return $locked->payment_status === 'verified'
+                    ? null
+                    : 'Verify the payment before completing this order.';
+            },
             fn (Order $locked) => $locked->forceFill([
                 'order_status' => 'completed',
                 'completed_at' => now(),
@@ -288,10 +345,14 @@ class OrderController extends Controller
     /**
      * Admin-initiated cancellation, independent of payment rejection.
      *
-     * Reachable from pending, processing and shipped — all of which still hold
-     * the checkout-time stock deduction, so the restore always applies. It can
-     * only ever run once per order: the guard refuses an already-cancelled
-     * order, and cancelled is terminal, so there is no second path back in.
+     * Reachable from pending and processing only. Both still hold the
+     * checkout-time stock deduction with the goods on the shelf, so the restore
+     * is honest. A shipped order is deliberately excluded: the parcel is with
+     * the courier, and putting those units back as available would let them be
+     * sold twice. Recording a physical return is a separate workflow.
+     *
+     * It can only ever run once per order: cancelled is terminal and is not in
+     * the allowed set, so there is no second path back in.
      */
     public function cancel(Request $request, Order $order): RedirectResponse
     {
@@ -299,9 +360,11 @@ class OrderController extends Controller
 
         return $this->transition(
             $order,
-            fn (Order $locked): ?string => in_array($locked->order_status, ['completed', 'cancelled'], true)
-                ? sprintf('A %s order cannot be cancelled.', OrderStatuses::orderLabel($locked->order_status))
-                : null,
+            fn (Order $locked): ?string => match (true) {
+                in_array($locked->order_status, ['pending', 'processing'], true) => null,
+                $locked->order_status === 'shipped' => 'A shipped order cannot be cancelled — record a return once the parcel is back.',
+                default => sprintf('A %s order cannot be cancelled.', OrderStatuses::orderLabel($locked->order_status)),
+            },
             function (Order $locked) use ($reason) {
                 $locked->forceFill([
                     'order_status' => 'cancelled',

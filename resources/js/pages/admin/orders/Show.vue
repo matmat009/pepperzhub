@@ -24,7 +24,17 @@ import {
     verifyPayment,
 } from '@/routes/admin/orders';
 import ActionDialog from './partials/ActionDialog.vue';
-import { formatDateTime, orderTone, paymentTone } from './types';
+import {
+    canCancel as canCancelOrder,
+    canMarkCompleted,
+    canMarkProcessing,
+    canMarkShipped,
+    canRejectPayment,
+    canVerifyPayment,
+    formatDateTime,
+    orderTone,
+    paymentTone,
+} from './types';
 import type { OrderDetail } from './types';
 
 const props = defineProps<{ order: OrderDetail }>();
@@ -52,23 +62,15 @@ const shipOpen = isOpen('ship');
 /*
  * Availability mirrors the server guards exactly. An action the guard would
  * refuse is not rendered at all — offering a button that always errors is worse
- * than not offering it.
+ * than not offering it. The predicates live in ./types.ts so there is one
+ * client-side statement of the machine rather than five that can drift.
  */
-const canVerify = computed(() => props.order.payment_status === 'unverified');
-const canReject = computed(() => props.order.payment_status === 'unverified');
-
-const canProcess = computed(
-    () =>
-        props.order.payment_status === 'verified' &&
-        props.order.order_status === 'pending',
-);
-
-const canShip = computed(() => props.order.order_status === 'processing');
-const canComplete = computed(() => props.order.order_status === 'shipped');
-
-const canCancel = computed(
-    () => !['completed', 'cancelled'].includes(props.order.order_status),
-);
+const canVerify = computed(() => canVerifyPayment(props.order));
+const canReject = computed(() => canRejectPayment(props.order));
+const canProcess = computed(() => canMarkProcessing(props.order));
+const canShip = computed(() => canMarkShipped(props.order));
+const canComplete = computed(() => canMarkCompleted(props.order));
+const canCancel = computed(() => canCancelOrder(props.order));
 
 /** Why "Prepare order" is absent while payment is still unverified. */
 const processingBlockedReason = computed(() =>

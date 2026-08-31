@@ -22,6 +22,7 @@ type TrackResult = {
     shipping_fee: number;
     total: number;
     shipping_region_label: string;
+    /** Resolved snapshot (shipped_via, else the checkout-time courier name) — not a live join. */
     courier: string | null;
     tracking_number: string | null;
     items: OrderItemLine[];

@@ -1,12 +1,8 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import {
-    CreditCard,
-    LayoutDashboard,
-    Package,
-    ShoppingCart,
-    Tags,
-} from '@lucide/vue';
+// CreditCard is dropped along with the commented-out Payments entry below,
+// matching how Boxes went with Inventory — an unused import fails lint.
+import { LayoutDashboard, Package, ShoppingCart, Tags } from '@lucide/vue';
 import { IconInnerShadowTop, IconSettings } from '@tabler/icons-vue';
 import { computed } from 'vue';
 import NavMain from '@/components/NavMain.vue';
@@ -72,10 +68,13 @@ const navEcommerce: NavMainItem[] = [
         icon: ShoppingCart,
         url: ordersIndex(),
     },
-    {
-        title: 'Payments',
-        icon: CreditCard,
-    },
+    /*
+     * Payments is hidden, not deleted — same treatment as Inventory above. It
+     * has no route yet, and a url-less item renders as a clickable href="#"
+     * that goes nowhere, which reads as a broken link rather than a coming-soon
+     * one. Restore it with the Phase 3 payments screen.
+     */
+    // { title: 'Payments', icon: CreditCard },
 ];
 
 const navSecondary = [

@@ -172,4 +172,64 @@ class TrackOrderTest extends TestCase
             $order->delete();
         }
     }
+
+    // ----- courier display --------------------------------------------------
+
+    /** The courier string the page would render for this order. */
+    private function displayedCourier(Order $order): ?string
+    {
+        $response = $this->post(route('storefront.track.lookup'), [
+            'order_number' => $order->order_number,
+            'phone' => '0917 123 4567',
+        ]);
+
+        $response->assertInertia(fn ($page) => $page->where('notFound', false));
+
+        return $response->inertiaProps()['result']['courier'] ?? null;
+    }
+
+    public function test_the_courier_shown_is_the_snapshot_before_shipping(): void
+    {
+        $order = $this->order(['shipping_courier_name' => 'J&T Express']);
+
+        $this->assertSame('J&T Express', $this->displayedCourier($order));
+    }
+
+    public function test_the_courier_shown_is_shipped_via_once_shipped(): void
+    {
+        // What actually carried the parcel wins over the checkout-time quote.
+        $order = $this->order([
+            'payment_status' => 'verified',
+            'order_status' => 'shipped',
+            'shipping_courier_name' => 'J&T Express',
+            'shipped_via' => 'LBC Express',
+        ]);
+
+        $this->assertSame('LBC Express', $this->displayedCourier($order));
+    }
+
+    /**
+     * The FK is nullOnDelete, so reading the live relation would blank the
+     * courier on every historical order the day one is retired.
+     */
+    public function test_deleting_the_courier_does_not_change_the_displayed_courier(): void
+    {
+        $order = $this->order(['shipping_courier_name' => 'J&T Express']);
+
+        ShippingCourier::query()->delete();
+
+        $order->refresh();
+        $this->assertNull($order->shipping_courier_id, 'the FK should have been nulled');
+        $this->assertSame('J&T Express', $this->displayedCourier($order));
+    }
+
+    public function test_renaming_the_courier_does_not_change_the_displayed_courier(): void
+    {
+        $order = $this->order(['shipping_courier_name' => 'J&T Express']);
+
+        ShippingCourier::query()->update(['name' => 'J&T Express (PH)']);
+
+        // The order still reads as it did on the day it was placed.
+        $this->assertSame('J&T Express', $this->displayedCourier($order));
+    }
 }
