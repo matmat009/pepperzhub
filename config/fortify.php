@@ -168,7 +168,14 @@ return [
 
     'features' => [
         /* @chisel-registration */
-        Features::registration(),
+        // Public registration is disabled deliberately. PepperzHub is
+        // single-admin and gates every admin route on ['auth','verified']
+        // alone — no roles, no policies — so any account that registered and
+        // verified its own email would be indistinguishable from the operator
+        // at the middleware layer: full access to orders and payment proofs.
+        // Removing the feature also unregisters GET/POST /register.
+        // Re-enable only alongside a real authorisation layer.
+        // Features::registration(),
         /* @end-chisel-registration */
         Features::resetPasswords(),
         /* @chisel-email-verification */

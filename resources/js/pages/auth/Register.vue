@@ -13,7 +13,16 @@ import {
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
-import { store } from '@/routes/register';
+
+/*
+ * Public registration is disabled (see config/fortify.php), so the `register`
+ * route no longer exists and Wayfinder no longer emits a `@/routes/register`
+ * helper. This page is kept — no route renders it — in case staff accounts are
+ * ever added deliberately; the literal below stands in for the helper so the
+ * file still type-checks and builds. Restoring the feature means restoring the
+ * `import { store } from '@/routes/register'` and `v-bind="store.form()"`.
+ */
+const registerForm = { action: '/register', method: 'post' } as const;
 
 defineProps<{
     passwordRules: string;
@@ -31,7 +40,7 @@ defineOptions({
     <Head title="Register" />
 
     <Form
-        v-bind="store.form()"
+        v-bind="registerForm"
         :reset-on-success="['password', 'password_confirmation']"
         v-slot="{ errors, processing }"
     >

@@ -5,17 +5,9 @@ import PasswordInput from '@/components/PasswordInput.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-    Field,
-    FieldDescription,
-    FieldGroup,
-    FieldLabel,
-} from '@/components/ui/field';
+import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
-/* @chisel-registration */
-import { register } from '@/routes';
-/* @end-chisel-registration */
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 /* @chisel-passkeys */
@@ -117,10 +109,11 @@ defineProps<{
             </Field>
 
             <!-- @chisel-registration -->
-            <FieldDescription class="text-center">
-                Don't have an account?
-                <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
-            </FieldDescription>
+            <!--
+                Sign-up link removed with Fortify's registration feature: the
+                `register` route no longer exists, so Wayfinder does not emit a
+                helper for it and this block would not compile.
+            -->
             <!-- @end-chisel-registration -->
         </FieldGroup>
     </Form>
