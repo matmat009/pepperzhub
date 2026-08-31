@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-// CreditCard is dropped along with the commented-out Payments entry below,
-// matching how Boxes went with Inventory — an unused import fails lint.
-import { LayoutDashboard, Package, ShoppingCart, Tags } from '@lucide/vue';
+import {
+    CreditCard,
+    LayoutDashboard,
+    Package,
+    ShoppingCart,
+    Tags,
+    Truck,
+} from '@lucide/vue';
 import { IconInnerShadowTop, IconSettings } from '@tabler/icons-vue';
 import { computed } from 'vue';
 import NavMain from '@/components/NavMain.vue';
@@ -20,6 +25,8 @@ import {
 import { dashboard, home } from '@/routes';
 import { index as productsIndex } from '@/routes/admin/products';
 import { index as ordersIndex } from '@/routes/admin/orders';
+import { index as paymentMethodsIndex } from '@/routes/admin/payment-methods';
+import { index as shippingCouriersIndex } from '@/routes/admin/shipping-couriers';
 import { index as categoriesIndex } from '@/routes/admin/products/categories';
 import { edit as editProfile } from '@/routes/profile';
 import type { NavMainItem } from '@/components/NavMain.vue';
@@ -68,13 +75,18 @@ const navEcommerce: NavMainItem[] = [
         icon: ShoppingCart,
         url: ordersIndex(),
     },
-    /*
-     * Payments is hidden, not deleted — same treatment as Inventory above. It
-     * has no route yet, and a url-less item renders as a clickable href="#"
-     * that goes nowhere, which reads as a broken link rather than a coming-soon
-     * one. Restore it with the Phase 3 payments screen.
-     */
-    // { title: 'Payments', icon: CreditCard },
+    // Checkout's reference data, editable since Phase 3. Both were previously
+    // seeder-only, so changing a rate or adding a method meant a redeploy.
+    {
+        title: 'Payments',
+        icon: CreditCard,
+        url: paymentMethodsIndex(),
+    },
+    {
+        title: 'Shipping',
+        icon: Truck,
+        url: shippingCouriersIndex(),
+    },
 ];
 
 const navSecondary = [

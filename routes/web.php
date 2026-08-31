@@ -3,7 +3,9 @@
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ShippingCourierController;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/storefront.php';
@@ -77,6 +79,40 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('orders.complete');
         Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])
             ->name('orders.cancel');
+
+        /*
+         * Checkout's reference data. Both resources delete for real — their
+         * order FKs are nullOnDelete and every order snapshots the names it
+         * displays, so removing a row cannot alter order history.
+         */
+        Route::get('payment-methods', [PaymentMethodController::class, 'index'])
+            ->name('payment-methods.index');
+        Route::post('payment-methods', [PaymentMethodController::class, 'store'])
+            ->name('payment-methods.store');
+        // POST-spoofed PUT on the client: FormData cannot ride a real PUT, and
+        // the QR code upload puts a file in this payload.
+        Route::put('payment-methods/{paymentMethod}', [PaymentMethodController::class, 'update'])
+            ->whereNumber('paymentMethod')
+            ->name('payment-methods.update');
+        Route::delete('payment-methods/{paymentMethod}', [PaymentMethodController::class, 'destroy'])
+            ->whereNumber('paymentMethod')
+            ->name('payment-methods.destroy');
+
+        Route::get('shipping-couriers', [ShippingCourierController::class, 'index'])
+            ->name('shipping-couriers.index');
+        Route::post('shipping-couriers', [ShippingCourierController::class, 'store'])
+            ->name('shipping-couriers.store');
+        Route::put('shipping-couriers/{shippingCourier}', [ShippingCourierController::class, 'update'])
+            ->whereNumber('shippingCourier')
+            ->name('shipping-couriers.update');
+        Route::delete('shipping-couriers/{shippingCourier}', [ShippingCourierController::class, 'destroy'])
+            ->whereNumber('shippingCourier')
+            ->name('shipping-couriers.destroy');
+        // Regions are normally saved with their courier; this drops one on its
+        // own without rewriting the rest of the list.
+        Route::delete('shipping-couriers/{shippingCourier}/regions/{region}', [ShippingCourierController::class, 'destroyRegion'])
+            ->whereNumber(['shippingCourier', 'region'])
+            ->name('shipping-couriers.regions.destroy');
     });
 });
 

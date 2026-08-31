@@ -291,7 +291,7 @@ const fieldClass =
 
                 <section>
                     <h2 class="font-display text-xl font-semibold text-sf-ink">
-                        Select Courier Provider
+                        Select Courier
                     </h2>
                     <label class="mt-5 flex flex-col gap-2">
                         <span class="text-sm font-medium text-sf-text"
@@ -314,7 +314,7 @@ const fieldClass =
                         <div
                             class="font-display text-[15px] font-semibold text-sf-ink"
                         >
-                            Choose Shipping Region
+                            Choose Delivery Option
                         </div>
                         <div class="mt-3 flex flex-col gap-3">
                             <label
