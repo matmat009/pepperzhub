@@ -1,6 +1,10 @@
 <?php
 
+use App\Http\Controllers\Storefront\CartController;
+use App\Http\Controllers\Storefront\CheckoutController;
+use App\Http\Controllers\Storefront\OrderConfirmationController;
 use App\Http\Controllers\Storefront\ProductController;
+use App\Http\Controllers\Storefront\TrackOrderController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,11 +27,31 @@ Route::name('storefront.')->group(function () {
         ->where('slug', '[A-Za-z0-9\-_]+')
         ->name('products.show');
 
-    // Dummy UI for now — no cart or order schema exists yet, so these render
-    // straight to their pages and hold their state client-side.
-    Route::inertia('cart', 'storefront/Cart')->name('cart');
-    Route::inertia('checkout', 'storefront/Checkout')->name('checkout');
-    Route::inertia('order-confirmation', 'storefront/OrderConfirmation')
+    /*
+     * Cart lives in the session. Names and paths are unchanged from the stub
+     * routes these replaced — Wayfinder helpers and <Link> usages across the
+     * nav, the added-to-cart popover and the cart page already point at them.
+     */
+    Route::get('cart', [CartController::class, 'show'])->name('cart');
+    Route::post('cart', [CartController::class, 'store'])->name('cart.store');
+    Route::patch('cart', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('cart', [CartController::class, 'destroy'])->name('cart.destroy');
+
+    Route::get('checkout', [CheckoutController::class, 'show'])->name('checkout');
+    Route::post('checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+
+    /*
+     * A random per-order token, not the id or the PZH- reference — the page has
+     * to survive a refresh, and a sequential id in the URL would let one
+     * customer read another's confirmation by counting.
+     */
+    Route::get('order-confirmation/{token}', [OrderConfirmationController::class, 'show'])
+        ->where('token', '[A-Za-z0-9]{40}')
         ->name('confirmation');
-    Route::inertia('track', 'storefront/TrackOrder')->name('track');
+
+    Route::get('track', [TrackOrderController::class, 'show'])->name('track');
+    // Public, unauthenticated and guessable by design, so it is throttled.
+    Route::post('track', [TrackOrderController::class, 'lookup'])
+        ->middleware('throttle:6,1')
+        ->name('track.lookup');
 });

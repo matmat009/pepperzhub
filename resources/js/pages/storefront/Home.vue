@@ -214,9 +214,10 @@ const subscribe = () => {
             class="mt-11 grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
         >
             <ProductCard
-                v-for="product in shown"
+                v-for="(product, i) in shown"
                 :key="product.id"
                 :product="product"
+                :index="i"
             />
         </div>
         <p v-else class="mt-11 text-[15px] text-sf-muted italic">

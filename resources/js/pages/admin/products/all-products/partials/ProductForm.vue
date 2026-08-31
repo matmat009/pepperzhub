@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Plus } from '@lucide/vue';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -66,6 +66,10 @@ const inert =
  */
 const firstError = (prefix: string): string | undefined =>
     Object.entries(props.errors).find(([key]) => key.startsWith(prefix))?.[1];
+
+const shortDescriptionRequired = computed(
+    () => fields.value.status === 'Active',
+);
 
 const formatDialogOpen = ref(false);
 const editingVariant = ref<ProductVariant | null>(null);
@@ -200,20 +204,48 @@ const removeFormat = (variant: ProductVariant) => {
                     <div class="grid gap-2">
                         <Label for="short-description">
                             Short Description
+                            <span
+                                v-if="shortDescriptionRequired"
+                                class="text-destructive"
+                                aria-hidden="true"
+                                >*</span
+                            >
+                            <span
+                                v-else
+                                class="font-normal text-muted-foreground"
+                            >
+                                (Optional)
+                            </span>
                         </Label>
                         <Input
                             id="short-description"
                             v-model="fields.short_description"
                             :disabled="readonly"
+                            :aria-required="shortDescriptionRequired"
                             :class="inert"
                             placeholder="One line shown on the storefront grid"
                             autocomplete="off"
                         />
+                        <p
+                            v-if="!readonly"
+                            class="text-xs text-muted-foreground"
+                        >
+                            {{
+                                shortDescriptionRequired
+                                    ? 'Required for active products.'
+                                    : 'Optional while this product is not active.'
+                            }}
+                        </p>
                         <InputError :message="errors.short_description" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="description">Full Description</Label>
+                        <Label for="description">
+                            Full Description
+                            <span class="font-normal text-muted-foreground">
+                                (Optional)
+                            </span>
+                        </Label>
                         <Textarea
                             id="description"
                             v-model="fields.full_description"
@@ -290,8 +322,8 @@ const removeFormat = (variant: ProductVariant) => {
                             v-model="fields.storage_instructions"
                             id-prefix="storage"
                             add-label="Add Storage Instruction"
-                            label-placeholder="e.g. Temperature"
-                            value-placeholder="e.g. Store at 2-8°C"
+                            label-placeholder="Label (optional), e.g. Temperature"
+                            value-placeholder="Instruction or temperature, e.g. 2-8°C"
                             :readonly="readonly"
                         />
                         <InputError :message="firstError('storage')" />

@@ -22,7 +22,12 @@ class ProductRequest extends FormRequest
             'category_id' => ['required', 'integer', Rule::exists('categories', 'id')],
             'status' => ['required', Rule::in(['draft', 'active', 'archived'])],
             'featured' => ['boolean'],
-            'short_description' => ['nullable', 'string', 'max:255'],
+            'short_description' => [
+                'nullable',
+                Rule::requiredIf(fn (): bool => $this->string('status')->lower()->value() === 'active'),
+                'string',
+                'max:255',
+            ],
             'full_description' => ['nullable', 'string', 'max:5000'],
 
             'variants' => ['array'],
@@ -64,8 +69,9 @@ class ProductRequest extends FormRequest
             'variants.*.label.required' => 'Every format needs a label.',
             'variants.*.price.min' => 'Format prices cannot be negative.',
             'variants.*.stock.min' => 'Format stock cannot be negative.',
+            'short_description.required' => 'A short description is required for active products.',
             'purity.*.value.required' => 'Remove the empty purity row, or give it a value.',
-            'storage.*.value.required' => 'Remove the empty storage row, or give it a value.',
+            'storage.*.value.required' => 'Remove the empty storage row, or give it an instruction.',
             'new_images.*.max' => 'Each image must be 5MB or smaller.',
         ];
     }
@@ -82,9 +88,37 @@ class ProductRequest extends FormRequest
             ->values()
             ->all();
 
+        // A standalone temperature is still a complete instruction. Keep the
+        // persisted text in `value` so existing detail rendering stays intact.
+        $storage = collect($strip($this->input('storage')))
+            ->map(function (array $row): array {
+                if (blank($row['value'] ?? null) && filled($row['label'] ?? null)) {
+                    $row['value'] = $row['label'];
+                    $row['label'] = null;
+                }
+
+                return $row;
+            })
+            ->all();
+
         $this->merge([
+            'short_description' => $this->normalizedDescription('short_description'),
+            'full_description' => $this->normalizedDescription('full_description'),
             'purity' => $strip($this->input('purity')),
-            'storage' => $strip($this->input('storage')),
+            'storage' => $storage,
         ]);
+    }
+
+    private function normalizedDescription(string $key): mixed
+    {
+        $value = $this->input($key);
+
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        $value = trim($value);
+
+        return $value === '' ? null : $value;
     }
 }

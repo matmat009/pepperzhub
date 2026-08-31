@@ -100,6 +100,9 @@
     --color-sf-primary-soft: var(--sf-primary-soft);
 
     --color-sf-rose: var(--sf-rose);
+    --color-sf-rose-quartz: var(--sf-rose-quartz);
+    --color-sf-well-blue: var(--sf-well-blue);
+    --color-sf-well-rose: var(--sf-well-rose);
     --color-sf-rose-mid: var(--sf-rose-mid);
     --color-sf-rose-deep: var(--sf-rose-deep);
     --color-sf-rose-tint: var(--sf-rose-tint);
@@ -200,6 +203,22 @@
     --sf-primary-soft: oklch(0.42 0.1 264);
 
     --sf-rose: oklch(0.8 0.105 14);
+    /*
+     * The literal Rose Quartz brand swatch, #F7CAC9. Softer than --sf-rose,
+     * which is deepened for use as type. This one is a ground only — pair it
+     * with --sf-ink, never with white (1.47:1).
+     */
+    --sf-rose-quartz: oklch(0.878 0.051 19.7);
+
+    /*
+     * Product-image wells. Cards alternate between these two so a grid reads as
+     * a rhythm rather than a wall of grey, and so a transparent PNG and an
+     * opaque photo both sit on brand colour. Values are the artboards' own
+     * rotation — light enough that matting round a letterboxed photo reads as
+     * intentional backdrop rather than a gap.
+     */
+    --sf-well-blue: oklch(0.92 0.02 240);
+    --sf-well-rose: oklch(0.93 0.035 20);
     --sf-rose-mid: oklch(0.72 0.11 14);
     --sf-rose-deep: oklch(0.55 0.17 14);
     --sf-rose-tint: oklch(0.95 0.035 14);

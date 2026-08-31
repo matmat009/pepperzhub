@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import {
-    Boxes,
     CreditCard,
     LayoutDashboard,
     Package,
@@ -24,8 +23,8 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard, home } from '@/routes';
 import { index as productsIndex } from '@/routes/admin/products';
+import { index as ordersIndex } from '@/routes/admin/orders';
 import { index as categoriesIndex } from '@/routes/admin/products/categories';
-import { index as inventoryIndex } from '@/routes/admin/products/inventory';
 import { edit as editProfile } from '@/routes/profile';
 import type { NavMainItem } from '@/components/NavMain.vue';
 import type { SidebarProps } from '@/components/ui/sidebar';
@@ -58,12 +57,20 @@ const navEcommerce: NavMainItem[] = [
             // icon so the three children stay aligned.
             { title: 'All Products', icon: Package, url: productsIndex() },
             { title: 'Categories', icon: Tags, url: categoriesIndex() },
-            { title: 'Inventory', icon: Boxes, url: inventoryIndex() },
+            /*
+             * Inventory is hidden, not deleted. Its screen still renders
+             * hardcoded placeholder stock and its adjust action writes nothing,
+             * while real stock lives on product_variants — showing it invites
+             * someone to trust a number that is not real. The route and
+             * controller stay put for the rebuild that follows Orders.
+             */
+            // { title: 'Inventory', icon: Boxes, url: inventoryIndex() },
         ],
     },
     {
         title: 'Orders',
         icon: ShoppingCart,
+        url: ordersIndex(),
     },
     {
         title: 'Payments',

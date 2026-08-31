@@ -202,6 +202,22 @@ export const totalStock = (variants: ProductVariant[]): number =>
     variants.reduce((sum, variant) => sum + variant.stock, 0);
 
 /**
+ * At or below this many units a product counts as low stock.
+ *
+ * Shared so the storefront card's badge and the catalogue's "Low stock" filter
+ * cannot drift apart — a card reading "Only 6 left" that the filter refuses to
+ * return is worse than either behaviour on its own.
+ */
+export const LOW_STOCK_THRESHOLD = 5;
+
+/** In stock, but at or under the low-stock threshold. */
+export const isLowStock = (variants: ProductVariant[]): boolean => {
+    const stock = totalStock(variants);
+
+    return stock > 0 && stock <= LOW_STOCK_THRESHOLD;
+};
+
+/**
  * Maps the form's shape onto what ProductRequest expects.
  *
  * Kept images are sent as ids so the controller can drop the rest; newly picked

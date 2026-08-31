@@ -22,6 +22,12 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        $this->call(CatalogSeeder::class);
+        $this->call([
+            CatalogSeeder::class,
+            // Checkout reads both from the database now rather than from
+            // hardcoded arrays in the Vue page.
+            PaymentMethodSeeder::class,
+            ShippingCourierSeeder::class,
+        ]);
     }
 }

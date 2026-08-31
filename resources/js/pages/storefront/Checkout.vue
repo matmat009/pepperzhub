@@ -1,62 +1,61 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Check, FlaskConical, QrCode, Upload } from '@lucide/vue';
-import { computed, reactive, ref, watch } from 'vue';
-import { useStorefrontCart } from '@/composables/useStorefrontCart';
+import { computed, ref, watch } from 'vue';
+import type { CartLine } from '@/composables/useStorefrontCart';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
 import { home } from '@/routes';
-import { confirmation } from '@/routes/storefront';
 import { index as catalog } from '@/routes/storefront/products';
-
-const { lines, subtotal, isEmpty } = useStorefrontCart();
+import { store as submitCheckout } from '@/routes/storefront/checkout';
 
 /**
- * Courier → region and payment method → account details are both dependent
- * selects: picking the parent reveals the child, changing it resets the child.
- * Rates and account numbers come from the design bundle.
+ * Couriers, regions and payment methods are seeded rows now, not hardcoded
+ * arrays. Prices and rates displayed here are for information only — the server
+ * recomputes every figure from the database when the order is placed.
  */
-const couriers = [
-    {
-        id: 'jnt',
-        name: 'J&T Express',
-        regions: [
-            {
-                id: 'luzvis',
-                name: 'J&T – Luzon & Visayas',
-                note: 'Standard pouch',
-                rate: 150,
-            },
-            {
-                id: 'mindanao-s',
-                name: 'J&T – Mindanao (Small)',
-                note: 'Max. 2 kits',
-                rate: 100,
-            },
-            {
-                id: 'mindanao-l',
-                name: 'J&T – Mindanao (Large Pouch)',
-                note: 'Min. 5 kits',
-                rate: 200,
-            },
-        ],
-    },
-] as const;
+type Region = {
+    id: number;
+    name: string;
+    note: string | null;
+    rate: number;
+};
 
-const paymentMethods = [
-    {
-        id: 'gotyme',
-        name: 'GOtyme Bank',
-        details: [
-            { label: 'Bank', value: 'GOtyme Bank' },
-            { label: 'Account Number', value: '0012 3456 7890' },
-            { label: 'Account Name', value: 'PepperzzHub Trading' },
-        ],
-    },
-] as const;
+type Courier = {
+    id: number;
+    name: string;
+    regions: Region[];
+};
 
-const form = reactive({
+type PaymentMethod = {
+    id: number;
+    name: string;
+    details: { label: string; value: string }[];
+    qr_code_url: string | null;
+};
+
+const props = defineProps<{
+    lines: CartLine[];
+    subtotal: number;
+    couriers: Courier[];
+    paymentMethods: PaymentMethod[];
+}>();
+
+const form = useForm<{
+    name: string;
+    social_handle: string;
+    phone: string;
+    street: string;
+    barangay: string;
+    city: string;
+    province: string;
+    zip: string;
+    notes: string;
+    shipping_region_id: number | null;
+    payment_method_id: number | null;
+    payment_proof: File | null;
+}>({
     name: '',
-    social: '',
+    social_handle: '',
     phone: '',
     street: '',
     barangay: '',
@@ -64,41 +63,41 @@ const form = reactive({
     province: '',
     zip: '',
     notes: '',
+    shipping_region_id: null,
+    payment_method_id: null,
+    payment_proof: null,
 });
 
-const courierId = ref('');
-const regionId = ref('');
-const paymentId = ref('');
+const courierId = ref<number | null>(null);
 const proofName = ref('');
-const attempted = ref(false);
 
 const selectedCourier = computed(() =>
-    couriers.find((courier) => courier.id === courierId.value),
+    props.couriers.find((courier) => courier.id === courierId.value),
 );
 
 const selectedRegion = computed(() =>
     selectedCourier.value?.regions.find(
-        (region) => region.id === regionId.value,
+        (region) => region.id === form.shipping_region_id,
     ),
 );
 
 const selectedPayment = computed(() =>
-    paymentMethods.find((method) => method.id === paymentId.value),
+    props.paymentMethods.find((method) => method.id === form.payment_method_id),
 );
 
 // Changing the courier invalidates whichever region was picked under the old one.
 watch(courierId, () => {
-    regionId.value = '';
+    form.shipping_region_id = null;
 });
 
 const shipping = computed(() => selectedRegion.value?.rate ?? 0);
-const total = computed(() => subtotal.value + shipping.value);
+const total = computed(() => props.subtotal + shipping.value);
 
 const requiredFilled = computed(() =>
     (
         [
             'name',
-            'social',
+            'social_handle',
             'phone',
             'street',
             'barangay',
@@ -118,40 +117,43 @@ const missing = computed(() => {
 
     if (!courierId.value) {
         gaps.push('courier');
-    } else if (!regionId.value) {
+    } else if (!form.shipping_region_id) {
         gaps.push('shipping region');
     }
 
-    if (!paymentId.value) {
+    if (!form.payment_method_id) {
         gaps.push('payment method');
     }
 
-    if (!proofName.value) {
+    if (!form.payment_proof) {
         gaps.push('proof of payment');
     }
 
     return gaps;
 });
 
-const ready = computed(() => missing.value.length === 0 && !isEmpty.value);
+const ready = computed(
+    () => missing.value.length === 0 && props.lines.length > 0,
+);
 
 const onProof = (event: Event) => {
     const input = event.target as HTMLInputElement;
-    proofName.value = input.files?.[0]?.name ?? '';
+    const file = input.files?.[0] ?? null;
+
+    form.payment_proof = file;
+    proofName.value = file?.name ?? '';
 };
 
 /**
- * Nothing is persisted — there is no order schema yet. The form validates and
- * hands off to the confirmation screen, which renders its own dummy order.
+ * A real submit now. Inertia switches to multipart automatically because the
+ * payload carries a File, which is what carries the payment proof up.
  */
 const placeOrder = () => {
-    attempted.value = true;
-
     if (!ready.value) {
         return;
     }
 
-    router.visit(confirmation().url);
+    form.post(submitCheckout().url, { forceFormData: true });
 };
 
 const fieldClass =
@@ -205,7 +207,7 @@ const fieldClass =
                                 <span class="text-sf-rose-deep">*</span></span
                             >
                             <input
-                                v-model="form.social"
+                                v-model="form.social_handle"
                                 :class="fieldClass"
                                 placeholder="fb.com/juandc or +63 917…"
                             />
@@ -297,7 +299,7 @@ const fieldClass =
                             <span class="text-sf-rose-deep">*</span></span
                         >
                         <select v-model="courierId" :class="fieldClass">
-                            <option value="">Choose a courier…</option>
+                            <option :value="null">Choose a courier…</option>
                             <option
                                 v-for="courier in couriers"
                                 :key="courier.id"
@@ -320,14 +322,14 @@ const fieldClass =
                                 :key="region.id"
                                 class="flex cursor-pointer items-center justify-between gap-4 rounded-xl border px-5 py-4 transition-colors duration-200 ease-out"
                                 :class="
-                                    regionId === region.id
+                                    form.shipping_region_id === region.id
                                         ? 'border-sf-primary bg-sf-tint'
                                         : 'border-sf-line-strong bg-white hover:border-sf-primary/50'
                                 "
                             >
                                 <span class="flex items-center gap-3">
                                     <input
-                                        v-model="regionId"
+                                        v-model="form.shipping_region_id"
                                         type="radio"
                                         :value="region.id"
                                         class="size-4 accent-sf-primary"
@@ -361,8 +363,13 @@ const fieldClass =
                             >Payment Method
                             <span class="text-sf-rose-deep">*</span></span
                         >
-                        <select v-model="paymentId" :class="fieldClass">
-                            <option value="">Choose a payment method…</option>
+                        <select
+                            v-model="form.payment_method_id"
+                            :class="fieldClass"
+                        >
+                            <option :value="null">
+                                Choose a payment method…
+                            </option>
                             <option
                                 v-for="method in paymentMethods"
                                 :key="method.id"
@@ -391,11 +398,26 @@ const fieldClass =
                                 </dd>
                             </div>
                         </dl>
+                        <!--
+                            qr_code_path is nullable and currently unset — the
+                            placeholder is the expected state, not a failure.
+                        -->
                         <div
+                            v-if="selectedPayment?.qr_code_url"
+                            class="size-32 shrink-0 overflow-hidden rounded-xl border border-sf-line bg-white"
+                        >
+                            <img
+                                :src="selectedPayment.qr_code_url"
+                                :alt="`${selectedPayment.name} payment QR`"
+                                class="size-full object-contain p-1"
+                            />
+                        </div>
+                        <div
+                            v-else
                             class="grid size-32 shrink-0 place-items-center gap-1 rounded-xl border border-dashed border-sf-line-strong bg-white text-sf-subtle"
                         >
                             <QrCode class="size-10" />
-                            <span class="text-xs">Payment QR</span>
+                            <span class="text-xs">QR coming soon</span>
                         </div>
                     </div>
                 </section>
@@ -454,7 +476,7 @@ const fieldClass =
                     </h2>
 
                     <div
-                        v-if="isEmpty"
+                        v-if="lines.length === 0"
                         class="mt-5 text-[15px] text-sf-muted italic"
                     >
                         Your cart is empty —
@@ -469,37 +491,35 @@ const fieldClass =
                     <div v-else class="mt-5 flex flex-col gap-4">
                         <div
                             v-for="line in lines"
-                            :key="line.key"
+                            :key="line.variant_id"
                             class="flex items-center gap-3"
                         >
                             <span
-                                class="grid size-14 shrink-0 place-items-center overflow-hidden rounded-lg border border-sf-line bg-white"
+                                class="relative block size-20 shrink-0 overflow-hidden rounded-lg border border-sf-line bg-white"
                             >
                                 <img
-                                    v-if="line.imageUrl"
-                                    :src="line.imageUrl"
-                                    :alt="line.productName"
-                                    class="size-full object-contain"
+                                    v-if="line.image_url"
+                                    :src="line.image_url"
+                                    :alt="line.product_name"
+                                    class="absolute inset-0 size-full rounded-lg object-cover"
                                 />
                                 <FlaskConical
                                     v-else
-                                    class="size-5 text-sf-primary/35"
+                                    class="absolute inset-0 m-auto size-7 text-sf-primary/35"
                                 />
                             </span>
                             <span class="min-w-0 flex-1">
                                 <span
                                     class="block truncate text-[15px] font-medium text-sf-ink"
-                                    >{{ line.productName }}</span
+                                    >{{ line.product_name }}</span
                                 >
                                 <span class="block text-sm text-sf-subtle"
-                                    >{{ line.variantLabel }} ×
+                                    >{{ line.variant_label }} ×
                                     {{ line.quantity }}</span
                                 >
                             </span>
                             <span class="font-medium text-sf-ink">
-                                {{
-                                    formatPrice(line.unitPrice * line.quantity)
-                                }}
+                                {{ formatPrice(line.line_total) }}
                             </span>
                         </div>
                     </div>
@@ -538,18 +558,25 @@ const fieldClass =
 
                     <button
                         type="submit"
-                        :disabled="!ready"
+                        :disabled="!ready || form.processing"
                         class="mt-6 w-full rounded-full bg-sf-primary px-8 py-4 font-display text-base font-medium text-white transition-colors duration-200 ease-out hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary disabled:cursor-not-allowed disabled:opacity-40"
                     >
-                        Place order
+                        {{ form.processing ? 'Placing order…' : 'Place order' }}
                     </button>
 
                     <p
-                        v-if="attempted && missing.length"
-                        role="alert"
-                        class="mt-3 text-sm text-sf-rose-deep"
+                        v-if="missing.length"
+                        class="mt-3 text-sm text-sf-subtle"
                     >
                         Still needed: {{ missing.join(', ') }}.
+                    </p>
+                    <p
+                        v-for="(message, field) in form.errors"
+                        :key="field"
+                        role="alert"
+                        class="mt-2 text-sm text-sf-rose-deep"
+                    >
+                        {{ message }}
                     </p>
                     <p class="mt-3 text-center text-xs text-sf-subtle italic">
                         Orders are verified manually before dispatch.

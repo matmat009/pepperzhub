@@ -20,14 +20,25 @@ const image = computed(() => props.product.images[0] ?? null);
 </script>
 
 <template>
-    <img
-        v-if="image"
-        :src="image.url"
-        :alt="product.name"
-        loading="lazy"
-        class="size-full object-contain"
-    />
-    <span v-else class="grid size-full place-items-center">
-        <FlaskConical :class="iconClass" class="text-sf-primary/35" />
+    <!--
+        `max-h/max-w-full` rather than `size-full`: a percentage height on a
+        replaced element resolves against the box before object-fit runs, which
+        lets a tall source render past the well's edge. Capping by the image's
+        own intrinsic size instead means it can never exceed the box, whatever
+        aspect ratio it arrives with.
+    -->
+    <span class="relative block size-full">
+        <img
+            v-if="image"
+            :src="image.url"
+            :alt="product.name"
+            loading="lazy"
+            class="absolute inset-0 size-full rounded-lg object-contain"
+        />
+        <FlaskConical
+            v-else
+            :class="iconClass"
+            class="absolute inset-0 m-auto text-sf-primary/35"
+        />
     </span>
 </template>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\SessionCart;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -42,6 +43,13 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            /*
+             * The navbar badge needs the cart count on every storefront page,
+             * and the cart now lives in the session rather than the browser.
+             * Summed straight off the session so this costs no query — the
+             * cart page itself does the hydrating.
+             */
+            'cartCount' => array_sum(SessionCart::raw()),
         ];
     }
 }

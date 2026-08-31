@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AddedToCartDialog from '@/components/storefront/AddedToCartDialog.vue';
 import StorefrontFooter from '@/components/storefront/StorefrontFooter.vue';
 import StorefrontNav from '@/components/storefront/StorefrontNav.vue';
 
@@ -18,5 +19,8 @@ import StorefrontNav from '@/components/storefront/StorefrontNav.vue';
             <slot />
         </main>
         <StorefrontFooter />
+
+        <!-- Mounted once here so a card on any page can raise it. -->
+        <AddedToCartDialog />
     </div>
 </template>

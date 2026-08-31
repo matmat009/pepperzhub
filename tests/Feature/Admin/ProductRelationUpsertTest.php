@@ -205,6 +205,26 @@ class ProductRelationUpsertTest extends TestCase
         $this->assertCount(2, $product->technicalDetails);
     }
 
+    public function test_storage_instruction_can_be_saved_with_only_the_first_field()
+    {
+        $product = $this->product();
+        $storage = $product->technicalDetails->firstWhere('type', ProductTechnicalDetail::TYPE_STORAGE);
+
+        $payload = $this->payload($product);
+        $payload['storage'][0]['label'] = '2-8°C';
+        $payload['storage'][0]['value'] = '';
+
+        $this->put(route('admin.products.update', $product), $payload)
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('product_technical_details', [
+            'id' => $storage->id,
+            'type' => ProductTechnicalDetail::TYPE_STORAGE,
+            'label' => null,
+            'value' => '2-8°C',
+        ]);
+    }
+
     public function test_an_id_belonging_to_another_product_is_inserted_rather_than_hijacked()
     {
         $product = $this->product();

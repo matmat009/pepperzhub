@@ -1,49 +1,39 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowRight, Check, Clock, MessageCircle, Phone } from '@lucide/vue';
+import { computed } from 'vue';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
 import { index as catalog } from '@/routes/storefront/products';
+import { cancellationMessage, isCancelled, trackerSteps } from './orderTracker';
+import type { OrderItemLine, OrderTracker } from './orderTracker';
 
 /**
- * Dummy order. No order schema exists yet, so nothing here is looked up — the
- * numbers below are fixed sample data matching the design bundle.
+ * Reached by a random per-order token in the URL, so the page survives a
+ * refresh and one order's link reveals nothing about another's. The tracker
+ * stage is derived server-side by App\Support\OrderTracker.
  */
-const order = {
-    number: 'PZH-00248',
-    customer: 'Juan Dela Cruz',
-    phone: '0917 123 4567',
-    social: 'fb.com/juandc',
-    items: [
-        { name: 'BPC-157', format: '5 mg vial', quantity: 2, unitPrice: 2400 },
-        { name: 'TB-500', format: '5 mg vial', quantity: 1, unitPrice: 2800 },
-    ],
-    shipping: 150,
-};
+const props = defineProps<{
+    order: {
+        order_number: string;
+        name: string;
+        phone: string;
+        social_handle: string;
+        subtotal: number;
+        shipping_fee: number;
+        total: number;
+        shipping_region_label: string;
+        courier: string | null;
+        payment_method: string | null;
+        items: OrderItemLine[];
+    };
+    tracker: OrderTracker;
+}>();
 
-const subtotal = order.items.reduce(
-    (sum, item) => sum + item.unitPrice * item.quantity,
-    0,
-);
+// Only the first three stages are shown here; the full five live on Track Order.
+const steps = computed(() => trackerSteps(props.tracker).slice(0, 3));
 
-const total = subtotal + order.shipping;
-
-const steps = [
-    {
-        title: 'Order Placed',
-        copy: 'We have your order and payment proof.',
-        done: true,
-    },
-    {
-        title: 'Payment Verification',
-        copy: 'Our team is confirming your transfer.',
-        done: false,
-    },
-    {
-        title: 'Preparing for Shipment',
-        copy: 'Packed and handed to the courier.',
-        done: false,
-    },
-];
+const cancelled = computed(() => isCancelled(props.tracker));
+const cancelledMessage = computed(() => cancellationMessage(props.tracker));
 </script>
 
 <template>
@@ -59,15 +49,26 @@ const steps = [
             <h1
                 class="mt-6 font-display text-[40px] leading-[1.15] font-medium tracking-[-0.02em] text-balance text-sf-ink"
             >
-                Order Placed — Pending Verification
+                {{
+                    cancelled
+                        ? 'Order Cancelled'
+                        : 'Order Placed — Pending Verification'
+                }}
             </h1>
             <p
+                v-if="cancelled"
+                class="mt-4 max-w-[600px] text-[17px] leading-[1.7] text-balance text-sf-rose-deep"
+            >
+                {{ cancelledMessage }}
+            </p>
+            <p
+                v-else
                 class="mt-4 max-w-[600px] text-[17px] leading-[1.7] text-balance text-sf-muted"
             >
                 We've received your order and payment proof. We'll verify your
                 payment and reach out via
                 <span class="font-semibold text-sf-ink">{{
-                    order.social
+                    order.social_handle
                 }}</span>
                 or
                 <span class="font-semibold text-sf-ink">{{ order.phone }}</span>
@@ -77,14 +78,17 @@ const steps = [
             <div
                 class="mt-7 rounded-full border border-sf-line bg-sf-tint px-6 py-3 font-display text-lg font-semibold text-sf-ink"
             >
-                Order {{ order.number }}
+                Order {{ order.order_number }}
             </div>
         </div>
 
-        <ol class="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-3">
+        <ol
+            v-if="!cancelled"
+            class="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-3"
+        >
             <li
                 v-for="(step, index) in steps"
-                :key="step.title"
+                :key="step.label"
                 class="flex flex-col items-center gap-3 rounded-2xl border p-6 text-center"
                 :class="
                     step.done
@@ -104,11 +108,13 @@ const steps = [
                     <template v-else>{{ index + 1 }}</template>
                 </span>
                 <span class="font-display font-semibold text-sf-ink">{{
-                    step.title
+                    step.label
                 }}</span>
-                <span class="text-sm leading-[1.6] text-sf-muted">{{
-                    step.copy
-                }}</span>
+                <span
+                    v-if="step.current"
+                    class="text-sm leading-[1.6] text-sf-primary"
+                    >Current status</span
+                >
             </li>
         </ol>
 
@@ -119,19 +125,20 @@ const steps = [
             <div class="mt-5 flex flex-col divide-y divide-sf-line">
                 <div
                     v-for="item in order.items"
-                    :key="item.name"
+                    :key="`${item.product_name}-${item.variant_label}`"
                     class="flex items-center justify-between gap-4 py-3.5"
                 >
                     <span>
                         <span class="block font-medium text-sf-ink">{{
-                            item.name
+                            item.product_name
                         }}</span>
                         <span class="block text-sm text-sf-subtle"
-                            >{{ item.format }} × {{ item.quantity }}</span
+                            >{{ item.variant_label }} ×
+                            {{ item.quantity }}</span
                         >
                     </span>
                     <span class="font-medium text-sf-ink">{{
-                        formatPrice(item.unitPrice * item.quantity)
+                        formatPrice(item.line_total)
                     }}</span>
                 </div>
             </div>
@@ -139,13 +146,13 @@ const steps = [
                 <div class="flex justify-between text-[15px] text-sf-muted">
                     <span>Subtotal</span>
                     <span class="font-medium text-sf-ink">{{
-                        formatPrice(subtotal)
+                        formatPrice(order.subtotal)
                     }}</span>
                 </div>
                 <div class="flex justify-between text-[15px] text-sf-muted">
                     <span>Shipping</span>
                     <span class="font-medium text-sf-ink">{{
-                        formatPrice(order.shipping)
+                        formatPrice(order.shipping_fee)
                     }}</span>
                 </div>
                 <div
@@ -156,7 +163,7 @@ const steps = [
                     >
                     <span
                         class="font-display text-2xl font-semibold text-sf-primary-soft"
-                        >{{ formatPrice(total) }}</span
+                        >{{ formatPrice(order.total) }}</span
                     >
                 </div>
             </div>

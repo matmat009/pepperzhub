@@ -1,96 +1,78 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Check, CircleAlert, Copy, Search, Truck } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
 import { home } from '@/routes';
 import { index as catalog } from '@/routes/storefront/products';
+import { lookup as lookupRoute } from '@/routes/storefront/track';
+import { cancellationMessage, isCancelled, trackerSteps } from './orderTracker';
+import type { OrderItemLine, OrderTracker } from './orderTracker';
 
 /**
- * Dummy lookup. No order schema exists yet, so exactly one combination
- * resolves — PZH-00231 / 09171234567 — and everything else falls through to
- * the not-found state. Sample record matches the design bundle.
+ * Lookup happens server-side and is rate-limited there. The failure case is
+ * deliberately one generic message — telling someone the order number exists
+ * but the phone is wrong would turn this into an order-number oracle.
  */
-const DEMO = {
-    orderNo: 'PZH-00231',
-    phone: '09171234567',
-    items: [
-        { name: 'BPC-157', format: '5 mg vial', quantity: 2, unitPrice: 2450 },
-        {
-            name: 'Ipamorelin',
-            format: '10 mg vial',
-            quantity: 1,
-            unitPrice: 5100,
-        },
-    ],
-    shipping: 150,
-    shipName: 'J&T – Luzon & Visayas',
-    courier: 'J&T Express',
-    trackingNo: 'JT2260041188PH',
-    customer: 'Juan Dela Cruz',
+type TrackResult = {
+    order_number: string;
+    name: string;
+    placed_at: string | null;
+    subtotal: number;
+    shipping_fee: number;
+    total: number;
+    shipping_region_label: string;
+    courier: string | null;
+    tracking_number: string | null;
+    items: OrderItemLine[];
+    tracker: OrderTracker;
 };
 
-/** Five stages; the demo order sits at "Shipped" (index 3). */
-const STAGE_LABELS = [
-    'Order Placed',
-    'Payment Verified',
-    'Preparing Order',
-    'Shipped',
-    'Delivered',
-];
+const props = withDefaults(
+    defineProps<{
+        result?: TrackResult | null;
+        notFound?: boolean;
+    }>(),
+    { result: null, notFound: false },
+);
 
-const CURRENT_STAGE = 3;
+const form = useForm({
+    order_number: '',
+    phone: '',
+});
 
-const orderInput = ref('');
-const phoneInput = ref('');
-const found = ref(false);
-const error = ref(false);
+const found = computed(() => props.result !== null);
 
-const digits = (value: string) => value.replace(/\D/g, '');
+const stages = computed(() =>
+    props.result ? trackerSteps(props.result.tracker) : [],
+);
 
-const normalizeOrderNo = (value: string) =>
-    value
-        .trim()
-        .toUpperCase()
-        .replace(/^#/, '')
-        .replace(/^PZH-?/, '');
+const cancelled = computed(() =>
+    props.result ? isCancelled(props.result.tracker) : false,
+);
+
+const cancelledMessage = computed(() =>
+    props.result ? cancellationMessage(props.result.tracker) : '',
+);
 
 const lookup = () => {
-    const matches =
-        normalizeOrderNo(orderInput.value) === normalizeOrderNo(DEMO.orderNo) &&
-        digits(phoneInput.value) === DEMO.phone;
-
-    found.value = matches;
-    error.value = !matches;
+    form.post(lookupRoute().url, { preserveScroll: true });
 };
 
 const reset = () => {
-    orderInput.value = '';
-    phoneInput.value = '';
-    found.value = false;
-    error.value = false;
+    form.reset();
+    form.clearErrors();
 };
-
-const subtotal = DEMO.items.reduce(
-    (sum, item) => sum + item.unitPrice * item.quantity,
-    0,
-);
-
-const total = subtotal + DEMO.shipping;
-
-const stages = computed(() =>
-    STAGE_LABELS.map((label, index) => ({
-        label,
-        done: index <= CURRENT_STAGE,
-        current: index === CURRENT_STAGE,
-    })),
-);
 
 const copied = ref(false);
 
 const copyTracking = async () => {
+    if (!props.result?.tracking_number) {
+        return;
+    }
+
     try {
-        await navigator.clipboard.writeText(DEMO.trackingNo);
+        await navigator.clipboard.writeText(props.result.tracking_number);
         copied.value = true;
         window.setTimeout(() => (copied.value = false), 2000);
     } catch {
@@ -136,7 +118,7 @@ const fieldClass =
                         >Order Number</span
                     >
                     <input
-                        v-model="orderInput"
+                        v-model="form.order_number"
                         :class="fieldClass"
                         placeholder="e.g. PZH-00231"
                     />
@@ -146,7 +128,7 @@ const fieldClass =
                         >Phone Number</span
                     >
                     <input
-                        v-model="phoneInput"
+                        v-model="form.phone"
                         :class="fieldClass"
                         placeholder="0917 123 4567"
                     />
@@ -162,7 +144,7 @@ const fieldClass =
             </button>
 
             <div
-                v-if="error"
+                v-if="notFound"
                 role="alert"
                 class="mt-6 flex items-start gap-3 rounded-xl border border-sf-rose-line bg-sf-rose-tint p-5"
             >
@@ -190,14 +172,14 @@ const fieldClass =
                     class="flex flex-wrap items-baseline justify-between gap-3"
                 >
                     <h2 class="font-display text-xl font-semibold text-sf-ink">
-                        Order {{ DEMO.orderNo }}
+                        Order {{ result?.order_number }}
                     </h2>
                     <span class="text-[15px] text-sf-muted">{{
-                        DEMO.customer
+                        result?.name
                     }}</span>
                 </div>
 
-                <ol class="mt-8 flex flex-col gap-0">
+                <ol v-if="!cancelled" class="mt-8 flex flex-col gap-0">
                     <li
                         v-for="(stage, index) in stages"
                         :key="stage.label"
@@ -245,22 +227,46 @@ const fieldClass =
                         </div>
                     </li>
                 </ol>
+                <div
+                    v-else
+                    class="mt-8 flex items-start gap-3 rounded-xl border border-sf-rose-line bg-sf-rose-tint p-5"
+                >
+                    <CircleAlert
+                        class="mt-0.5 size-5 shrink-0 text-sf-rose-deep"
+                    />
+                    <div>
+                        <div
+                            class="font-display font-semibold text-sf-rose-deep"
+                        >
+                            Order Cancelled
+                        </div>
+                        <p class="mt-1 text-[15px] leading-[1.6] text-sf-muted">
+                            {{ cancelledMessage }}
+                        </p>
+                    </div>
+                </div>
 
                 <div
+                    v-if="!cancelled"
                     class="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-sf-line bg-sf-tint p-5"
                 >
                     <div class="flex items-center gap-3">
                         <Truck class="size-5 shrink-0 text-sf-primary" />
                         <div>
                             <div class="text-sm text-sf-subtle">
-                                {{ DEMO.courier }} · {{ DEMO.shipName }}
+                                {{ result?.courier }} ·
+                                {{ result?.shipping_region_label }}
                             </div>
                             <div class="font-display font-semibold text-sf-ink">
-                                {{ DEMO.trackingNo }}
+                                {{
+                                    result?.tracking_number ??
+                                    'Not yet assigned'
+                                }}
                             </div>
                         </div>
                     </div>
                     <button
+                        v-if="result?.tracking_number"
                         type="button"
                         class="inline-flex items-center gap-2 rounded-full border border-sf-line-strong bg-white px-4 py-2 text-sm font-medium text-sf-text transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary"
                         @click="copyTracking"
@@ -277,20 +283,21 @@ const fieldClass =
                 </h2>
                 <div class="mt-5 flex flex-col divide-y divide-sf-line">
                     <div
-                        v-for="item in DEMO.items"
-                        :key="item.name"
+                        v-for="item in result?.items ?? []"
+                        :key="`${item.product_name}-${item.variant_label}`"
                         class="flex items-center justify-between gap-4 py-3.5"
                     >
                         <span>
                             <span class="block font-medium text-sf-ink">{{
-                                item.name
+                                item.product_name
                             }}</span>
                             <span class="block text-sm text-sf-subtle"
-                                >{{ item.format }} × {{ item.quantity }}</span
+                                >{{ item.variant_label }} ×
+                                {{ item.quantity }}</span
                             >
                         </span>
                         <span class="font-medium text-sf-ink">{{
-                            formatPrice(item.unitPrice * item.quantity)
+                            formatPrice(item.line_total)
                         }}</span>
                     </div>
                 </div>
@@ -300,13 +307,13 @@ const fieldClass =
                     <div class="flex justify-between text-[15px] text-sf-muted">
                         <span>Subtotal</span>
                         <span class="font-medium text-sf-ink">{{
-                            formatPrice(subtotal)
+                            formatPrice(result?.subtotal ?? 0)
                         }}</span>
                     </div>
                     <div class="flex justify-between text-[15px] text-sf-muted">
                         <span>Shipping</span>
                         <span class="font-medium text-sf-ink">{{
-                            formatPrice(DEMO.shipping)
+                            formatPrice(result?.shipping_fee ?? 0)
                         }}</span>
                     </div>
                     <div
@@ -317,7 +324,7 @@ const fieldClass =
                         >
                         <span
                             class="font-display text-2xl font-semibold text-sf-primary-soft"
-                            >{{ formatPrice(total) }}</span
+                            >{{ formatPrice(result?.total ?? 0) }}</span
                         >
                     </div>
                 </div>

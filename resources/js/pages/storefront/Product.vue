@@ -66,16 +66,15 @@ const details = computed(() => [
     ...props.product.storage_instructions,
 ]);
 
-const longDescription = computed(
-    () => props.product.full_description || props.product.short_description,
-);
+const shortDescription = computed(() => props.product.short_description.trim());
+const fullDescription = computed(() => props.product.full_description.trim());
 
-const canExpand = computed(() => longDescription.value.length > 280);
+const canExpand = computed(() => fullDescription.value.length > 280);
 
 const shownDescription = computed(() =>
     canExpand.value && !descExpanded.value
-        ? `${longDescription.value.slice(0, 280).trimEnd()}…`
-        : longDescription.value,
+        ? `${fullDescription.value.slice(0, 280).trimEnd()}…`
+        : fullDescription.value,
 );
 
 // A different format can carry less stock than the quantity already dialled in.
@@ -106,9 +105,21 @@ const addToCart = () => {
     add(props.product, selectedVariant.value.id, quantity.value);
 };
 
+/**
+ * Adding is a server round trip now, so checkout has to be visited from the
+ * success callback — navigating straight away would race the add and land on a
+ * checkout that has not seen the item yet. No confirmation popover either: the
+ * checkout page is the confirmation.
+ */
 const buyNow = () => {
-    addToCart();
-    router.visit(checkout().url);
+    if (!selectedVariant.value || outOfStock.value) {
+        return;
+    }
+
+    add(props.product, selectedVariant.value.id, quantity.value, {
+        confirm: false,
+        onSuccess: () => router.visit(checkout().url),
+    });
 };
 
 const share = async () => {
@@ -153,7 +164,7 @@ const share = async () => {
                         v-if="currentImage"
                         :src="currentImage.url"
                         :alt="product.name"
-                        class="size-full object-contain"
+                        class="absolute inset-0 size-full rounded-2xl object-contain"
                     />
                     <ProductThumb
                         v-else
@@ -204,7 +215,7 @@ const share = async () => {
                         type="button"
                         :aria-label="`Show image ${index + 1}`"
                         :aria-current="index === imageIndex"
-                        class="size-20 overflow-hidden rounded-lg border bg-sf-tint transition-colors duration-200 ease-out"
+                        class="relative size-20 overflow-hidden rounded-lg border bg-sf-tint transition-colors duration-200 ease-out"
                         :class="
                             index === imageIndex
                                 ? 'border-sf-primary'
@@ -215,7 +226,7 @@ const share = async () => {
                         <img
                             :src="image.url"
                             :alt="`${product.name} view ${index + 1}`"
-                            class="size-full object-contain"
+                            class="absolute inset-0 size-full rounded-lg object-contain"
                         />
                     </button>
                 </div>
@@ -233,13 +244,23 @@ const share = async () => {
                     {{ product.name }}
                 </h1>
 
+                <p
+                    v-if="shortDescription"
+                    class="mt-4 text-[17px] leading-[1.7] text-sf-muted"
+                >
+                    {{ shortDescription }}
+                </p>
+
                 <div
                     class="mt-4 font-display text-[32px] font-semibold text-sf-primary-soft"
                 >
                     {{ price }}
                 </div>
 
-                <div class="mt-7 border-t border-sf-line pt-7">
+                <div
+                    v-if="fullDescription"
+                    class="mt-7 border-t border-sf-line pt-7"
+                >
                     <div class="font-display text-lg font-semibold text-sf-ink">
                         Description
                     </div>
@@ -398,9 +419,10 @@ const share = async () => {
                 class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             >
                 <ProductCard
-                    v-for="item in related"
+                    v-for="(item, i) in related"
                     :key="item.id"
                     :product="item"
+                    :index="i"
                 />
             </div>
         </section>

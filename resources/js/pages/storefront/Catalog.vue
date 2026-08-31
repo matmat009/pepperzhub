@@ -3,7 +3,6 @@ import { Head, Link } from '@inertiajs/vue3';
 import { ChevronDown, Search, SlidersHorizontal, X } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import ProductCard from '@/components/storefront/ProductCard.vue';
-import { totalStock } from '@/pages/admin/products/all-products/types';
 import type { Product } from '@/pages/admin/products/all-products/types';
 import { home } from '@/routes';
 
@@ -14,12 +13,24 @@ const props = defineProps<{
 
 type Sort = 'featured' | 'price-asc' | 'price-desc' | 'name';
 
+/** Banded on the product's cheapest format, the same figure the card shows. */
+type PriceBand = 'all' | 'under' | 'mid' | 'over';
+
+const PRICE_BANDS: { id: PriceBand; label: string }[] = [
+    { id: 'all', label: 'All prices' },
+    { id: 'under', label: 'Under ₱3,000' },
+    { id: 'mid', label: '₱3,000 – ₱6,000' },
+    { id: 'over', label: 'Over ₱6,000' },
+];
+
 const search = ref('');
 const activeCategory = ref('All');
 const sort = ref<Sort>('featured');
-const inStockOnly = ref(false);
-const outOfStockOnly = ref(false);
-const stockOpen = ref(true);
+const priceBand = ref<PriceBand>('all');
+const singleVialOnly = ref(false);
+const kitOnly = ref(false);
+const priceOpen = ref(true);
+const formatOpen = ref(true);
 const drawerOpen = ref(false);
 
 const categoryTabs = computed(() => ['All', ...props.categories]);
@@ -50,11 +61,31 @@ const filtered = computed(() => {
             return false;
         }
 
-        // Both boxes ticked (or neither) means no stock constraint at all.
-        if (inStockOnly.value !== outOfStockOnly.value) {
-            const hasStock = totalStock(product.variants) > 0;
+        if (priceBand.value !== 'all') {
+            const price = lowestPrice(product);
 
-            return inStockOnly.value ? hasStock : !hasStock;
+            const inBand =
+                priceBand.value === 'under'
+                    ? price < 3000
+                    : priceBand.value === 'mid'
+                      ? price >= 3000 && price <= 6000
+                      : price > 6000;
+
+            if (!inBand) {
+                return false;
+            }
+        }
+
+        if (singleVialOnly.value || kitOnly.value) {
+            const passes =
+                (singleVialOnly.value &&
+                    product.variants.some((variant) => !variant.is_kit)) ||
+                (kitOnly.value &&
+                    product.variants.some((variant) => variant.is_kit));
+
+            if (!passes) {
+                return false;
+            }
         }
 
         return true;
@@ -141,19 +172,32 @@ const pickCategory = (category: string) => {
             </div>
         </div>
 
-        <div class="mt-8 flex gap-10">
+        <div class="mt-8 flex items-start gap-10">
             <!-- Static rail on desktop, slide-over drawer below lg. -->
             <div
                 v-if="drawerOpen"
                 class="fixed inset-0 z-70 bg-[rgba(20,22,35,0.45)] lg:hidden"
                 @click="drawerOpen = false"
             />
+            <!--
+                Sticky from lg up only, where the two-column layout exists.
+
+                `self-start` is what makes it work at all: a flex item stretches
+                to the row's full height by default, leaving sticky no room to
+                travel. Sticky is also scoped to the drawer-closed branch so it
+                can never fight the `fixed` positioning of the mobile drawer.
+
+                It releases on its own at the bottom of the flex row, so it
+                cannot run past the grid or reach the footer — no JS needed. The
+                max-height keeps a filter list taller than the viewport
+                reachable rather than clipped.
+            -->
             <aside
                 class="shrink-0 lg:block lg:w-56"
                 :class="
                     drawerOpen
                         ? 'fixed inset-y-0 left-0 z-80 w-72 overflow-y-auto bg-white p-6 shadow-2xl'
-                        : 'hidden'
+                        : 'hidden lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:self-start lg:overflow-y-auto lg:pr-1'
                 "
             >
                 <div
@@ -194,35 +238,66 @@ const pickCategory = (category: string) => {
                     <button
                         type="button"
                         class="flex w-full items-center justify-between font-display text-[15px] font-semibold text-sf-ink"
-                        :aria-expanded="stockOpen"
-                        @click="stockOpen = !stockOpen"
+                        :aria-expanded="priceOpen"
+                        @click="priceOpen = !priceOpen"
                     >
-                        Stock Status
+                        Price Range
                         <ChevronDown
                             class="size-4 transition-transform duration-200 ease-out"
-                            :class="stockOpen ? 'rotate-180' : ''"
+                            :class="priceOpen ? 'rotate-180' : ''"
                         />
                     </button>
-                    <div v-if="stockOpen" class="mt-4 flex flex-col gap-3">
+                    <div v-if="priceOpen" class="mt-4 flex flex-col gap-3">
                         <label
-                            class="flex items-center gap-2.5 text-[15px] text-sf-text"
+                            v-for="band in PRICE_BANDS"
+                            :key="band.id"
+                            class="flex cursor-pointer items-center gap-2.5 text-[15px] text-sf-text"
                         >
                             <input
-                                v-model="inStockOnly"
+                                v-model="priceBand"
+                                type="radio"
+                                name="price-band"
+                                :value="band.id"
+                                class="size-4 accent-sf-primary"
+                            />
+                            {{ band.label }}
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mt-8 border-t border-sf-line pt-6">
+                    <button
+                        type="button"
+                        class="flex w-full items-center justify-between font-display text-[15px] font-semibold text-sf-ink"
+                        :aria-expanded="formatOpen"
+                        @click="formatOpen = !formatOpen"
+                    >
+                        Format
+                        <ChevronDown
+                            class="size-4 transition-transform duration-200 ease-out"
+                            :class="formatOpen ? 'rotate-180' : ''"
+                        />
+                    </button>
+                    <div v-if="formatOpen" class="mt-4 flex flex-col gap-3">
+                        <label
+                            class="flex cursor-pointer items-center gap-2.5 text-[15px] text-sf-text"
+                        >
+                            <input
+                                v-model="singleVialOnly"
                                 type="checkbox"
                                 class="size-4 accent-sf-primary"
                             />
-                            In Stock
+                            Single Vial
                         </label>
                         <label
-                            class="flex items-center gap-2.5 text-[15px] text-sf-text"
+                            class="flex cursor-pointer items-center gap-2.5 text-[15px] text-sf-text"
                         >
                             <input
-                                v-model="outOfStockOnly"
+                                v-model="kitOnly"
                                 type="checkbox"
                                 class="size-4 accent-sf-primary"
                             />
-                            Out of Stock
+                            Kit
                         </label>
                     </div>
                 </div>
@@ -234,9 +309,10 @@ const pickCategory = (category: string) => {
                     class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
                 >
                     <ProductCard
-                        v-for="product in filtered"
+                        v-for="(product, i) in filtered"
                         :key="product.id"
                         :product="product"
+                        :index="i"
                     />
                 </div>
                 <div
