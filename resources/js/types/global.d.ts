@@ -19,6 +19,8 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             sidebarOpen: boolean;
+            /** App\Models\ProductVariant::LOW_STOCK_THRESHOLD, shared on every response. */
+            lowStockThreshold: number;
             [key: string]: unknown;
         };
     }

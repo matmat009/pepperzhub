@@ -13,6 +13,21 @@ class ProductVariant extends Model
     /** @use HasFactory<ProductVariantFactory> */
     use HasFactory;
 
+    /**
+     * At or below this many units, stock counts as low.
+     *
+     * A fact about stock, so it lives on the model rather than on whichever
+     * screen happens to display it. Shared to every Inertia response by
+     * HandleInertiaRequests, so no Vue file carries its own copy — the
+     * storefront badge a customer sees and the admin's low-stock tile are
+     * reading the same number by construction, not by coincidence.
+     *
+     * (products/inventory/types.ts declares its own 10. That page is hidden
+     * placeholder data with no connection to real stock; it is deliberately
+     * left alone.)
+     */
+    public const LOW_STOCK_THRESHOLD = 5;
+
     protected $fillable = [
         'product_id',
         'label',

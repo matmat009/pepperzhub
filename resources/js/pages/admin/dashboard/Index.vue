@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
+import { useLowStockThreshold } from '@/composables/useLowStockThreshold';
 import { dashboard } from '@/routes';
 import PendingPayments from './partials/PendingPayments.vue';
 import StatsCards from './partials/StatsCards.vue';
@@ -25,9 +26,15 @@ defineOptions({
 
 defineProps<{
     stats: DashboardStats;
-    lowStockThreshold: number;
     pendingPayments: PendingPayment[];
 }>();
+
+/*
+ * Shared prop, not a page prop: the same number drives the storefront's
+ * "Only N left" badge, so it is published once for every response rather than
+ * handed to this screen alone.
+ */
+const lowStockThreshold = useLowStockThreshold();
 </script>
 
 <template>

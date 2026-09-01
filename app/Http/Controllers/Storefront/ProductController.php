@@ -13,8 +13,9 @@ use Inertia\Response;
 /**
  * Public catalogue reads.
  *
- * Only Home, Catalog and Product Detail are served from the database; the cart
- * and order screens are still dummy UI, so they render without a controller.
+ * Home, Catalog and Product Detail. Cart, Checkout, Order Confirmation and
+ * Track Order are real and persisted too, each with its own controller in this
+ * namespace; this one covers the catalogue reads only.
  *
  * The payload shape deliberately matches the one in
  * App\Http\Controllers\Admin\ProductController so the storefront pages can

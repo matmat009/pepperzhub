@@ -24,7 +24,10 @@ export type OrderTracker = {
     stage: OrderStage;
     stages: string[];
     cancelled: boolean;
-    /** Set by Phase 2's reject/cancel actions; null until then. */
+    /**
+     * The reason recorded when the order was rejected or cancelled. Null while
+     * the order is live, and also when it was cancelled without one given.
+     */
     cancellation_reason: string | null;
     payment_status: OrderPaymentStatus;
     payment_label: string;

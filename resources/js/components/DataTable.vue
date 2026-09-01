@@ -51,7 +51,8 @@ import type { Features } from './features';
  *
  * `rowClickable` makes each row activate on click, Enter or Space, emitting
  * `rowClick`. It is off by default, so a table only becomes interactive by
- * opting in.
+ * opting in. The row keeps its native `role="row"`; the keyboard affordance is
+ * a button inside the first participating cell. See `focusCellByRow`.
  */
 type ColumnMeta = {
     noRowClick?: boolean;
@@ -130,32 +131,43 @@ const onCellClick = (cell: Cell<Features, TData, unknown>, row: TData) => {
 };
 
 /**
- * Keyboard equivalent of the row click.
+ * Which cell carries the row's keyboard affordance, keyed by row id.
  *
- * The click handler is per-cell, because `noRowClick` opts individual cells
- * out. Focus cannot work that way — one tab stop per cell would make a
- * five-column table five identical stops per row — so the keyboard affordance
- * sits on the row instead, and the target check below does the job `noRowClick`
- * does for the mouse: when focus is on a control inside a cell (the Edit or
- * Delete button in the actions column), Enter belongs to that button and must
- * not also open the row.
+ * The affordance is a real <button> wrapped around that cell's content rather
+ * than role/tabindex on the <tr>. Overriding a row's native `role="row"` with
+ * `role="button"` takes it out of the table's accessibility tree, so a screen
+ * reader can no longer navigate the grid — and a button wrapping the first
+ * cell also gets its accessible name from that cell's own text ("GOtyme Bank"),
+ * where a row-level control would have needed a generic invented label.
  *
- * No-ops unless `rowClickable`, so tables that have not opted in are unchanged.
+ * The first cell that participates in the row click, so a table whose leading
+ * column is opted out (a checkbox) puts the affordance on the next one rather
+ * than on a control that would do nothing.
+ *
+ * Empty unless `rowClickable`, so tables that have not opted in render exactly
+ * as before.
  */
-const onRowKeydown = (event: KeyboardEvent, row: TData) => {
-    if (!props.rowClickable || (event.key !== 'Enter' && event.key !== ' ')) {
-        return;
+const focusCellByRow = computed(() => {
+    const map = new Map<string, string>();
+
+    if (!props.rowClickable) {
+        return map;
     }
 
-    if (event.target !== event.currentTarget) {
-        return;
+    for (const row of table.getRowModel().rows) {
+        const cell = row
+            .getVisibleCells()
+            .find(
+                (candidate) => !metaOf(candidate.column.columnDef).noRowClick,
+            );
+
+        if (cell) {
+            map.set(row.id, cell.id);
+        }
     }
 
-    // Space would otherwise scroll the page.
-    event.preventDefault();
-
-    emit('rowClick', row);
-};
+    return map;
+});
 
 const selectedRows = computed(() =>
     table.getFilteredSelectedRowModel().rows.map((row) => row.original),
@@ -254,16 +266,11 @@ defineExpose({ table });
                                     :data-state="
                                         row.getIsSelected() && 'selected'
                                     "
-                                    :role="rowClickable ? 'button' : undefined"
-                                    :tabindex="rowClickable ? 0 : undefined"
                                     :class="[
                                         'transition-colors',
                                         rowClickable &&
-                                            'cursor-pointer focus-visible:bg-muted/50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
+                                            'cursor-pointer focus-within:bg-muted/50',
                                     ]"
-                                    @keydown="
-                                        onRowKeydown($event, row.original)
-                                    "
                                 >
                                     <TableCell
                                         v-for="cell in row.getVisibleCells()"
@@ -271,7 +278,27 @@ defineExpose({ table });
                                         class="py-3"
                                         @click="onCellClick(cell, row.original)"
                                     >
-                                        <FlexRender :cell="cell" />
+                                        <!--
+                                            The row's keyboard affordance. A
+                                            native button, so Enter and Space
+                                            are handled by the platform and the
+                                            resulting click bubbles into the
+                                            cell's own handler — one code path
+                                            for mouse and keyboard alike. Its
+                                            accessible name is the cell content
+                                            it wraps.
+                                        -->
+                                        <button
+                                            v-if="
+                                                focusCellByRow.get(row.id) ===
+                                                cell.id
+                                            "
+                                            type="button"
+                                            class="block w-full cursor-pointer rounded-sm text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+                                        >
+                                            <FlexRender :cell="cell" />
+                                        </button>
+                                        <FlexRender v-else :cell="cell" />
                                     </TableCell>
                                 </TableRow>
 

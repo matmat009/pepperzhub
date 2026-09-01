@@ -3,10 +3,10 @@ import { Link } from '@inertiajs/vue3';
 import { Eye, ShoppingCart } from '@lucide/vue';
 import { computed } from 'vue';
 import ProductThumb from '@/components/storefront/ProductThumb.vue';
+import { useLowStockThreshold } from '@/composables/useLowStockThreshold';
 import { useStorefrontCart } from '@/composables/useStorefrontCart';
 import {
     formatPrice,
-    LOW_STOCK_THRESHOLD,
     totalStock,
 } from '@/pages/admin/products/all-products/types';
 import type { Product } from '@/pages/admin/products/all-products/types';
@@ -34,6 +34,9 @@ const wellClass = computed(() =>
 
 const { add } = useStorefrontCart();
 
+// From the server, so this badge and the admin's low-stock tile cannot drift.
+const lowStockThreshold = useLowStockThreshold();
+
 const stock = computed(() => totalStock(props.product.variants));
 const inStock = computed(() => stock.value > 0);
 
@@ -49,7 +52,7 @@ const stockBadge = computed(() => {
         };
     }
 
-    if (stock.value <= LOW_STOCK_THRESHOLD) {
+    if (stock.value <= lowStockThreshold.value) {
         return {
             label: `Only ${stock.value} left`,
             class: 'border-sf-rose-line bg-sf-rose-tint text-sf-rose-deep',

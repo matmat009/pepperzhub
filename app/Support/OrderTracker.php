@@ -106,9 +106,9 @@ class OrderTracker
             'stage' => static::stage($order),
             'stages' => static::STAGES,
             'cancelled' => $cancelled,
-            // Nothing writes this yet — Phase 2's reject/cancel actions will.
-            // The read path is here so the pages can show a reason the day it
-            // starts being set, and a sensible default until then.
+            // Written by Admin\OrderController's rejectPayment() and cancel(),
+            // both of which take an optional reason. Null when the order is
+            // live, or when it was cancelled without one being recorded.
             'cancellation_reason' => $cancelled ? $order->cancellation_reason : null,
             'payment_status' => $order->payment_status,
             'payment_label' => static::paymentLabels()[$order->payment_status] ?? $order->payment_status,

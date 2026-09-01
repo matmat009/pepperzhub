@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ProductVariant;
 use App\Support\SessionCart;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -50,6 +51,13 @@ class HandleInertiaRequests extends Middleware
              * cart page itself does the hydrating.
              */
             'cartCount' => array_sum(SessionCart::raw()),
+            /*
+             * Shared rather than passed per page: the storefront card's badge
+             * and the admin's low-stock tile both need it, and two pages each
+             * declaring their own copy is how they drifted apart in the first
+             * place. A constant, so this costs nothing.
+             */
+            'lowStockThreshold' => ProductVariant::LOW_STOCK_THRESHOLD,
         ];
     }
 }

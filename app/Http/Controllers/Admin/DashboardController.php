@@ -21,16 +21,6 @@ use Inertia\Response;
  */
 class DashboardController extends Controller
 {
-    /**
-     * Stock at or below this is surfaced as needing attention.
-     *
-     * The count is computed here from product_variants, so it cannot import the
-     * TypeScript constant; the value is passed to the page instead, which is
-     * why the frontend does not redeclare it. See the handover note about the
-     * two differing TS constants this mirrors.
-     */
-    public const LOW_STOCK_THRESHOLD = 10;
-
     /** How many pending orders the widget lists before deferring to Orders. */
     private const PENDING_LIMIT = 5;
 
@@ -43,11 +33,18 @@ class DashboardController extends Controller
                     ->whereDate('created_at', Carbon::today())
                     ->count(),
                 'revenue_this_month' => $this->revenueThisMonth(),
+                /*
+                 * The threshold is the model's, not this screen's. It used to
+                 * be a local 10 copied from the hidden Inventory page, which
+                 * meant this tile could disagree with the badge a customer was
+                 * looking at on the same product. HandleInertiaRequests shares
+                 * the same constant with the frontend, so no page prop for it
+                 * is needed here.
+                 */
                 'low_stock' => ProductVariant::query()
-                    ->where('stock', '<=', self::LOW_STOCK_THRESHOLD)
+                    ->where('stock', '<=', ProductVariant::LOW_STOCK_THRESHOLD)
                     ->count(),
             ],
-            'lowStockThreshold' => self::LOW_STOCK_THRESHOLD,
             'pendingPayments' => $this->pendingPayments(),
         ]);
     }

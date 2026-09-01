@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Http\Controllers\Admin\DashboardController;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\PaymentMethod;
@@ -164,6 +163,8 @@ class DashboardTest extends TestCase
                 ->component('admin/dashboard/Index')
                 ->has('stats')
                 ->has('pendingPayments')
+                // Shared by HandleInertiaRequests rather than passed by this
+                // controller, but present on the page either way.
                 ->has('lowStockThreshold')
             );
     }
@@ -340,7 +341,7 @@ class DashboardTest extends TestCase
 
     public function test_low_stock_uses_the_shared_threshold_and_includes_zero(): void
     {
-        $threshold = DashboardController::LOW_STOCK_THRESHOLD;
+        $threshold = ProductVariant::LOW_STOCK_THRESHOLD;
 
         $product = Product::sole();
 
@@ -354,6 +355,8 @@ class DashboardTest extends TestCase
 
         $this->assertSame(3, $props['stats']['low_stock']);
         // The page is told the threshold, so it never restates the number.
-        $this->assertSame($threshold, $props['lowStockThreshold']);
+        // Shared from the model, so the page never restates the number and
+        // cannot disagree with the storefront badge.
+        $this->assertSame($threshold, (int) $props['lowStockThreshold']);
     }
 }

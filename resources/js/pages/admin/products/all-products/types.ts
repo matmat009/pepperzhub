@@ -202,19 +202,20 @@ export const totalStock = (variants: ProductVariant[]): number =>
     variants.reduce((sum, variant) => sum + variant.stock, 0);
 
 /**
- * At or below this many units a product counts as low stock.
+ * In stock, but at or under the low-stock threshold.
  *
- * Shared so the storefront card's badge and the catalogue's "Low stock" filter
- * cannot drift apart — a card reading "Only 6 left" that the filter refuses to
- * return is worse than either behaviour on its own.
+ * The threshold is passed in rather than declared here. It lives on
+ * App\Models\ProductVariant and reaches the client as a shared Inertia prop —
+ * read it with `useLowStockThreshold()`. A literal in this file was how the
+ * storefront badge and the admin's low-stock tile came to disagree.
  */
-export const LOW_STOCK_THRESHOLD = 5;
-
-/** In stock, but at or under the low-stock threshold. */
-export const isLowStock = (variants: ProductVariant[]): boolean => {
+export const isLowStock = (
+    variants: ProductVariant[],
+    threshold: number,
+): boolean => {
     const stock = totalStock(variants);
 
-    return stock > 0 && stock <= LOW_STOCK_THRESHOLD;
+    return stock > 0 && stock <= threshold;
 };
 
 /**
