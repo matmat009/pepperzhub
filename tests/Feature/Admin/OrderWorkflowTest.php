@@ -10,7 +10,6 @@ use App\Models\ProductVariant;
 use App\Models\ShippingCourier;
 use App\Models\ShippingRegion;
 use App\Models\User;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -501,29 +500,18 @@ class OrderWorkflowTest extends TestCase
     }
 
     /**
-     * Asserts the intended boundary, and is skipped because it does not hold.
+     * The clearest proof that `verified` is doing real work.
      *
-     * The admin routes carry `verified`, but App\Models\User does not implement
-     * MustVerifyEmail — its import is commented out in the model. Laravel's
-     * EnsureEmailIsVerified only redirects when the user implements that
-     * contract, so today the middleware passes every authenticated user
-     * through and this route answers 200 to an unverified account.
-     *
-     * The one-line fix (implementing MustVerifyEmail) would immediately lock
-     * out the live operator, whose email_verified_at is null, so it needs a
-     * deliberate decision rather than being bundled into this phase. Skipped
-     * rather than deleted or inverted: the suite must not report protection it
-     * does not have, and this passes the moment the contract is added.
+     * Skipped for two phases: the admin routes carried the middleware, but User
+     * did not implement MustVerifyEmail, so EnsureEmailIsVerified let every
+     * authenticated account through and this route answered 200 to an
+     * unverified one. The contract is implemented now — shipped alongside the
+     * migration that grandfathers pre-existing accounts — so the assertion runs
+     * for real. Of everything sitting behind `verified`, a customer's bank
+     * receipt is what most needs that guard to be more than decoration.
      */
     public function test_an_unverified_admin_cannot_read_a_payment_proof(): void
     {
-        if (! app(User::class) instanceof MustVerifyEmail) {
-            $this->markTestSkipped(
-                'User does not implement MustVerifyEmail, so the `verified` middleware is inert. '
-                .'See the Phase 2.2 report — enabling it locks out the unverified live admin.',
-            );
-        }
-
         Storage::fake('local');
         $order = $this->order();
         Storage::disk('local')->put($order->payment_proof_path, 'x');
