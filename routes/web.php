@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PaymentMethodController;
@@ -11,7 +12,13 @@ use Illuminate\Support\Facades\Route;
 require __DIR__.'/storefront.php';
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+    /*
+     * Keeps the bare `dashboard` name: AppSidebar, AppHeader and several
+     * breadcrumb definitions import it from the Wayfinder barrel, and renaming
+     * it would break all of them for no gain. Only the backing controller and
+     * page changed.
+     */
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('products', [ProductController::class, 'index'])
