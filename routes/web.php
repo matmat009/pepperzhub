@@ -39,6 +39,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->whereNumber('product')
             ->name('products.inventory.adjust');
 
+        Route::post('products/bulk-archive', [ProductController::class, 'bulkArchive'])
+            ->name('products.bulk-archive');
+        Route::delete('products/bulk-destroy', [ProductController::class, 'bulkDestroy'])
+            ->name('products.bulk-destroy');
+
         Route::get('products/{product}', [ProductController::class, 'show'])
             ->whereNumber('product')
             ->name('products.show');

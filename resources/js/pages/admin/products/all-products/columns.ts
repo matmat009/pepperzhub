@@ -239,8 +239,8 @@ export const createProductColumns = (
         }),
         columnHelper.display({
             id: 'actions',
-            meta: { ...NO_ROW_CLICK, headerClass: 'w-10' },
-            header: () => null,
+            meta: { ...NO_ROW_CLICK, headerClass: 'text-right' },
+            header: 'Action',
             cell: ({ row }) =>
                 h(RowActions, {
                     product: row.original,

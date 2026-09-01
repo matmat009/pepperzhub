@@ -27,8 +27,9 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Features } from '@/components/features';
-import { create, index, show } from '@/routes/admin/products';
+import { bulkArchive, create, index, show } from '@/routes/admin/products';
 import { createProductColumns } from './columns';
+import BulkDeleteDialog from './partials/BulkDeleteDialog.vue';
 import DeleteDialog from './partials/DeleteDialog.vue';
 import FormatBreakdown from './partials/FormatBreakdown.vue';
 import { PRODUCT_STATUSES } from './types';
@@ -54,12 +55,53 @@ type ProductTable = Table<Features, Product>;
 const rowSelection = ref<RowSelectionState>({});
 const deleteTarget = ref<Product | null>(null);
 const deleteOpen = ref(false);
+const bulkDeleteIds = ref<number[]>([]);
+const bulkDeleteOpen = ref(false);
+const bulkArchiving = ref(false);
 
 const goToProduct = (product: Product) => router.visit(show(product.id).url);
 
 const requestDelete = (product: Product) => {
     deleteTarget.value = product;
     deleteOpen.value = true;
+};
+
+const selectedIds = (products: Product[]) =>
+    products.map((product) => product.id);
+
+const archiveSelected = (products: Product[]) => {
+    const ids = selectedIds(products);
+
+    if (!ids.length) {
+        return;
+    }
+
+    router.post(
+        bulkArchive().url,
+        { ids },
+        {
+            preserveScroll: true,
+            onStart: () => {
+                bulkArchiving.value = true;
+            },
+            onSuccess: () => {
+                rowSelection.value = {};
+            },
+            onFinish: () => {
+                bulkArchiving.value = false;
+            },
+        },
+    );
+};
+
+const requestBulkDelete = (products: Product[]) => {
+    bulkDeleteIds.value = selectedIds(products);
+    bulkDeleteOpen.value = bulkDeleteIds.value.length > 0;
+};
+
+const bulkDeleted = () => {
+    rowSelection.value = {};
+    bulkDeleteIds.value = [];
 };
 
 /** Only products with more than one format have a breakdown worth revealing. */
@@ -310,7 +352,13 @@ const hideableColumns = (table: ProductTable) =>
                             orientation="vertical"
                             class="data-[orientation=vertical]:h-5"
                         />
-                        <Button variant="ghost" size="sm" class="h-8">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            class="h-8"
+                            :disabled="bulkArchiving"
+                            @click="archiveSelected(selected)"
+                        >
                             <Archive />
                             Archive
                         </Button>
@@ -318,6 +366,7 @@ const hideableColumns = (table: ProductTable) =>
                             variant="ghost"
                             size="sm"
                             class="h-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            @click="requestBulkDelete(selected)"
                         >
                             <Trash2 />
                             Delete
@@ -349,4 +398,9 @@ const hideableColumns = (table: ProductTable) =>
     </div>
 
     <DeleteDialog v-model:open="deleteOpen" :product="deleteTarget" />
+    <BulkDeleteDialog
+        v-model:open="bulkDeleteOpen"
+        :ids="bulkDeleteIds"
+        @deleted="bulkDeleted"
+    />
 </template>

@@ -4,6 +4,7 @@ import {
     CreditCard,
     LayoutDashboard,
     Package,
+    Plus,
     ShoppingCart,
     Tags,
     Truck,
@@ -23,7 +24,10 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard, home } from '@/routes';
-import { index as productsIndex } from '@/routes/admin/products';
+import {
+    create as createProduct,
+    index as productsIndex,
+} from '@/routes/admin/products';
 import { index as ordersIndex } from '@/routes/admin/orders';
 import { index as paymentMethodsIndex } from '@/routes/admin/payment-methods';
 import { index as shippingCouriersIndex } from '@/routes/admin/shipping-couriers';
@@ -59,6 +63,7 @@ const navEcommerce: NavMainItem[] = [
             // No icon was specified for All Products; it reuses the Products
             // icon so the three children stay aligned.
             { title: 'All Products', icon: Package, url: productsIndex() },
+            { title: 'Add Product', icon: Plus, url: createProduct() },
             { title: 'Categories', icon: Tags, url: categoriesIndex() },
             /*
              * Inventory is hidden, not deleted. Its screen still renders

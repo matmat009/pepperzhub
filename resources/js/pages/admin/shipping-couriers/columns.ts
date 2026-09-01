@@ -112,6 +112,9 @@ export const createCourierColumns = (
         }),
         columnHelper.display({
             id: 'actions',
+            // Clicking Edit or Delete must not also open the row's view dialog.
+            meta: { noRowClick: true, headerClass: 'text-right' },
+            header: 'Action',
             cell: ({ row }) =>
                 h(RowActions, {
                     courier: row.original,

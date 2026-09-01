@@ -8,10 +8,13 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductTechnicalDetail;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
 
 class ProductController extends Controller
 {
@@ -169,6 +172,81 @@ class ProductController extends Controller
         $this->toast('Product deleted.');
 
         return to_route('admin.products.index');
+    }
+
+    public function bulkArchive(Request $request): RedirectResponse
+    {
+        $ids = $this->validatedProductIds($request);
+
+        // A query-builder update changes exactly the requested field. In
+        // particular, it does not rewrite names, descriptions or timestamps.
+        DB::table('products')->whereIn('id', $ids)->update(['status' => 'archived']);
+
+        $count = count($ids);
+        $this->toast("{$count} ".str('product')->plural($count).' archived.');
+
+        return back();
+    }
+
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $ids = $this->validatedProductIds($request);
+
+        /** @var array<string, string> $deletedFiles */
+        $deletedFiles = [];
+        $disk = Storage::disk('public');
+
+        try {
+            DB::transaction(function () use ($ids, $disk, &$deletedFiles) {
+                $products = Product::query()
+                    ->with('images')
+                    ->whereKey($ids)
+                    ->lockForUpdate()
+                    ->get()
+                    ->keyBy('id');
+
+                // Preserve request order so the operation is deterministic and
+                // every selected row follows the single-delete sequence.
+                foreach ($ids as $id) {
+                    $product = $products->get($id);
+
+                    foreach ($product->images as $image) {
+                        if ($disk->exists($image->path)) {
+                            $deletedFiles[$image->path] = $disk->get($image->path);
+                        }
+
+                        $disk->delete($image->path);
+                    }
+
+                    $product->delete();
+                }
+            });
+        } catch (Throwable $exception) {
+            // Database rollback cannot restore filesystem writes. Put back any
+            // files removed before the failure so the surviving rows remain
+            // completely intact as well.
+            foreach ($deletedFiles as $path => $contents) {
+                $disk->put($path, $contents);
+            }
+
+            throw $exception;
+        }
+
+        $count = count($ids);
+        $this->toast("{$count} ".str('product')->plural($count).' deleted.');
+
+        return back();
+    }
+
+    /** @return array<int, int> */
+    private function validatedProductIds(Request $request): array
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['required', 'integer', 'distinct', Rule::exists('products', 'id')],
+        ]);
+
+        return array_map('intval', $validated['ids']);
     }
 
     /**

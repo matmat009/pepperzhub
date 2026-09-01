@@ -11,6 +11,7 @@ import { index } from '@/routes/admin/shipping-couriers';
 import { createCourierColumns } from './columns';
 import CourierDialog from './partials/CourierDialog.vue';
 import DeleteDialog from './partials/DeleteDialog.vue';
+import ViewDialog from './partials/ViewDialog.vue';
 import type { ShippingCourier } from './types';
 
 defineOptions({
@@ -34,6 +35,14 @@ const editTarget = ref<ShippingCourier | null>(null);
 const formOpen = ref(false);
 const deleteTarget = ref<ShippingCourier | null>(null);
 const deleteOpen = ref(false);
+const viewTarget = ref<ShippingCourier | null>(null);
+const viewOpen = ref(false);
+
+/** Row click and Enter/Space both land here; see DataTable's rowClickable. */
+const openView = (courier: ShippingCourier) => {
+    viewTarget.value = courier;
+    viewOpen.value = true;
+};
 
 const openCreate = () => {
     editTarget.value = null;
@@ -84,7 +93,9 @@ const setSearch = (table: CourierTable, value: string | number) => {
         <DataTable
             :data="couriers"
             :columns="columns"
+            row-clickable
             empty-message="No couriers match this search."
+            @row-click="openView"
         >
             <template #toolbar="{ table }">
                 <div class="flex flex-wrap items-center gap-2">
@@ -107,6 +118,11 @@ const setSearch = (table: CourierTable, value: string | number) => {
         </DataTable>
     </div>
 
+    <ViewDialog
+        v-model:open="viewOpen"
+        :courier="viewTarget"
+        @edit="openEdit"
+    />
     <CourierDialog v-model:open="formOpen" :courier="editTarget" />
     <DeleteDialog v-model:open="deleteOpen" :courier="deleteTarget" />
 </template>

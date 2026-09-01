@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { MoreHorizontal, Pencil, Trash2 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import type { ShippingCourier } from '../types';
 
+/**
+ * Always-visible row actions, no dropdown.
+ *
+ * The row itself opens the read-only view, so hiding Edit and Delete behind a
+ * menu would put three different intents at three different depths. They emit
+ * exactly what the dropdown emitted; only the trigger changed.
+ *
+ * The actions column is marked `noRowClick`, so pressing either of these never
+ * also opens the view dialog.
+ */
 defineProps<{
     courier: ShippingCourier;
 }>();
@@ -21,30 +23,22 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <DropdownMenu>
-        <DropdownMenuTrigger as-child>
-            <Button
-                variant="ghost"
-                size="icon"
-                class="size-8 text-muted-foreground data-[state=open]:bg-accent data-[state=open]:text-foreground"
-            >
-                <MoreHorizontal class="size-4" />
-                <span class="sr-only">Open menu for {{ courier.name }}</span>
-            </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" class="w-36">
-            <DropdownMenuItem @select="emit('edit', courier)">
-                <Pencil />
-                Edit
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-                variant="destructive"
-                @select="emit('remove', courier)"
-            >
-                <Trash2 />
-                Delete
-            </DropdownMenuItem>
-        </DropdownMenuContent>
-    </DropdownMenu>
+    <div class="flex items-center justify-end gap-1">
+        <Button
+            variant="ghost"
+            size="sm"
+            class="h-8 px-2 text-muted-foreground hover:text-foreground"
+            @click="emit('edit', courier)"
+        >
+            Edit
+        </Button>
+        <Button
+            variant="ghost"
+            size="sm"
+            class="h-8 px-2 text-muted-foreground hover:text-destructive"
+            @click="emit('remove', courier)"
+        >
+            Delete
+        </Button>
+    </div>
 </template>

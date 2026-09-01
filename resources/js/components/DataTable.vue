@@ -48,6 +48,10 @@ import type { Features } from './features';
  * Column `meta` options:
  *  - `noRowClick` opts a cell out of the row-click target (checkbox / actions)
  *  - `headerClass` aligns or sizes a header cell
+ *
+ * `rowClickable` makes each row activate on click, Enter or Space, emitting
+ * `rowClick`. It is off by default, so a table only becomes interactive by
+ * opting in.
  */
 type ColumnMeta = {
     noRowClick?: boolean;
@@ -121,6 +125,34 @@ const onCellClick = (cell: Cell<Features, TData, unknown>, row: TData) => {
     if (!props.rowClickable || metaOf(cell.column.columnDef).noRowClick) {
         return;
     }
+
+    emit('rowClick', row);
+};
+
+/**
+ * Keyboard equivalent of the row click.
+ *
+ * The click handler is per-cell, because `noRowClick` opts individual cells
+ * out. Focus cannot work that way — one tab stop per cell would make a
+ * five-column table five identical stops per row — so the keyboard affordance
+ * sits on the row instead, and the target check below does the job `noRowClick`
+ * does for the mouse: when focus is on a control inside a cell (the Edit or
+ * Delete button in the actions column), Enter belongs to that button and must
+ * not also open the row.
+ *
+ * No-ops unless `rowClickable`, so tables that have not opted in are unchanged.
+ */
+const onRowKeydown = (event: KeyboardEvent, row: TData) => {
+    if (!props.rowClickable || (event.key !== 'Enter' && event.key !== ' ')) {
+        return;
+    }
+
+    if (event.target !== event.currentTarget) {
+        return;
+    }
+
+    // Space would otherwise scroll the page.
+    event.preventDefault();
 
     emit('rowClick', row);
 };
@@ -222,10 +254,16 @@ defineExpose({ table });
                                     :data-state="
                                         row.getIsSelected() && 'selected'
                                     "
+                                    :role="rowClickable ? 'button' : undefined"
+                                    :tabindex="rowClickable ? 0 : undefined"
                                     :class="[
                                         'transition-colors',
-                                        rowClickable && 'cursor-pointer',
+                                        rowClickable &&
+                                            'cursor-pointer focus-visible:bg-muted/50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
                                     ]"
+                                    @keydown="
+                                        onRowKeydown($event, row.original)
+                                    "
                                 >
                                     <TableCell
                                         v-for="cell in row.getVisibleCells()"

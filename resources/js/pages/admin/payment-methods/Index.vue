@@ -11,6 +11,7 @@ import { index } from '@/routes/admin/payment-methods';
 import { createPaymentMethodColumns } from './columns';
 import DeleteDialog from './partials/DeleteDialog.vue';
 import PaymentMethodDialog from './partials/PaymentMethodDialog.vue';
+import ViewDialog from './partials/ViewDialog.vue';
 import type { PaymentMethod } from './types';
 
 defineOptions({
@@ -34,6 +35,14 @@ const editTarget = ref<PaymentMethod | null>(null);
 const formOpen = ref(false);
 const deleteTarget = ref<PaymentMethod | null>(null);
 const deleteOpen = ref(false);
+const viewTarget = ref<PaymentMethod | null>(null);
+const viewOpen = ref(false);
+
+/** Row click and Enter/Space both land here; see DataTable's rowClickable. */
+const openView = (method: PaymentMethod) => {
+    viewTarget.value = method;
+    viewOpen.value = true;
+};
 
 const openCreate = () => {
     editTarget.value = null;
@@ -84,7 +93,9 @@ const setSearch = (table: PaymentMethodTable, value: string | number) => {
         <DataTable
             :data="paymentMethods"
             :columns="columns"
+            row-clickable
             empty-message="No payment methods match this search."
+            @row-click="openView"
         >
             <template #toolbar="{ table }">
                 <div class="flex flex-wrap items-center gap-2">
@@ -112,6 +123,7 @@ const setSearch = (table: PaymentMethodTable, value: string | number) => {
         </DataTable>
     </div>
 
+    <ViewDialog v-model:open="viewOpen" :method="viewTarget" @edit="openEdit" />
     <PaymentMethodDialog v-model:open="formOpen" :method="editTarget" />
     <DeleteDialog v-model:open="deleteOpen" :method="deleteTarget" />
 </template>
