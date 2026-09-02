@@ -107,31 +107,46 @@ unit — an order row whose proof file is missing cannot be verified.
 
 ## 4. Seeding
 
-`DatabaseSeeder` is split by what running it against real data would mean.
+Payment methods, couriers, and shipping regions are bootstrap data only. After
+their initial creation they are owned by Admin, not deployment automation.
 
-| Seeder | Production | What it does |
-|---|---|---|
-| `PaymentMethodSeeder` | **Safe, and needed** | Creates the payment method Checkout offers. An empty `payment_methods` table means a customer reaches checkout with nothing to pay to. |
-| `ShippingCourierSeeder` | **Safe, and needed** | Creates the courier and its delivery options. Empty ⇒ no shipping choice at checkout. |
-| `CatalogSeeder` | **No — dev only** | Fake demo products, categories and images. |
+### First production or staging bootstrap
+
+On a fresh, empty database, run migrations and then the explicit reference-data
+bootstrap once:
+
+```bash
+php artisan migrate --force
+php artisan db:seed --class=ReferenceDataBootstrapSeeder --force
+```
+
+`ReferenceDataBootstrapSeeder` creates the payment method, courier, and delivery
+options Checkout requires. After it runs, review and configure all payment
+methods, couriers, and regions through Admin before accepting orders.
+
+This seeder is intentionally not called by `DatabaseSeeder`. Its child seeders
+use `firstOrCreate` keyed by mutable names. They do not overwrite a row whose
+name still matches, but rerunning them after an admin renames or deletes a
+method, courier, or region can recreate the original active default.
+
+### Subsequent deployments
+
+Run migrations only:
+
+```bash
+php artisan migrate --force
+```
+
+Do **not** include either of these commands in normal deployment automation:
 
 ```bash
 php artisan db:seed --force
+php artisan migrate --seed
 ```
 
-With `APP_ENV=production` this runs the two reference seeders **only** — the
-demo catalogue is gated behind a non-production check inside `DatabaseSeeder`.
-In development the same command also seeds the demo catalogue.
-
-Both reference seeders use `firstOrCreate`, so re-running is a no-op rather than
-a duplicate — safe to leave in a redeploy script.
-
-`CatalogSeeder` is **not** re-runnable: a second run fails on the
-`categories.slug` unique index. That is fine for demo data seeded once into a
-fresh development database, and is a further reason it stays out of the
-production path. It can still be run deliberately in a production-flagged
-environment with `php artisan db:seed --class=CatalogSeeder --force` — the gate
-exists to stop the accident, not the intent.
+The default `DatabaseSeeder` contains only the non-production demo catalogue;
+it contains no production or staging reference data. `CatalogSeeder` is not
+re-runnable and remains development-only.
 
 **No user is seeded.** There is no self-registration — `Features::registration()`
 is disabled in `config/fortify.php` — so accounts are provisioned by hand:
