@@ -30,10 +30,22 @@ return [
 
     'disks' => [
 
+        /*
+         * Private disk. Holds customers' payment proofs and nothing else.
+         *
+         * `serve` is off deliberately. Turning it on registers an unauthenticated
+         * GET /storage/{path} and PUT /storage/{path} pair over this disk, gated
+         * only by a signed URL — no session, no auth, no CSRF. Nothing in this
+         * app generates such a URL (every ->url() call is on the `public` disk),
+         * and the admin payment-proof route streams these files through its own
+         * auth/verified controller action instead. So the route added no
+         * capability the app uses, while offering arbitrary read *and write*
+         * over the most sensitive data here to anyone holding APP_KEY.
+         */
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],
