@@ -19,9 +19,9 @@ export default defineConfig({
                     weights: [400, 500, 600],
                     styles: ['normal', 'italic'],
                 }),
-                // Admin: Space Grotesk throughout, applied via `font-sans`.
+                // Admin: Geist throughout, applied via `font-sans`.
                 // 700 is loaded for table headers and primary buttons.
-                bunny('Space Grotesk', {
+                bunny('Geist', {
                     weights: [400, 500, 600, 700],
                 }),
             ],
