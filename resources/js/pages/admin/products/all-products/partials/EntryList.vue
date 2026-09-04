@@ -22,13 +22,17 @@ const props = withDefaults(
         valuePlaceholder: string;
         idPrefix: string;
         readonly?: boolean;
+        blueOutline?: boolean;
     }>(),
-    { readonly: false },
+    { readonly: false, blueOutline: false },
 );
 
 /** Matches the readonly treatment used across the rest of the form. */
 const inert =
     'disabled:cursor-default disabled:opacity-100 disabled:bg-muted/40 disabled:text-foreground';
+
+const blueOutlineButton =
+    'border-primary/70 text-primary shadow-xs hover:border-primary hover:bg-primary/10 hover:text-primary dark:border-primary/75 dark:text-primary dark:hover:bg-primary/15 dark:hover:text-primary';
 
 const listRef = ref<HTMLElement | null>(null);
 
@@ -118,7 +122,7 @@ const update = (id: string, key: 'label' | 'value', next: string) => {
             type="button"
             variant="outline"
             size="sm"
-            class="mt-1 w-fit"
+            :class="['mt-1 w-fit', blueOutline && blueOutlineButton]"
             @click="addEntry"
         >
             <Plus />

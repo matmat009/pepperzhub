@@ -29,6 +29,9 @@ defineProps<{
 
 const form = useForm<ProductFormFields>(emptyProductForm());
 
+const blueOutlineButton =
+    'border-primary/70 text-primary shadow-xs hover:border-primary hover:bg-primary/10 hover:text-primary dark:border-primary/75 dark:text-primary dark:hover:bg-primary/15 dark:hover:text-primary';
+
 /** Abandons the draft and returns to the list. Nothing is persisted yet. */
 const discard = () => router.visit(index().url);
 
@@ -42,10 +45,15 @@ const submit = () => {
 <template>
     <Head title="New product" />
 
-    <div class="flex flex-1 flex-col gap-6 px-4 py-6 lg:px-6">
+    <div class="flex flex-1 flex-col gap-5 px-4 py-6 lg:px-6">
         <header class="flex items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <Button as-child variant="outline" size="icon" class="shrink-0">
+                <Button
+                    as-child
+                    variant="outline"
+                    size="icon"
+                    :class="['shrink-0', blueOutlineButton]"
+                >
                     <Link :href="index()">
                         <ChevronLeft class="size-4" />
                         <span class="sr-only">Back to products</span>
@@ -59,6 +67,7 @@ const submit = () => {
             <div class="flex items-center gap-2">
                 <Button
                     variant="outline"
+                    :class="blueOutlineButton"
                     :disabled="form.processing"
                     @click="discard"
                 >
@@ -80,6 +89,7 @@ const submit = () => {
             :model-value="form"
             :categories="categories"
             :errors="form.errors as Record<string, string>"
+            create-style
         />
     </div>
 </template>

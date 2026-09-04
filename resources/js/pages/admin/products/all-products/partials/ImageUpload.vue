@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ImageIcon, Plus, RefreshCw, X } from '@lucide/vue';
+import { Check, ImageIcon, Plus, RefreshCw, Trash2, X } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { Button } from '@/components/ui/button';
 import { newLocalId } from '../types';
@@ -16,15 +16,25 @@ const images = defineModel<ProductImage[]>({ required: true });
 const props = withDefaults(
     defineProps<{
         readonly?: boolean;
+        blueOutline?: boolean;
     }>(),
-    { readonly: false },
+    { readonly: false, blueOutline: false },
 );
 
 const activeIndex = ref(0);
 const dragging = ref(false);
 
+const blueOutlineButton =
+    'border-primary/70 text-primary shadow-xs hover:border-primary hover:bg-primary/10 hover:text-primary dark:border-primary/75 dark:text-primary dark:hover:bg-primary/15 dark:hover:text-primary';
+
 const active = computed<ProductImage | undefined>(
     () => images.value[activeIndex.value] ?? images.value[0],
+);
+
+const primaryImage = computed<ProductImage | undefined>(() => images.value[0]);
+const additionalImages = computed(() => images.value.slice(1));
+const canAddImage = computed(
+    () => !props.blueOutline || images.value.length < 10,
 );
 
 const browseInput = ref<HTMLInputElement | null>(null);
@@ -43,7 +53,14 @@ const addFiles = (files: FileList | null) => {
         return;
     }
 
-    const added = Array.from(files).map(toImage);
+    const available = props.blueOutline
+        ? Math.max(0, 10 - images.value.length)
+        : files.length;
+    const added = Array.from(files).slice(0, available).map(toImage);
+
+    if (!added.length) {
+        return;
+    }
 
     images.value = [...images.value, ...added];
     activeIndex.value = images.value.length - added.length;
@@ -56,7 +73,7 @@ const replaceActive = (files: FileList | null) => {
 
     const next = [...images.value];
 
-    next[activeIndex.value] = toImage(files[0]);
+    next[props.blueOutline ? 0 : activeIndex.value] = toImage(files[0]);
     images.value = next;
 };
 
@@ -79,7 +96,148 @@ const onDrop = (event: DragEvent) => {
 </script>
 
 <template>
-    <div class="space-y-4">
+    <div v-if="blueOutline" class="space-y-4">
+        <div
+            :class="[
+                'relative flex aspect-square items-center justify-center overflow-hidden rounded-lg border bg-background transition-colors duration-200 ease-out',
+                primaryImage
+                    ? 'border-2 border-primary'
+                    : 'border-dashed border-border',
+                dragging && !readonly && 'border-primary bg-primary/5',
+            ]"
+            @dragover.prevent="!readonly && (dragging = true)"
+            @dragleave.prevent="dragging = false"
+            @drop.prevent="onDrop"
+        >
+            <img
+                v-if="primaryImage"
+                :src="primaryImage.url"
+                alt="Primary product image"
+                class="size-full bg-muted/10 object-contain"
+            />
+            <div
+                v-else
+                class="flex flex-col items-center gap-2 px-6 text-center"
+            >
+                <ImageIcon class="size-6 text-muted-foreground" />
+                <p v-if="readonly" class="text-sm text-muted-foreground">
+                    No image for this product
+                </p>
+                <p v-else class="text-sm text-muted-foreground">
+                    Drop an image here, or
+                    <button
+                        type="button"
+                        class="font-medium text-primary hover:underline"
+                        @click="browseInput?.click()"
+                    >
+                        browse
+                    </button>
+                </p>
+            </div>
+
+            <span
+                v-if="primaryImage"
+                class="absolute top-2 right-2 grid size-5 place-items-center rounded-full bg-primary text-primary-foreground shadow-sm"
+                aria-label="Primary image selected"
+            >
+                <Check class="size-3.5" />
+            </span>
+        </div>
+
+        <div v-if="!readonly" class="flex flex-wrap items-center gap-2">
+            <Button
+                v-if="primaryImage"
+                type="button"
+                variant="outline"
+                size="sm"
+                :class="blueOutlineButton"
+                @click="replaceInput?.click()"
+            >
+                <RefreshCw />
+                Replace
+            </Button>
+            <Button
+                v-else
+                type="button"
+                variant="outline"
+                size="sm"
+                :class="blueOutlineButton"
+                @click="browseInput?.click()"
+            >
+                <ImageIcon />
+                Browse
+            </Button>
+            <Button
+                v-if="primaryImage"
+                type="button"
+                variant="outline"
+                size="sm"
+                class="border-destructive/40 text-destructive shadow-xs hover:border-destructive hover:bg-destructive/10 hover:text-destructive"
+                @click="removeAt(0)"
+            >
+                <Trash2 />
+                Remove
+            </Button>
+        </div>
+
+        <p class="text-xs text-muted-foreground">
+            Recommended: 1000 × 1000px, JPG, PNG, WEBP, or SVG (max 5MB).
+        </p>
+
+        <div class="space-y-3 border-t pt-4">
+            <div class="flex items-baseline gap-2">
+                <p class="text-sm font-medium">Additional Images</p>
+                <span class="text-xs text-muted-foreground">
+                    ({{ additionalImages.length }}/9)
+                </span>
+            </div>
+
+            <TransitionGroup
+                tag="div"
+                class="grid grid-cols-3 gap-3"
+                enter-active-class="transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity"
+                enter-from-class="scale-95 opacity-0 motion-reduce:scale-100"
+                leave-active-class="absolute transition-[opacity,transform] duration-150 ease-out motion-reduce:transition-opacity"
+                leave-to-class="scale-95 opacity-0 motion-reduce:scale-100"
+            >
+                <div
+                    v-for="(image, index) in additionalImages"
+                    :key="image.id"
+                    class="group relative aspect-square overflow-hidden rounded-lg border bg-background"
+                >
+                    <img
+                        :src="image.url"
+                        :alt="`Additional product image ${index + 1}`"
+                        class="size-full object-contain"
+                    />
+                    <button
+                        v-if="!readonly"
+                        type="button"
+                        class="absolute top-1.5 right-1.5 grid size-5 place-items-center rounded-full border bg-background/95 text-muted-foreground shadow-xs transition-colors hover:border-destructive/40 hover:text-destructive"
+                        @click="removeAt(index + 1)"
+                    >
+                        <X class="size-3" />
+                        <span class="sr-only">
+                            Remove additional image {{ index + 1 }}
+                        </span>
+                    </button>
+                </div>
+
+                <button
+                    v-if="!readonly && canAddImage"
+                    key="add-tile"
+                    type="button"
+                    class="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-primary/55 text-primary transition-colors duration-200 ease-out hover:border-primary hover:bg-primary/10 hover:text-primary"
+                    @click="browseInput?.click()"
+                >
+                    <Plus class="size-5" />
+                    <span class="text-xs font-medium">Add Image</span>
+                </button>
+            </TransitionGroup>
+        </div>
+    </div>
+
+    <div v-else class="space-y-4">
         <div class="space-y-2">
             <p class="text-sm font-medium">Product Image</p>
 
@@ -189,21 +347,21 @@ const onDrop = (event: DragEvent) => {
                 <span class="text-xs font-medium">Add Image</span>
             </button>
         </TransitionGroup>
-
-        <input
-            ref="browseInput"
-            type="file"
-            accept="image/*"
-            multiple
-            class="sr-only"
-            @change="addFiles(($event.target as HTMLInputElement).files)"
-        />
-        <input
-            ref="replaceInput"
-            type="file"
-            accept="image/*"
-            class="sr-only"
-            @change="replaceActive(($event.target as HTMLInputElement).files)"
-        />
     </div>
+
+    <input
+        ref="browseInput"
+        type="file"
+        accept="image/*"
+        multiple
+        class="sr-only"
+        @change="addFiles(($event.target as HTMLInputElement).files)"
+    />
+    <input
+        ref="replaceInput"
+        type="file"
+        accept="image/*"
+        class="sr-only"
+        @change="replaceActive(($event.target as HTMLInputElement).files)"
+    />
 </template>

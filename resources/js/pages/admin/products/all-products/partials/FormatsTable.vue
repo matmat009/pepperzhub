@@ -22,8 +22,9 @@ withDefaults(
     defineProps<{
         variants: ProductVariant[];
         readonly?: boolean;
+        compact?: boolean;
     }>(),
-    { readonly: false },
+    { readonly: false, compact: false },
 );
 
 const emit = defineEmits<{
@@ -33,28 +34,45 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <div class="overflow-hidden rounded-lg border">
+    <div
+        :class="[
+            'overflow-hidden border',
+            compact ? 'rounded-md' : 'rounded-lg',
+        ]"
+    >
         <Table>
             <TableHeader class="bg-muted/40">
                 <TableRow class="hover:bg-transparent">
                     <TableHead
-                        class="h-10 text-xs font-medium text-muted-foreground"
+                        :class="[
+                            'text-xs font-medium text-muted-foreground',
+                            compact ? 'h-9' : 'h-10',
+                        ]"
                     >
                         Format
                     </TableHead>
                     <TableHead
-                        class="h-10 text-right text-xs font-medium text-muted-foreground"
+                        :class="[
+                            'text-right text-xs font-medium text-muted-foreground',
+                            compact ? 'h-9' : 'h-10',
+                        ]"
                     >
                         Price
                     </TableHead>
                     <TableHead
-                        class="h-10 text-right text-xs font-medium text-muted-foreground"
+                        :class="[
+                            'text-right text-xs font-medium text-muted-foreground',
+                            compact ? 'h-9' : 'h-10',
+                        ]"
                     >
                         Stock
                     </TableHead>
                     <TableHead
                         v-if="!readonly"
-                        class="h-10 w-20 text-xs font-medium text-muted-foreground"
+                        :class="[
+                            'w-20 text-xs font-medium text-muted-foreground',
+                            compact ? 'h-9' : 'h-10',
+                        ]"
                     >
                         <span class="sr-only">Actions</span>
                     </TableHead>
@@ -69,7 +87,7 @@ const emit = defineEmits<{
                 leave-to-class="-translate-y-1 opacity-0 motion-reduce:translate-y-0"
             >
                 <TableRow v-for="variant in variants" :key="variant.id">
-                    <TableCell class="py-3">
+                    <TableCell :class="compact ? 'py-2.5' : 'py-3'">
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="text-sm font-medium">
                                 {{ variant.label }}
@@ -95,12 +113,18 @@ const emit = defineEmits<{
                             included
                         </p>
                     </TableCell>
-                    <TableCell class="py-3 text-right font-medium tabular-nums">
+                    <TableCell
+                        :class="[
+                            'text-right font-medium tabular-nums',
+                            compact ? 'py-2.5' : 'py-3',
+                        ]"
+                    >
                         {{ formatPrice(variant.price) }}
                     </TableCell>
                     <TableCell
                         :class="[
-                            'py-3 text-right tabular-nums',
+                            compact ? 'py-2.5' : 'py-3',
+                            'text-right tabular-nums',
                             variant.stock === 0
                                 ? 'font-medium text-red-600 dark:text-red-400'
                                 : '',
@@ -108,7 +132,10 @@ const emit = defineEmits<{
                     >
                         {{ variant.stock }}
                     </TableCell>
-                    <TableCell v-if="!readonly" class="py-3">
+                    <TableCell
+                        v-if="!readonly"
+                        :class="compact ? 'py-2.5' : 'py-3'"
+                    >
                         <div class="flex items-center justify-end gap-1">
                             <Button
                                 type="button"
@@ -141,7 +168,10 @@ const emit = defineEmits<{
                 <TableRow v-if="!variants.length" key="empty">
                     <TableCell
                         :colspan="readonly ? 3 : 4"
-                        class="h-24 text-center text-sm text-muted-foreground"
+                        :class="[
+                            'text-center text-sm text-muted-foreground',
+                            compact ? 'h-14' : 'h-24',
+                        ]"
                     >
                         No formats yet — add the sizes this product ships in.
                     </TableCell>
