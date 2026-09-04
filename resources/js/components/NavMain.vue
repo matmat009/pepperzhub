@@ -51,6 +51,15 @@ const isActive = (url?: Href) => (url ? isCurrentUrl(url) : false);
 
 const hasActiveChild = (item: NavMainItem) =>
     item.items?.some((sub) => isActive(sub.url)) ?? false;
+
+/*
+ * Nav item weight: 500 inactive, 600 active. The vendored defaults are 400
+ * inactive, and sub-items carry no weight rule at all — so a selected
+ * sub-item was distinguished only by its pill, never by weight. Set here
+ * rather than in components/ui/sidebar so shadcn stays regenerable; `cn()`
+ * drops the base `data-[active=true]:font-medium` in favour of this.
+ */
+const navItemWeight = 'font-medium data-[active=true]:font-semibold';
 </script>
 
 <template>
@@ -70,7 +79,10 @@ const hasActiveChild = (item: NavMainItem) =>
                     >
                         <SidebarMenuItem>
                             <CollapsibleTrigger as-child>
-                                <SidebarMenuButton :tooltip="item.title">
+                                <SidebarMenuButton
+                                    :tooltip="item.title"
+                                    :class="navItemWeight"
+                                >
                                     <component
                                         :is="item.icon"
                                         v-if="item.icon"
@@ -90,6 +102,7 @@ const hasActiveChild = (item: NavMainItem) =>
                                         <SidebarMenuSubButton
                                             as-child
                                             :is-active="isActive(sub.url)"
+                                            :class="navItemWeight"
                                         >
                                             <Link
                                                 v-if="sub.url"
@@ -121,6 +134,7 @@ const hasActiveChild = (item: NavMainItem) =>
                             as-child
                             :tooltip="item.title"
                             :is-active="isActive(item.url)"
+                            :class="navItemWeight"
                         >
                             <Link v-if="item.url" :href="item.url">
                                 <component :is="item.icon" v-if="item.icon" />

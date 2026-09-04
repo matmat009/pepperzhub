@@ -22,6 +22,9 @@ defineProps<{
 }>();
 
 const { isCurrentOrParentUrl } = useCurrentUrl();
+
+// Matches NavMain: 500 inactive, 600 active. See the note there.
+const navItemWeight = 'font-medium data-[active=true]:font-semibold';
 </script>
 
 <template>
@@ -32,6 +35,7 @@ const { isCurrentOrParentUrl } = useCurrentUrl();
                     <SidebarMenuButton
                         as-child
                         :is-active="isCurrentOrParentUrl(item.url)"
+                        :class="navItemWeight"
                     >
                         <Link :href="item.url">
                             <component :is="item.icon" v-if="item.icon" />
