@@ -101,7 +101,9 @@ const onDrop = (event: DragEvent) => {
             :class="[
                 'relative flex aspect-square items-center justify-center overflow-hidden rounded-lg border bg-background transition-colors duration-200 ease-out',
                 primaryImage
-                    ? 'border-2 border-primary'
+                    ? readonly
+                        ? 'border-2 border-border'
+                        : 'border-2 border-primary'
                     : 'border-dashed border-border',
                 dragging && !readonly && 'border-primary bg-primary/5',
             ]"
@@ -180,7 +182,7 @@ const onDrop = (event: DragEvent) => {
             </Button>
         </div>
 
-        <p class="text-xs text-muted-foreground">
+        <p v-if="!readonly" class="text-xs text-muted-foreground">
             Recommended: 1000 × 1000px, JPG, PNG, WEBP, or SVG (max 5MB).
         </p>
 

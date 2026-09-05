@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Check, FlaskConical, QrCode, Upload } from '@lucide/vue';
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import type { CartLine } from '@/composables/useStorefrontCart';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
 import { home } from '@/routes';
@@ -70,6 +70,7 @@ const form = useForm<{
 
 const courierId = ref<number | null>(null);
 const proofName = ref('');
+const proofPreviewUrl = ref<string | null>(null);
 
 const selectedCourier = computed(() =>
     props.couriers.find((courier) => courier.id === courierId.value),
@@ -140,9 +141,23 @@ const onProof = (event: Event) => {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0] ?? null;
 
+    if (proofPreviewUrl.value) {
+        URL.revokeObjectURL(proofPreviewUrl.value);
+    }
+
     form.payment_proof = file;
     proofName.value = file?.name ?? '';
+    proofPreviewUrl.value =
+        file && file.type.startsWith('image/')
+            ? URL.createObjectURL(file)
+            : null;
 };
+
+onBeforeUnmount(() => {
+    if (proofPreviewUrl.value) {
+        URL.revokeObjectURL(proofPreviewUrl.value);
+    }
+});
 
 /**
  * A real submit now. Inertia switches to multipart automatically because the
@@ -435,7 +450,14 @@ const fieldClass =
                                 : 'border-sf-line-strong text-sf-subtle hover:border-sf-primary hover:text-sf-primary'
                         "
                     >
+                        <img
+                            v-if="proofPreviewUrl"
+                            :src="proofPreviewUrl"
+                            alt="Payment proof preview"
+                            class="size-20 rounded-lg border border-sf-success/40 object-cover"
+                        />
                         <component
+                            v-else
                             :is="proofName ? Check : Upload"
                             class="size-8"
                         />

@@ -136,6 +136,7 @@ const submit = () => {
             :categories="categories"
             :errors="form.errors as Record<string, string>"
             :readonly="!editing"
+            create-style
         />
     </div>
 </template>
