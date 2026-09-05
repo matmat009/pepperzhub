@@ -25,9 +25,11 @@ withDefaults(defineProps<Props>(), {
              with a non-visible overflow becomes the sticky containing block, and
              SidebarInset never scrolls (the document does), which would pin the
              header to a scrollport that never moves. -->
-        <AppContent variant="sidebar">
+        <AppContent variant="sidebar" class="min-w-0">
             <SiteHeader :breadcrumbs="breadcrumbs" />
-            <div class="flex flex-1 flex-col overflow-x-hidden">
+            <div
+                class="flex w-full max-w-full min-w-0 flex-1 flex-col overflow-x-hidden"
+            >
                 <slot />
             </div>
         </AppContent>

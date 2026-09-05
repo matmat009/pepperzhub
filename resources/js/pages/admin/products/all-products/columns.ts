@@ -17,6 +17,18 @@ const columnHelper = createColumnHelper<Features, Product>();
 /** Cells the row-click handler must ignore, so they stay independently clickable. */
 const NO_ROW_CLICK = { noRowClick: true };
 
+/**
+ * Lower-priority columns, dropped between `md` and `lg` so the tablet layout
+ * keeps the seven that carry a decision: product, formats, status, stock,
+ * price, plus the checkbox and row menu. Hidden in CSS rather than through
+ * TanStack visibility, so the Columns toggle keeps owning that state and the
+ * two mechanisms do not fight over the same column.
+ */
+const DESKTOP_ONLY = {
+    headerClass: 'hidden lg:table-cell',
+    cellClass: 'hidden lg:table-cell',
+};
+
 export type ProductColumnActions = {
     onView: (product: Product) => void;
     onEdit: (product: Product) => void;
@@ -132,6 +144,7 @@ export const createProductColumns = (
         }),
         columnHelper.accessor('category', {
             header: 'Category',
+            meta: DESKTOP_ONLY,
             filterFn: (row, columnId, filterValue) => {
                 const selected = filterValue as string[] | undefined;
 
@@ -153,7 +166,10 @@ export const createProductColumns = (
         columnHelper.accessor((row) => primaryPurity(row.purity_entries), {
             id: 'purity',
             header: 'Purity',
-            meta: { headerClass: 'text-right' },
+            meta: {
+                ...DESKTOP_ONLY,
+                headerClass: `text-right ${DESKTOP_ONLY.headerClass}`,
+            },
             cell: ({ row }) => {
                 const entries = row.original.purity_entries;
 
@@ -228,6 +244,7 @@ export const createProductColumns = (
         columnHelper.accessor('created_at', {
             id: 'created',
             header: 'Created',
+            meta: DESKTOP_ONLY,
             cell: ({ row }) =>
                 h(
                     'div',

@@ -7,6 +7,7 @@ import {
     Columns3,
     Download,
     ListFilter,
+    MoreHorizontal,
     Plus,
     Search,
     Trash2,
@@ -19,11 +20,19 @@ import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
+    DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Features } from '@/components/features';
@@ -32,6 +41,7 @@ import { createProductColumns } from './columns';
 import BulkDeleteDialog from './partials/BulkDeleteDialog.vue';
 import DeleteDialog from './partials/DeleteDialog.vue';
 import FormatBreakdown from './partials/FormatBreakdown.vue';
+import ProductCard from './partials/ProductCard.vue';
 import { PRODUCT_STATUSES } from './types';
 import type { Product, ProductStatus } from './types';
 
@@ -163,20 +173,35 @@ const toggleCategory = (table: ProductTable, category: string) => {
 
 const hideableColumns = (table: ProductTable) =>
     table.getAllColumns().filter((column) => column.getCanHide());
+
+/**
+ * Drives the page's bottom padding on mobile. The bulk bar is fixed to the
+ * viewport there, so without this it would sit over the pagination controls.
+ */
+const hasSelection = computed(() =>
+    Object.values(rowSelection.value).some(Boolean),
+);
 </script>
 
 <template>
     <Head title="Products" />
 
-    <div class="flex flex-1 flex-col gap-6 px-4 py-6 lg:px-6">
-        <header class="flex flex-wrap items-start justify-between gap-4">
+    <div
+        :class="[
+            'flex flex-1 flex-col gap-6 px-4 py-6 lg:px-6',
+            hasSelection && 'pb-24 md:pb-6',
+        ]"
+    >
+        <header
+            class="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-start md:justify-between"
+        >
             <div class="space-y-1">
                 <h1 class="text-2xl font-semibold tracking-tight">Products</h1>
                 <p class="text-sm text-muted-foreground">
                     Browse and manage your product catalog.
                 </p>
             </div>
-            <Button as-child>
+            <Button as-child class="w-full md:w-auto">
                 <Link :href="create()">
                     <Plus />
                     Add Product
@@ -194,7 +219,40 @@ const hideableColumns = (table: ProductTable) =>
             @row-click="goToProduct"
         >
             <template #toolbar="{ table }">
+                <!--
+                    Four tabs do not fit a 375px viewport without wrapping to a
+                    second row, so below `md` the same filter collapses to a
+                    Select. One source of truth either way: both read and write
+                    the status column's filter value.
+                -->
+                <div class="md:hidden">
+                    <Select
+                        :model-value="activeStatus(table as ProductTable)"
+                        @update:model-value="
+                            (value) =>
+                                setStatus(table as ProductTable, String(value))
+                        "
+                    >
+                        <SelectTrigger class="h-9 w-full" aria-label="Status">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">
+                                All ({{ statusCounts.all }})
+                            </SelectItem>
+                            <SelectItem
+                                v-for="status in PRODUCT_STATUSES"
+                                :key="status"
+                                :value="status"
+                            >
+                                {{ status }} ({{ statusCounts[status] }})
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
                 <Tabs
+                    class="hidden md:flex"
                     :model-value="activeStatus(table as ProductTable)"
                     @update:model-value="
                         (value) =>
@@ -240,7 +298,11 @@ const hideableColumns = (table: ProductTable) =>
 
                     <DropdownMenu>
                         <DropdownMenuTrigger as-child>
-                            <Button variant="outline" size="sm" class="h-9">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                class="hidden h-9 md:inline-flex"
+                            >
                                 <ListFilter />
                                 Category
                                 <span
@@ -290,7 +352,15 @@ const hideableColumns = (table: ProductTable) =>
 
                     <DropdownMenu>
                         <DropdownMenuTrigger as-child>
-                            <Button variant="outline" size="sm" class="h-9">
+                            <!--
+                                Column visibility has nothing to act on in card
+                                view, so the control goes with the table.
+                            -->
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                class="hidden h-9 md:inline-flex"
+                            >
                                 <Columns3 />
                                 Columns
                             </Button>
@@ -319,10 +389,66 @@ const hideableColumns = (table: ProductTable) =>
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <Button variant="outline" size="sm" class="h-9">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        class="hidden h-9 md:inline-flex"
+                    >
                         <Download />
                         Export
                     </Button>
+
+                    <!--
+                        Below `md` the category filter and Export fold into one
+                        overflow menu, leaving the search field the full width
+                        of the row rather than a third of it.
+                    -->
+                    <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                class="size-9 shrink-0 md:hidden"
+                            >
+                                <MoreHorizontal />
+                                <span class="sr-only">
+                                    More filters and actions
+                                </span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" class="w-56">
+                            <DropdownMenuLabel>
+                                Filter by category
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuCheckboxItem
+                                v-for="category in categories"
+                                :key="category"
+                                :model-value="
+                                    selectedCategories(
+                                        table as ProductTable,
+                                    ).includes(category)
+                                "
+                                @select="
+                                    (event: Event) => event.preventDefault()
+                                "
+                                @update:model-value="
+                                    () =>
+                                        toggleCategory(
+                                            table as ProductTable,
+                                            category,
+                                        )
+                                "
+                            >
+                                {{ category }}
+                            </DropdownMenuCheckboxItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem>
+                                <Download />
+                                Export
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </template>
 
@@ -332,18 +458,25 @@ const hideableColumns = (table: ProductTable) =>
                     pop into the layout above the table — this is the
                     "prevent a jarring change" case. Exit is faster than enter:
                     the user has already decided by then.
+
+                    The bar is pinned to the bottom of the viewport below `md`,
+                    where the top of a phone screen is the hardest place to
+                    reach; from `md` up it sits in flow above the table as
+                    before. The enter offset follows it, so the bar always
+                    arrives from the edge it is anchored to rather than sliding
+                    down out of the bottom of the screen.
                 -->
                 <Transition
                     enter-active-class="transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity"
-                    enter-from-class="-translate-y-1 opacity-0 motion-reduce:translate-y-0"
+                    enter-from-class="translate-y-1 opacity-0 md:-translate-y-1 motion-reduce:translate-y-0"
                     enter-to-class="translate-y-0 opacity-100"
                     leave-active-class="transition-[opacity,transform] duration-150 ease-out motion-reduce:transition-opacity"
                     leave-from-class="translate-y-0 opacity-100"
-                    leave-to-class="-translate-y-1 opacity-0 motion-reduce:translate-y-0"
+                    leave-to-class="translate-y-1 opacity-0 md:-translate-y-1 motion-reduce:translate-y-0"
                 >
                     <div
                         v-if="selected.length"
-                        class="flex items-center gap-3 rounded-lg border bg-card px-3 py-2 shadow-sm"
+                        class="fixed inset-x-0 bottom-0 z-30 flex items-center gap-3 border-t bg-card px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-lg md:static md:rounded-lg md:border md:px-3 md:py-2 md:shadow-sm"
                     >
                         <span class="text-sm font-medium">
                             {{ selected.length }} selected
@@ -382,6 +515,30 @@ const hideableColumns = (table: ProductTable) =>
                         </Button>
                     </div>
                 </Transition>
+            </template>
+
+            <!--
+                Below `md` the same rows render as cards. Product-specific
+                markup stays here rather than in DataTable, which knows nothing
+                about products.
+            -->
+            <template #mobile-card="{ row, selected, toggle }">
+                <ProductCard
+                    :product="row"
+                    :selected="selected"
+                    @update:selected="toggle"
+                    @open="goToProduct"
+                    @view="goToProduct"
+                    @edit="
+                        (product) =>
+                            router.visit(`${show(product.id).url}?edit=1`)
+                    "
+                    @duplicate="
+                        (product) =>
+                            router.visit(`${create().url}?from=${product.id}`)
+                    "
+                    @remove="requestDelete"
+                />
             </template>
 
             <template #expanded="{ row }">

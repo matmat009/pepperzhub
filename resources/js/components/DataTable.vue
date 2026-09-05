@@ -15,7 +15,7 @@ import {
 } from '@tabler/icons-vue';
 import { FlexRender, useTable } from '@tanstack/vue-table';
 import { DragDropProvider } from 'dnd-kit-vue';
-import { computed, ref } from 'vue';
+import { computed, ref, useSlots } from 'vue';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -48,6 +48,13 @@ import type { Features } from './features';
  * Column `meta` options:
  *  - `noRowClick` opts a cell out of the row-click target (checkbox / actions)
  *  - `headerClass` aligns or sizes a header cell
+ *  - `cellClass` does the same for that column's body cells, which is how a
+ *    column drops out at a breakpoint without leaving its header behind
+ *
+ * A `#mobile-card` slot swaps the table for a stack of caller-supplied cards
+ * below `md`. It is opt-in: without that slot the table renders at every width
+ * exactly as it always has, so the tables that have not adopted it are
+ * untouched.
  *
  * `rowClickable` makes each row activate on click, Enter or Space, emitting
  * `rowClick`. It is off by default, so a table only becomes interactive by
@@ -57,6 +64,7 @@ import type { Features } from './features';
 type ColumnMeta = {
     noRowClick?: boolean;
     headerClass?: string;
+    cellClass?: string;
 };
 
 const props = withDefaults(
@@ -169,6 +177,13 @@ const focusCellByRow = computed(() => {
     return map;
 });
 
+/**
+ * Whether the caller supplied card markup. Gates the whole responsive swap, so
+ * a table without the slot keeps rendering its <table> at every width.
+ */
+const slots = useSlots();
+const hasMobileCards = computed(() => Boolean(slots['mobile-card']));
+
 const selectedRows = computed(() =>
     table.getFilteredSelectedRowModel().rows.map((row) => row.original),
 );
@@ -185,11 +200,16 @@ defineExpose({ table });
 </script>
 
 <template>
-    <div class="flex w-full flex-col gap-4">
+    <div class="flex w-full max-w-full min-w-0 flex-col gap-4">
         <slot name="toolbar" :table="table" />
         <slot name="bulk" :table="table" :selected="selectedRows" />
 
-        <div class="overflow-hidden rounded-xl border bg-card">
+        <div
+            :class="[
+                'w-full max-w-full overflow-hidden rounded-xl border bg-card',
+                hasMobileCards && 'hidden md:block',
+            ]"
+        >
             <component
                 :is="draggable ? DragDropProvider : 'div'"
                 :modifiers="draggable ? [RestrictToVerticalAxis] : undefined"
@@ -275,7 +295,11 @@ defineExpose({ table });
                                     <TableCell
                                         v-for="cell in row.getVisibleCells()"
                                         :key="cell.id"
-                                        class="py-3"
+                                        :class="[
+                                            'py-3',
+                                            metaOf(cell.column.columnDef)
+                                                .cellClass,
+                                        ]"
                                         @click="onCellClick(cell, row.original)"
                                     >
                                         <!--
@@ -340,6 +364,32 @@ defineExpose({ table });
                     </TableBody>
                 </Table>
             </component>
+        </div>
+
+        <!--
+            The same rows below `md`, as caller-supplied cards. Both views read
+            one table instance, so selection, filtering and pagination are
+            shared — a card ticked here is a row ticked in the bulk bar. The
+            swap is CSS-only: no resize listener, and nothing to re-hydrate
+            when the viewport crosses the breakpoint.
+        -->
+        <div v-if="hasMobileCards" class="flex flex-col gap-3 md:hidden">
+            <template v-if="table.getRowModel().rows.length">
+                <slot
+                    v-for="row in table.getRowModel().rows"
+                    :key="row.id"
+                    name="mobile-card"
+                    :row="row.original"
+                    :selected="row.getIsSelected()"
+                    :toggle="(value: boolean) => row.toggleSelected(value)"
+                />
+            </template>
+            <div
+                v-else
+                class="rounded-xl border bg-card p-8 text-center text-sm text-muted-foreground"
+            >
+                <slot name="empty">{{ emptyMessage }}</slot>
+            </div>
         </div>
 
         <div class="flex items-center justify-between gap-4">
