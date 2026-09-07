@@ -497,20 +497,30 @@ watch(
                 </div>
             </template>
 
-            <template #bulk="{ table, selected }">
-                <!--
-                    Selecting a row is occasional, and the bar would otherwise
-                    pop into the layout above the table — this is the
-                    "prevent a jarring change" case. Exit is faster than enter:
-                    the user has already decided by then.
+            <!--
+                Selecting a row is occasional, and the bar would otherwise pop
+                into the layout above the table — this is the "prevent a jarring
+                change" case. Exit is faster than enter: the user has already
+                decided by then.
 
-                    The bar is pinned to the bottom of the viewport below `md`,
-                    where the top of a phone screen is the hardest place to
-                    reach; from `md` up it sits in flow above the table as
-                    before. The enter offset follows it, so the bar always
-                    arrives from the edge it is anchored to rather than sliding
-                    down out of the bottom of the screen.
-                -->
+                The bar is pinned to the bottom of the viewport below `md`,
+                where the top of a phone screen is the hardest place to reach;
+                from `md` up it sits in flow above the table as before. The
+                enter offset follows it, so the bar always arrives from the edge
+                it is anchored to rather than sliding down out of the bottom of
+                the screen.
+
+                This note sits *outside* `#bulk` on purpose. With nothing
+                selected the slot renders only the Transition's `v-if`
+                placeholder, and Vue's SSR drops a slot whose whole output is
+                comments (`ensureValidVNode`), while the client still renders
+                one node for it. A comment in here would make that two nodes
+                against the server's zero, and the hydration desync shifts every
+                later sibling — the mobile-card wrapper then adopts the
+                pagination wrapper's classes and its cards show up at desktop
+                widths. Keep slot content free of leading comments.
+            -->
+            <template #bulk="{ table, selected }">
                 <Transition
                     enter-active-class="transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity"
                     enter-from-class="translate-y-1 opacity-0 md:-translate-y-1 motion-reduce:translate-y-0"
