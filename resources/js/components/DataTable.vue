@@ -2,6 +2,7 @@
 import type {
     Cell,
     ColumnDef,
+    ColumnFiltersState,
     ExpandedState,
     RowSelectionState,
 } from '@tanstack/vue-table';
@@ -95,6 +96,15 @@ const rowSelection = defineModel<RowSelectionState>('rowSelection', {
     default: () => ({}),
 });
 
+/**
+ * Controlled like `rowSelection` above, so a caller can seed the filters and be
+ * told when they change. Left uncontrolled, TanStack owns the state internally
+ * and there is nothing outside the table to read or restore.
+ */
+const columnFilters = defineModel<ColumnFiltersState>('columnFilters', {
+    default: () => [],
+});
+
 /** Keyed by row id, so several rows stay open at once. */
 const expanded = ref<ExpandedState>({});
 
@@ -113,12 +123,21 @@ const table = useTable({
         get expanded() {
             return expanded.value;
         },
+        get columnFilters() {
+            return columnFilters.value;
+        },
     },
     getRowCanExpand: (row) => props.canExpandRow?.(row.original) ?? false,
     onRowSelectionChange: (updater) => {
         rowSelection.value =
             typeof updater === 'function'
                 ? updater(rowSelection.value)
+                : updater;
+    },
+    onColumnFiltersChange: (updater) => {
+        columnFilters.value =
+            typeof updater === 'function'
+                ? updater(columnFilters.value)
                 : updater;
     },
     onExpandedChange: (updater) => {

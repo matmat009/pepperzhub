@@ -1,7 +1,23 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { Check, FlaskConical, QrCode, Upload } from '@lucide/vue';
+import {
+    Check,
+    FileText,
+    FlaskConical,
+    QrCode,
+    Search,
+    Upload,
+    X,
+} from '@lucide/vue';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
 import type { CartLine } from '@/composables/useStorefrontCart';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
 import { home } from '@/routes';
@@ -69,8 +85,16 @@ const form = useForm<{
 });
 
 const courierId = ref<number | null>(null);
+const proofInput = ref<HTMLInputElement | null>(null);
 const proofName = ref('');
 const proofPreviewUrl = ref<string | null>(null);
+const proofImageReady = ref(false);
+const proofIsPdf = ref(false);
+const proofDialogOpen = ref(false);
+const proofClientError = ref('');
+
+const acceptedProofExtensions = new Set(['jpg', 'jpeg', 'png', 'pdf']);
+const maxProofSize = 5 * 1024 * 1024;
 
 const selectedCourier = computed(() =>
     props.couriers.find((courier) => courier.id === courierId.value),
@@ -126,7 +150,7 @@ const missing = computed(() => {
         gaps.push('payment method');
     }
 
-    if (!form.payment_proof) {
+    if (!form.payment_proof || (!proofIsPdf.value && !proofImageReady.value)) {
         gaps.push('proof of payment');
     }
 
@@ -137,26 +161,98 @@ const ready = computed(
     () => missing.value.length === 0 && props.lines.length > 0,
 );
 
+const releaseProofPreview = () => {
+    if (proofPreviewUrl.value) {
+        URL.revokeObjectURL(proofPreviewUrl.value);
+        proofPreviewUrl.value = null;
+    }
+
+    proofImageReady.value = false;
+};
+
+const openProofPicker = () => {
+    if (!proofInput.value) {
+        return;
+    }
+
+    // Clearing only the native input lets choosing the same file fire change.
+    proofInput.value.value = '';
+    proofInput.value.click();
+};
+
+const removeProof = () => {
+    proofDialogOpen.value = false;
+    releaseProofPreview();
+    form.payment_proof = null;
+    proofName.value = '';
+    proofIsPdf.value = false;
+    proofClientError.value = '';
+    form.clearErrors('payment_proof');
+
+    if (proofInput.value) {
+        proofInput.value.value = '';
+    }
+};
+
 const onProof = (event: Event) => {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0] ?? null;
 
-    if (proofPreviewUrl.value) {
-        URL.revokeObjectURL(proofPreviewUrl.value);
+    if (!file) {
+        return;
+    }
+
+    proofDialogOpen.value = false;
+    releaseProofPreview();
+    proofClientError.value = '';
+    form.clearErrors('payment_proof');
+
+    const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+
+    if (!acceptedProofExtensions.has(extension)) {
+        form.payment_proof = null;
+        proofName.value = '';
+        proofIsPdf.value = false;
+        proofClientError.value = 'Upload a JPG, PNG or PDF receipt.';
+        input.value = '';
+
+        return;
+    }
+
+    if (file.size > maxProofSize) {
+        form.payment_proof = null;
+        proofName.value = '';
+        proofIsPdf.value = false;
+        proofClientError.value = 'Keep the receipt under 5MB.';
+        input.value = '';
+
+        return;
     }
 
     form.payment_proof = file;
-    proofName.value = file?.name ?? '';
-    proofPreviewUrl.value =
-        file && file.type.startsWith('image/')
-            ? URL.createObjectURL(file)
-            : null;
+    proofName.value = file.name;
+    proofIsPdf.value = extension === 'pdf';
+
+    if (!proofIsPdf.value) {
+        proofPreviewUrl.value = URL.createObjectURL(file);
+    }
+};
+
+const onProofPreviewError = () => {
+    releaseProofPreview();
+    form.payment_proof = null;
+    proofName.value = '';
+    proofIsPdf.value = false;
+    proofClientError.value =
+        'That image could not be previewed. Choose another JPG or PNG receipt.';
+
+    if (proofInput.value) {
+        proofInput.value.value = '';
+    }
 };
 
 onBeforeUnmount(() => {
-    if (proofPreviewUrl.value) {
-        URL.revokeObjectURL(proofPreviewUrl.value);
-    }
+    releaseProofPreview();
 });
 
 /**
@@ -442,39 +538,220 @@ const fieldClass =
                         Upload Proof of Payment
                         <span class="text-sf-rose-deep">*</span>
                     </h2>
-                    <label
-                        class="mt-5 flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed px-6 py-12 text-center transition-colors duration-200 ease-out"
-                        :class="
-                            proofName
-                                ? 'border-sf-success bg-sf-success/5 text-sf-success'
-                                : 'border-sf-line-strong text-sf-subtle hover:border-sf-primary hover:text-sf-primary'
-                        "
+                    <input
+                        ref="proofInput"
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                        class="sr-only"
+                        @change="onProof"
+                    />
+
+                    <Dialog
+                        v-if="proofPreviewUrl"
+                        v-model:open="proofDialogOpen"
                     >
-                        <img
-                            v-if="proofPreviewUrl"
-                            :src="proofPreviewUrl"
-                            alt="Payment proof preview"
-                            class="size-20 rounded-lg border border-sf-success/40 object-cover"
-                        />
-                        <component
-                            v-else
-                            :is="proofName ? Check : Upload"
-                            class="size-8"
-                        />
-                        <span class="text-[15px]">
-                            {{
-                                proofName
-                                    ? `${proofName} attached`
-                                    : 'Click to upload screenshot — GCash / Bank transfer receipt'
-                            }}
+                        <div
+                            class="mt-5 grid gap-6 rounded-xl border border-sf-rose-line/70 bg-white p-5 md:min-h-[330px] md:grid-cols-[minmax(0,0.43fr)_minmax(0,0.57fr)] md:gap-0"
+                        >
+                            <DialogTrigger as-child>
+                                <button
+                                    type="button"
+                                    :disabled="!proofImageReady"
+                                    :aria-label="`Open enlarged preview of ${proofName}`"
+                                    class="group flex min-w-0 flex-col gap-2 rounded-xl text-center text-sf-muted outline-none focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2 disabled:cursor-wait"
+                                >
+                                    <span
+                                        class="relative flex min-h-[240px] flex-1 items-center justify-center overflow-hidden rounded-xl bg-sf-tint p-3 sm:min-h-[260px] md:min-h-0"
+                                    >
+                                        <img
+                                            :src="proofPreviewUrl"
+                                            alt=""
+                                            class="size-full object-contain transition-opacity duration-200"
+                                            :class="
+                                                proofImageReady
+                                                    ? 'opacity-100'
+                                                    : 'opacity-0'
+                                            "
+                                            @load="proofImageReady = true"
+                                            @error="onProofPreviewError"
+                                        />
+                                        <span
+                                            v-if="!proofImageReady"
+                                            class="absolute inset-0 grid place-items-center text-sm text-sf-subtle"
+                                            >Preparing image preview…</span
+                                        >
+                                        <span
+                                            v-else
+                                            aria-hidden="true"
+                                            class="absolute right-3 bottom-3 grid size-9 place-items-center rounded-full bg-sf-primary-soft text-white shadow-sm transition-transform duration-200 ease-out group-hover:scale-105"
+                                        >
+                                            <Search class="size-4" />
+                                        </span>
+                                    </span>
+                                    <span
+                                        class="text-sm transition-colors duration-200 group-hover:text-sf-primary"
+                                    >
+                                        {{
+                                            proofImageReady
+                                                ? 'Click to enlarge'
+                                                : 'Preparing preview'
+                                        }}
+                                    </span>
+                                </button>
+                            </DialogTrigger>
+
+                            <div
+                                class="flex min-w-0 flex-col justify-center border-t border-sf-line-strong pt-6 md:ml-7 md:border-t-0 md:border-l md:pt-0 md:pl-8"
+                            >
+                                <div class="flex min-w-0 items-center gap-3">
+                                    <span
+                                        v-if="proofImageReady"
+                                        class="grid size-7 shrink-0 place-items-center rounded-full bg-sf-success text-white"
+                                    >
+                                        <Check
+                                            class="size-4"
+                                            stroke-width="3"
+                                        />
+                                    </span>
+                                    <span
+                                        class="min-w-0 font-display text-xl font-semibold break-all text-sf-ink"
+                                        >{{ proofName }}</span
+                                    >
+                                </div>
+                                <p
+                                    class="mt-2 text-[15px]"
+                                    :class="
+                                        proofImageReady
+                                            ? 'text-sf-success'
+                                            : 'text-sf-muted'
+                                    "
+                                >
+                                    {{
+                                        proofImageReady
+                                            ? 'Image attached successfully'
+                                            : 'Checking image preview…'
+                                    }}
+                                </p>
+                                <p class="mt-3 text-sm text-sf-subtle">
+                                    JPG, PNG or PDF · Max 5MB
+                                </p>
+                                <button
+                                    type="button"
+                                    class="mt-6 w-full rounded-xl border border-sf-primary px-5 py-3 text-[15px] font-semibold text-sf-primary transition-colors duration-200 ease-out outline-none hover:bg-sf-tint focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
+                                    @click="openProofPicker"
+                                >
+                                    Replace image
+                                </button>
+                                <button
+                                    type="button"
+                                    class="mt-2 self-center rounded-lg px-4 py-2 text-sm font-medium text-sf-primary-soft transition-colors duration-200 ease-out outline-none hover:bg-sf-tint hover:text-sf-primary-deep focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
+                                    @click="removeProof"
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+
+                        <DialogContent
+                            :show-close-button="false"
+                            class="h-[min(88vh,900px)] max-w-[calc(100%-1.5rem)] grid-rows-[1fr] overflow-hidden rounded-xl border-sf-line bg-white p-3 sm:max-w-5xl sm:p-5"
+                        >
+                            <DialogTitle class="sr-only">
+                                Payment proof preview
+                            </DialogTitle>
+                            <DialogDescription class="sr-only">
+                                Enlarged preview of {{ proofName }}
+                            </DialogDescription>
+                            <div
+                                class="min-h-0 overflow-hidden rounded-lg bg-sf-tint p-2"
+                            >
+                                <img
+                                    :src="proofPreviewUrl"
+                                    :alt="`Enlarged payment proof: ${proofName}`"
+                                    class="size-full object-contain"
+                                />
+                            </div>
+                            <DialogClose as-child>
+                                <button
+                                    type="button"
+                                    aria-label="Close enlarged payment proof"
+                                    class="absolute top-5 right-5 grid size-10 place-items-center rounded-full bg-white text-sf-ink shadow-md transition-colors duration-200 ease-out outline-none hover:bg-sf-tint focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
+                                >
+                                    <X class="size-5" />
+                                </button>
+                            </DialogClose>
+                        </DialogContent>
+                    </Dialog>
+
+                    <div
+                        v-else-if="form.payment_proof && proofIsPdf"
+                        class="mt-5 flex flex-col gap-4 rounded-xl border border-sf-line-strong bg-sf-tint p-5 sm:flex-row sm:items-center"
+                    >
+                        <span
+                            class="grid size-14 shrink-0 place-items-center rounded-xl bg-white text-sf-primary shadow-sm"
+                        >
+                            <FileText class="size-7" />
                         </span>
-                        <input
-                            type="file"
-                            accept="image/*,.pdf"
-                            class="sr-only"
-                            @change="onProof"
-                        />
-                    </label>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex min-w-0 items-center gap-2">
+                                <span
+                                    class="grid size-6 shrink-0 place-items-center rounded-full bg-sf-success text-white"
+                                >
+                                    <Check class="size-3.5" stroke-width="3" />
+                                </span>
+                                <span
+                                    class="min-w-0 font-display font-semibold break-all text-sf-ink"
+                                    >{{ proofName }}</span
+                                >
+                            </div>
+                            <p class="mt-1 text-sm text-sf-success">
+                                PDF attached successfully
+                            </p>
+                            <p class="mt-1 text-sm text-sf-subtle">
+                                JPG, PNG or PDF · Max 5MB
+                            </p>
+                        </div>
+                        <div class="flex shrink-0 items-center gap-2">
+                            <button
+                                type="button"
+                                class="rounded-xl border border-sf-primary px-4 py-2.5 text-sm font-semibold text-sf-primary transition-colors duration-200 ease-out outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
+                                @click="openProofPicker"
+                            >
+                                Replace file
+                            </button>
+                            <button
+                                type="button"
+                                class="rounded-lg px-3 py-2.5 text-sm font-medium text-sf-primary-soft transition-colors duration-200 ease-out outline-none hover:bg-white hover:text-sf-primary-deep focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
+                                @click="removeProof"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+
+                    <button
+                        v-else
+                        type="button"
+                        class="mt-5 flex w-full cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed border-sf-line-strong px-6 py-12 text-center text-sf-subtle transition-colors duration-200 ease-out outline-none hover:border-sf-primary hover:text-sf-primary focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
+                        @click="openProofPicker"
+                    >
+                        <Upload class="size-8" />
+                        <span class="text-[15px]">
+                            Click to upload screenshot — GCash / Bank transfer
+                            receipt
+                        </span>
+                        <span class="text-sm italic">
+                            JPG, PNG or PDF · Max 5MB
+                        </span>
+                    </button>
+
+                    <p
+                        v-if="proofClientError"
+                        role="alert"
+                        class="mt-2 text-sm text-sf-rose-deep"
+                    >
+                        {{ proofClientError }}
+                    </p>
                 </section>
 
                 <section>

@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import type { RowSelectionState, Table } from '@tanstack/vue-table';
+import type {
+    ColumnFiltersState,
+    RowSelectionState,
+    Table,
+} from '@tanstack/vue-table';
 import { Head, Link, router } from '@inertiajs/vue3';
 import {
     Archive,
@@ -13,7 +17,7 @@ import {
     Trash2,
     X,
 } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import DataTable from '@/components/DataTable.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -181,6 +185,46 @@ const hideableColumns = (table: ProductTable) =>
 const hasSelection = computed(() =>
     Object.values(rowSelection.value).some(Boolean),
 );
+
+/**
+ * Filters live only in the TanStack instance, so a real reload remounts the
+ * tree and drops them. sessionStorage rather than localStorage: the state dies
+ * with the tab, which matches how filtering is actually used — narrow the list,
+ * open a product, come back to the same view — without a filter set days ago
+ * silently hiding half the catalog on a fresh visit.
+ *
+ * `columnFilters` is TanStack's own shape, so it round-trips as-is: no
+ * translation through the toolbar's status/search/category helpers, and no
+ * post-mount restore step. The saved value simply *is* the ref's initial value.
+ */
+const FILTERS_STORAGE_KEY = 'pepperzhub:products:filters';
+
+const readStoredFilters = (): ColumnFiltersState => {
+    try {
+        const stored = sessionStorage.getItem(FILTERS_STORAGE_KEY);
+        const parsed = stored ? JSON.parse(stored) : null;
+
+        return Array.isArray(parsed) ? (parsed as ColumnFiltersState) : [];
+    } catch {
+        // Unreadable or corrupt — start unfiltered rather than failing setup.
+        return [];
+    }
+};
+
+const columnFilters = ref<ColumnFiltersState>(readStoredFilters());
+
+watch(
+    columnFilters,
+    (value) => {
+        try {
+            sessionStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(value));
+        } catch {
+            // Storage unavailable (private mode, quota) — filtering still works
+            // for this page view, it just will not survive the next reload.
+        }
+    },
+    { deep: true },
+);
 </script>
 
 <template>
@@ -211,6 +255,7 @@ const hasSelection = computed(() =>
 
         <DataTable
             v-model:row-selection="rowSelection"
+            v-model:column-filters="columnFilters"
             :data="products"
             :columns="columns"
             :can-expand-row="canExpandRow"
