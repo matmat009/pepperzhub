@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { store, update } from '@/routes/admin/shipping-couriers';
 import { emptyCourierForm, toCourierForm, toCourierPayload } from '../types';
@@ -152,8 +151,7 @@ const submit = () => {
                 >
                     Cancel
                 </Button>
-                <Button :disabled="processing" @click="submit">
-                    <Spinner v-if="processing" />
+                <Button :loading="processing" @click="submit">
                     {{ isEdit ? 'Save changes' : 'Create courier' }}
                 </Button>
             </DialogFooter>

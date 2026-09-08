@@ -147,8 +147,7 @@ const timeline = computed(() =>
                 </Button>
                 <Button
                     v-if="canReject"
-                    variant="outline"
-                    class="text-destructive"
+                    variant="destructive"
                     @click="rejectOpen = true"
                 >
                     <Ban class="size-4" />
@@ -174,8 +173,7 @@ const timeline = computed(() =>
                 </Button>
                 <Button
                     v-if="canCancel"
-                    variant="ghost"
-                    class="text-destructive"
+                    variant="destructive"
                     @click="cancelOpen = true"
                 >
                     Cancel order

@@ -112,9 +112,9 @@ const clear = () => {
             <Button
                 v-if="shownUrl"
                 type="button"
-                variant="ghost"
+                variant="destructive"
                 size="sm"
-                class="w-fit text-muted-foreground hover:text-destructive"
+                class="w-fit"
                 @click="clear"
             >
                 <X />

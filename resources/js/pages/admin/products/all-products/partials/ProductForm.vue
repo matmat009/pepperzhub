@@ -68,9 +68,6 @@ const props = withDefaults(
 const inert =
     'disabled:cursor-default disabled:opacity-100 disabled:bg-muted/40 disabled:text-foreground';
 
-const blueOutlineButton =
-    'border-primary/70 text-primary shadow-xs hover:border-primary hover:bg-primary/10 hover:text-primary dark:border-primary/75 dark:text-primary dark:hover:bg-primary/15 dark:hover:text-primary';
-
 /**
  * Laravel reports nested failures per index (`variants.0.price`). Surface the
  * first one for a section rather than leaving the user with a silent rejection.
@@ -347,7 +344,7 @@ const removeFormat = (variant: ProductVariant) => {
                             type="button"
                             variant="outline"
                             size="sm"
-                            :class="['shrink-0', blueOutlineButton]"
+                            class="shrink-0"
                             @click="openAddFormat"
                         >
                             <Plus />

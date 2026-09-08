@@ -459,8 +459,8 @@ defineExpose({ table });
                 <div class="ml-auto flex items-center gap-2 lg:ml-0">
                     <Button
                         variant="outline"
-                        size="icon"
-                        class="hidden size-8 lg:flex"
+                        size="icon-sm"
+                        class="hidden lg:flex"
                         :disabled="!table.getCanPreviousPage()"
                         @click="table.setPageIndex(0)"
                     >
@@ -469,8 +469,7 @@ defineExpose({ table });
                     </Button>
                     <Button
                         variant="outline"
-                        size="icon"
-                        class="size-8"
+                        size="icon-sm"
                         :disabled="!table.getCanPreviousPage()"
                         @click="table.previousPage()"
                     >
@@ -479,8 +478,7 @@ defineExpose({ table });
                     </Button>
                     <Button
                         variant="outline"
-                        size="icon"
-                        class="size-8"
+                        size="icon-sm"
                         :disabled="!table.getCanNextPage()"
                         @click="table.nextPage()"
                     >
@@ -489,8 +487,8 @@ defineExpose({ table });
                     </Button>
                     <Button
                         variant="outline"
-                        size="icon"
-                        class="hidden size-8 lg:flex"
+                        size="icon-sm"
+                        class="hidden lg:flex"
                         :disabled="!table.getCanNextPage()"
                         @click="table.setPageIndex(table.getPageCount() - 1)"
                     >

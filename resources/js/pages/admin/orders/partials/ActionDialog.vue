@@ -134,7 +134,7 @@ const submit = () => {
                     <Button
                         type="submit"
                         :variant="destructive ? 'destructive' : 'default'"
-                        :disabled="form.processing"
+                        :loading="form.processing"
                     >
                         {{ form.processing ? 'Working…' : confirmLabel }}
                     </Button>

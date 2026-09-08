@@ -2,7 +2,6 @@
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ChevronLeft } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import { index, store } from '@/routes/admin/products';
 import ProductForm from './partials/ProductForm.vue';
 import { emptyProductForm, toSubmitPayload } from './types';
@@ -29,9 +28,6 @@ defineProps<{
 
 const form = useForm<ProductFormFields>(emptyProductForm());
 
-const blueOutlineButton =
-    'border-primary/70 text-primary shadow-xs hover:border-primary hover:bg-primary/10 hover:text-primary dark:border-primary/75 dark:text-primary dark:hover:bg-primary/15 dark:hover:text-primary';
-
 /** Abandons the draft and returns to the list. Nothing is persisted yet. */
 const discard = () => router.visit(index().url);
 
@@ -50,12 +46,7 @@ const submit = () => {
             class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
         >
             <div class="flex items-center gap-3">
-                <Button
-                    as-child
-                    variant="outline"
-                    size="icon"
-                    :class="['shrink-0', blueOutlineButton]"
-                >
+                <Button as-child variant="outline" size="icon" class="shrink-0">
                     <Link :href="index()">
                         <ChevronLeft class="size-4" />
                         <span class="sr-only">Back to products</span>
@@ -74,14 +65,12 @@ const submit = () => {
             <div class="flex items-center gap-2 self-end sm:self-auto">
                 <Button
                     variant="outline"
-                    :class="blueOutlineButton"
                     :disabled="form.processing"
                     @click="discard"
                 >
                     Discard
                 </Button>
-                <Button :disabled="form.processing" @click="submit">
-                    <Spinner v-if="form.processing" />
+                <Button :loading="form.processing" @click="submit">
                     Publish
                 </Button>
             </div>

@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { store, update } from '@/routes/admin/payment-methods';
 import {
@@ -170,8 +169,7 @@ const submit = () => {
                 >
                     Cancel
                 </Button>
-                <Button :disabled="form.processing" @click="submit">
-                    <Spinner v-if="form.processing" />
+                <Button :loading="form.processing" @click="submit">
                     {{ isEdit ? 'Save changes' : 'Create method' }}
                 </Button>
             </DialogFooter>

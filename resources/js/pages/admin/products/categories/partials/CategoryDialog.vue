@@ -10,7 +10,6 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Spinner } from '@/components/ui/spinner';
 import { store, update } from '@/routes/admin/products/categories';
 import { emptyCategoryForm, toCategoryForm } from '../types';
 import type { Category, CategoryFormFields } from '../types';
@@ -99,8 +98,7 @@ const submit = () => {
                 >
                     Cancel
                 </Button>
-                <Button :disabled="processing" @click="submit">
-                    <Spinner v-if="processing" />
+                <Button :loading="processing" @click="submit">
                     {{ isEdit ? 'Save changes' : 'Create category' }}
                 </Button>
             </DialogFooter>

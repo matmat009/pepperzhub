@@ -88,8 +88,8 @@ const confirm = () => {
                     Cancel
                 </AlertDialogCancel>
                 <AlertDialogAction
-                    class="bg-destructive text-white hover:bg-destructive/90"
-                    :disabled="processing"
+                    variant="destructive"
+                    :loading="processing"
                     @click.prevent="confirm"
                 >
                     Delete

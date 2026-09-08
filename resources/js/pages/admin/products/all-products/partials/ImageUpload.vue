@@ -24,9 +24,6 @@ const props = withDefaults(
 const activeIndex = ref(0);
 const dragging = ref(false);
 
-const blueOutlineButton =
-    'border-primary/70 text-primary shadow-xs hover:border-primary hover:bg-primary/10 hover:text-primary dark:border-primary/75 dark:text-primary dark:hover:bg-primary/15 dark:hover:text-primary';
-
 const active = computed<ProductImage | undefined>(
     () => images.value[activeIndex.value] ?? images.value[0],
 );
@@ -147,7 +144,6 @@ const onDrop = (event: DragEvent) => {
                         type="button"
                         variant="outline"
                         size="sm"
-                        :class="blueOutlineButton"
                         @click="browseInput?.click()"
                     >
                         Browse
@@ -172,7 +168,6 @@ const onDrop = (event: DragEvent) => {
                 type="button"
                 variant="outline"
                 size="sm"
-                :class="blueOutlineButton"
                 @click="replaceInput?.click()"
             >
                 <RefreshCw />
@@ -180,9 +175,8 @@ const onDrop = (event: DragEvent) => {
             </Button>
             <Button
                 type="button"
-                variant="outline"
+                variant="destructive"
                 size="sm"
-                class="border-destructive/40 text-destructive shadow-xs hover:border-destructive hover:bg-destructive/10 hover:text-destructive"
                 @click="removeAt(0)"
             >
                 <Trash2 />
@@ -228,7 +222,7 @@ const onDrop = (event: DragEvent) => {
                     <button
                         v-if="!readonly"
                         type="button"
-                        class="absolute top-1.5 right-1.5 grid size-5 place-items-center rounded-full border bg-background/95 text-muted-foreground shadow-xs transition-colors hover:border-destructive/40 hover:text-destructive"
+                        class="absolute top-1.5 right-1.5 grid size-7 place-items-center rounded-full border border-destructive/50 bg-background/95 text-destructive shadow-xs transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out outline-none hover:border-destructive hover:bg-destructive/10 focus-visible:ring-3 focus-visible:ring-destructive/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-95 active:bg-destructive/15 motion-reduce:active:scale-100"
                         @click="removeAt(index + 1)"
                     >
                         <X class="size-3" />
@@ -244,7 +238,7 @@ const onDrop = (event: DragEvent) => {
                         : 0"
                     :key="`add-tile-${slot}`"
                     type="button"
-                    class="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-primary/35 bg-background/45 text-muted-foreground transition-colors duration-200 ease-out hover:border-primary hover:bg-primary/10 hover:text-primary"
+                    class="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-muted-foreground/40 bg-background/70 text-muted-foreground shadow-xs transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out outline-none hover:border-primary/60 hover:bg-primary/10 hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98] active:shadow-none motion-reduce:active:scale-100"
                     :aria-label="`Add additional image ${additionalImages.length + slot}`"
                     @click="browseInput?.click()"
                 >
@@ -305,7 +299,7 @@ const onDrop = (event: DragEvent) => {
                         type="button"
                         variant="secondary"
                         size="sm"
-                        class="shadow-sm backdrop-blur-sm"
+                        class="backdrop-blur-sm"
                         @click="browseInput?.click()"
                     >
                         <ImageIcon />
@@ -316,7 +310,7 @@ const onDrop = (event: DragEvent) => {
                         type="button"
                         variant="secondary"
                         size="sm"
-                        class="shadow-sm backdrop-blur-sm"
+                        class="backdrop-blur-sm"
                         @click="replaceInput?.click()"
                     >
                         <RefreshCw />
@@ -339,7 +333,7 @@ const onDrop = (event: DragEvent) => {
                 :key="image.id"
                 type="button"
                 :class="[
-                    'group relative aspect-square overflow-hidden rounded-lg border transition-shadow duration-200 ease-out',
+                    'group relative aspect-square overflow-hidden rounded-lg border transition-[border-color,box-shadow,transform] duration-150 ease-out outline-none focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98] motion-reduce:active:scale-100',
                     index === activeIndex
                         ? 'ring-2 ring-primary/60 ring-offset-2 ring-offset-background'
                         : 'hover:shadow-md hover:shadow-black/5',
@@ -365,7 +359,7 @@ const onDrop = (event: DragEvent) => {
                 v-if="!readonly"
                 key="add-tile"
                 type="button"
-                class="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed text-muted-foreground transition-colors duration-200 ease-out hover:border-ring hover:bg-accent/40 hover:text-foreground"
+                class="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-muted-foreground/40 bg-background text-muted-foreground shadow-xs transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out outline-none hover:border-primary/60 hover:bg-accent hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98] active:shadow-none motion-reduce:active:scale-100"
                 @click="browseInput?.click()"
             >
                 <Plus class="size-4" />

@@ -247,7 +247,7 @@ watch(
                     Browse and manage your product catalog.
                 </p>
             </div>
-            <Button as-child class="h-10 w-full rounded-lg px-4 md:w-auto">
+            <Button as-child class="w-full md:w-auto">
                 <Link :href="create()">
                     <Plus />
                     Add Product
@@ -372,8 +372,7 @@ watch(
                             <DropdownMenuTrigger as-child>
                                 <Button
                                     variant="outline"
-                                    size="sm"
-                                    class="hidden h-10 rounded-lg px-3 shadow-none md:inline-flex"
+                                    class="hidden md:inline-flex"
                                 >
                                     <ListFilter />
                                     Category
@@ -430,8 +429,7 @@ watch(
                             -->
                                 <Button
                                     variant="outline"
-                                    size="sm"
-                                    class="hidden h-10 rounded-lg px-3 shadow-none md:inline-flex"
+                                    class="hidden md:inline-flex"
                                 >
                                     <Columns3 />
                                     Columns
@@ -462,11 +460,7 @@ watch(
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            class="hidden h-10 rounded-lg px-3 shadow-none md:inline-flex"
-                        >
+                        <Button variant="outline" class="hidden md:inline-flex">
                             <Download />
                             Export
                         </Button>
@@ -481,7 +475,7 @@ watch(
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    class="size-10 shrink-0 rounded-lg shadow-none md:hidden"
+                                    class="shrink-0 md:hidden"
                                 >
                                     <MoreHorizontal />
                                     <span class="sr-only">
@@ -570,19 +564,17 @@ watch(
                             class="data-[orientation=vertical]:h-5"
                         />
                         <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
-                            class="h-8"
-                            :disabled="bulkArchiving"
+                            :loading="bulkArchiving"
                             @click="archiveSelected(selected)"
                         >
                             <Archive />
                             Archive
                         </Button>
                         <Button
-                            variant="ghost"
+                            variant="destructive"
                             size="sm"
-                            class="h-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
                             @click="requestBulkDelete(selected)"
                         >
                             <Trash2 />
@@ -590,8 +582,8 @@ watch(
                         </Button>
                         <Button
                             variant="ghost"
-                            size="icon"
-                            class="ml-auto size-8 text-muted-foreground"
+                            size="icon-sm"
+                            class="ml-auto"
                             @click="table.resetRowSelection()"
                         >
                             <X class="size-4" />

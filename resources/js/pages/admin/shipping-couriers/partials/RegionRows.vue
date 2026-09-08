@@ -121,8 +121,8 @@ const update = (
                     <Button
                         type="button"
                         variant="ghost"
-                        size="icon"
-                        class="mt-5 size-9 shrink-0 text-muted-foreground hover:text-destructive"
+                        size="icon-sm"
+                        class="mt-5 shrink-0 hover:text-destructive"
                         @click="removeRow(row.key)"
                     >
                         <Trash2 class="size-4" />

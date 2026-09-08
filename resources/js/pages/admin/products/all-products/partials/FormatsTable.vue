@@ -140,8 +140,7 @@ const emit = defineEmits<{
                             <Button
                                 type="button"
                                 variant="ghost"
-                                size="icon"
-                                class="size-8 text-muted-foreground"
+                                size="icon-sm"
                                 @click="emit('edit', variant)"
                             >
                                 <Pencil class="size-3.5" />
@@ -152,8 +151,8 @@ const emit = defineEmits<{
                             <Button
                                 type="button"
                                 variant="ghost"
-                                size="icon"
-                                class="size-8 text-muted-foreground hover:text-destructive"
+                                size="icon-sm"
+                                class="hover:text-destructive"
                                 @click="emit('remove', variant)"
                             >
                                 <Trash2 class="size-3.5" />

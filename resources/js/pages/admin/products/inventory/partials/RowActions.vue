@@ -24,8 +24,8 @@ const emit = defineEmits<{
         <DropdownMenuTrigger as-child>
             <Button
                 variant="ghost"
-                size="icon"
-                class="size-8 text-muted-foreground data-[state=open]:bg-accent data-[state=open]:text-foreground"
+                size="icon-sm"
+                class="data-[state=open]:bg-accent data-[state=open]:text-foreground"
             >
                 <MoreHorizontal class="size-4" />
                 <span class="sr-only">Open menu for {{ item.name }}</span>

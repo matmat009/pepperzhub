@@ -20,7 +20,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import { adjust } from '@/routes/admin/products/inventory';
 import { STOCK_REASONS } from '../types';
@@ -129,8 +128,7 @@ const submit = () => {
                                 :variant="
                                     direction === 1 ? 'secondary' : 'ghost'
                                 "
-                                size="icon"
-                                class="size-8"
+                                size="icon-xs"
                                 @click="direction = 1"
                             >
                                 <Plus class="size-4" />
@@ -141,8 +139,7 @@ const submit = () => {
                                 :variant="
                                     direction === -1 ? 'secondary' : 'ghost'
                                 "
-                                size="icon"
-                                class="size-8"
+                                size="icon-xs"
                                 @click="direction = -1"
                             >
                                 <Minus class="size-4" />
@@ -207,8 +204,11 @@ const submit = () => {
                 >
                     Cancel
                 </Button>
-                <Button :disabled="processing || invalid" @click="submit">
-                    <Spinner v-if="processing" />
+                <Button
+                    :disabled="invalid"
+                    :loading="processing"
+                    @click="submit"
+                >
                     Apply adjustment
                 </Button>
             </DialogFooter>

@@ -3,7 +3,6 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ChevronLeft, Pencil } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import { index, update } from '@/routes/admin/products';
 import ProductForm from './partials/ProductForm.vue';
 import StatusBadge from './partials/StatusBadge.vue';
@@ -85,12 +84,7 @@ const submit = () => {
     <div class="flex flex-1 flex-col gap-6 px-4 py-6 lg:px-6">
         <header class="flex flex-wrap items-start justify-between gap-4">
             <div class="space-y-1">
-                <Button
-                    as-child
-                    variant="ghost"
-                    size="sm"
-                    class="-ml-2 h-7 px-2 text-muted-foreground"
-                >
+                <Button as-child variant="ghost" size="xs" class="-ml-2">
                     <Link :href="index()">
                         <ChevronLeft class="size-3.5" />
                         Products
@@ -119,8 +113,7 @@ const submit = () => {
                     >
                         Cancel
                     </Button>
-                    <Button :disabled="form.processing" @click="submit">
-                        <Spinner v-if="form.processing" />
+                    <Button :loading="form.processing" @click="submit">
                         Save
                     </Button>
                 </template>

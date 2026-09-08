@@ -84,8 +84,8 @@ const update = (key: string, field: 'label' | 'value', next: string) => {
                     <Button
                         type="button"
                         variant="ghost"
-                        size="icon"
-                        class="size-9 shrink-0 text-muted-foreground hover:text-destructive"
+                        size="icon-sm"
+                        class="shrink-0 hover:text-destructive"
                         :disabled="!canRemove"
                         @click="removeRow(row.key)"
                     >

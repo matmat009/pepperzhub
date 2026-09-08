@@ -89,8 +89,8 @@ const confirm = () => {
                 </AlertDialogCancel>
                 <AlertDialogAction
                     v-if="!blocked"
-                    class="bg-destructive text-white hover:bg-destructive/90"
-                    :disabled="processing"
+                    variant="destructive"
+                    :loading="processing"
                     @click.prevent="confirm"
                 >
                     Delete

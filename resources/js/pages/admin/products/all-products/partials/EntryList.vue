@@ -31,9 +31,6 @@ const props = withDefaults(
 const inert =
     'disabled:cursor-default disabled:opacity-100 disabled:bg-muted/40 disabled:text-foreground';
 
-const blueOutlineButton =
-    'border-primary/70 text-primary shadow-xs hover:border-primary hover:bg-primary/10 hover:text-primary dark:border-primary/75 dark:text-primary dark:hover:bg-primary/15 dark:hover:text-primary';
-
 const listRef = ref<HTMLElement | null>(null);
 
 const canRemove = computed(() => !props.readonly && entries.value.length > 1);
@@ -114,8 +111,8 @@ const update = (id: string, key: 'label' | 'value', next: string) => {
                     v-if="!readonly"
                     type="button"
                     variant="ghost"
-                    size="icon"
-                    class="size-9 shrink-0 text-muted-foreground hover:text-destructive"
+                    size="icon-sm"
+                    class="shrink-0 hover:text-destructive"
                     :disabled="!canRemove"
                     @click="removeEntry(entry.id)"
                 >
@@ -132,7 +129,7 @@ const update = (id: string, key: 'label' | 'value', next: string) => {
             type="button"
             variant="outline"
             size="sm"
-            :class="['mt-1 w-fit', blueOutline && blueOutlineButton]"
+            class="mt-1 w-fit"
             @click="addEntry"
         >
             <Plus />

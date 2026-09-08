@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { ArrowRight, Check } from '@lucide/vue';
+import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
 import { index as ordersIndex, show as orderShow } from '@/routes/admin/orders';
 import type { PendingPayment } from '../types';
@@ -76,12 +77,11 @@ defineProps<{
             every order and filters client-side, so there is no filter state in
             the URL to target. See the handover note.
         -->
-        <Link
-            :href="ordersIndex()"
-            class="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors duration-200 ease-out hover:text-foreground"
-        >
-            View all orders
-            <ArrowRight class="size-3.5" />
-        </Link>
+        <Button as-child variant="ghost" size="sm" class="mt-3 -ml-3">
+            <Link :href="ordersIndex()">
+                View all orders
+                <ArrowRight class="size-3.5" />
+            </Link>
+        </Button>
     </section>
 </template>

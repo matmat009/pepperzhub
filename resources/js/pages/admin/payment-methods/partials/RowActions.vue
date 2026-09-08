@@ -26,16 +26,16 @@ const emit = defineEmits<{
     <div class="flex items-center justify-end gap-1">
         <Button
             variant="ghost"
-            size="sm"
-            class="h-8 px-2 text-muted-foreground hover:text-foreground"
+            size="xs"
+            class="hover:text-foreground"
             @click="emit('edit', method)"
         >
             Edit
         </Button>
         <Button
             variant="ghost"
-            size="sm"
-            class="h-8 px-2 text-muted-foreground hover:text-destructive"
+            size="xs"
+            class="text-destructive hover:text-destructive"
             @click="emit('remove', method)"
         >
             Delete

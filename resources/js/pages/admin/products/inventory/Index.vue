@@ -183,7 +183,7 @@ const lowStockCount = computed(
 
                     <DropdownMenu>
                         <DropdownMenuTrigger as-child>
-                            <Button variant="outline" size="sm" class="h-9">
+                            <Button variant="outline" size="sm">
                                 <ListFilter />
                                 Category
                                 <span
