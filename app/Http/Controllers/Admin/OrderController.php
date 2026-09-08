@@ -114,6 +114,10 @@ class OrderController extends Controller
                     // reads as "not recorded" rather than "not a kit".
                     'is_kit' => $item->is_kit,
                     'kit_inclusions' => $item->kit_inclusions,
+                    // Live, not snapshotted — the variant link is nullable and
+                    // the product may have no gallery, so every hop is
+                    // optional and the line falls back to a placeholder.
+                    'image_url' => $item->variant?->product?->images->first()?->url(),
                     'unit_price' => (float) $item->unit_price,
                     'quantity' => (int) $item->quantity,
                     'line_total' => (float) $item->line_total,
@@ -143,7 +147,9 @@ class OrderController extends Controller
 
     public function show(Order $order): Response
     {
-        $order->load('items');
+        // Down to the images: the thumbnail is a live lookup through the
+        // variant link, so without this it is one query per line.
+        $order->load('items.variant.product.images');
 
         return Inertia::render('admin/orders/Show', [
             'order' => $this->toPayload($order),

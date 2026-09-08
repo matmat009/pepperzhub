@@ -6,6 +6,7 @@ import {
     Check,
     ExternalLink,
     FileText,
+    FlaskConical,
     Package,
     Pencil,
     Truck,
@@ -281,39 +282,61 @@ const timeline = computed(() =>
                             :key="item.id"
                             class="flex items-start justify-between gap-4 py-3"
                         >
-                            <div class="min-w-0">
-                                <div class="truncate font-medium">
-                                    {{ item.product_name }}
-                                </div>
-                                <div class="text-sm text-muted-foreground">
-                                    {{ item.variant_label }} ×
-                                    {{ item.quantity }} @
-                                    {{ formatPrice(item.unit_price) }}
-                                </div>
+                            <div class="flex min-w-0 items-start gap-3">
                                 <!--
-                                    Snapshotted at order time, so this is the
-                                    packing list as it stood then — null on
-                                    orders that predate the snapshot, which
-                                    renders as nothing.
+                                    Same well and FlaskConical fallback the
+                                    products list uses, so a line whose variant
+                                    has been deleted looks like every other
+                                    missing image in the admin.
                                 -->
-                                <ul
-                                    v-if="
-                                        item.is_kit &&
-                                        item.kit_inclusions?.length
-                                    "
-                                    class="mt-1 flex flex-col gap-0.5"
+                                <div
+                                    class="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted/60"
                                 >
-                                    <li
-                                        v-for="inclusion in item.kit_inclusions"
-                                        :key="inclusion"
-                                        class="flex items-start gap-2 text-sm text-muted-foreground"
+                                    <img
+                                        v-if="item.image_url"
+                                        :src="item.image_url"
+                                        :alt="item.product_name"
+                                        class="size-full object-cover"
+                                    />
+                                    <FlaskConical
+                                        v-else
+                                        class="size-4 text-muted-foreground"
+                                    />
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="truncate font-medium">
+                                        {{ item.product_name }}
+                                    </div>
+                                    <div class="text-sm text-muted-foreground">
+                                        {{ item.variant_label }} ×
+                                        {{ item.quantity }} @
+                                        {{ formatPrice(item.unit_price) }}
+                                    </div>
+                                    <!--
+                                        Snapshotted at order time, so this is
+                                        the packing list as it stood then —
+                                        null on orders that predate the
+                                        snapshot, which renders as nothing.
+                                    -->
+                                    <ul
+                                        v-if="
+                                            item.is_kit &&
+                                            item.kit_inclusions?.length
+                                        "
+                                        class="mt-1 flex flex-col gap-0.5"
                                     >
-                                        <span
-                                            class="mt-2 size-1 shrink-0 rounded-full bg-muted-foreground/50"
-                                        />
-                                        <span>{{ inclusion }}</span>
-                                    </li>
-                                </ul>
+                                        <li
+                                            v-for="inclusion in item.kit_inclusions"
+                                            :key="inclusion"
+                                            class="flex items-start gap-2 text-sm text-muted-foreground"
+                                        >
+                                            <span
+                                                class="mt-2 size-1 shrink-0 rounded-full bg-muted-foreground/50"
+                                            />
+                                            <span>{{ inclusion }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                             <div class="font-medium tabular-nums">
                                 {{ formatPrice(item.line_total) }}

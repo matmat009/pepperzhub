@@ -31,6 +31,8 @@ export type OrderItem = {
     /** Null on orders placed before kit contents were snapshotted. */
     is_kit: boolean | null;
     kit_inclusions: string[] | null;
+    /** Live from the variant's product, so null once either is gone. */
+    image_url: string | null;
     unit_price: number;
     quantity: number;
     line_total: number;
