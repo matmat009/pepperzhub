@@ -14,7 +14,7 @@ const thumbnail = computed(() => props.product.images[0]?.url ?? null);
 <template>
     <div class="flex min-w-0 items-center gap-3">
         <div
-            class="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted/60"
+            class="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted/60"
         >
             <img
                 v-if="thumbnail"
@@ -24,9 +24,13 @@ const thumbnail = computed(() => props.product.images[0]?.url ?? null);
             />
             <FlaskConical v-else class="size-4 text-muted-foreground" />
         </div>
-        <div class="min-w-0">
-            <div class="truncate text-sm font-medium">{{ product.name }}</div>
-            <div class="truncate text-xs text-muted-foreground">
+        <div class="max-w-60 min-w-0">
+            <div class="truncate text-sm leading-5 font-semibold">
+                {{ product.name }}
+            </div>
+            <div
+                class="line-clamp-2 text-xs leading-4 whitespace-normal text-muted-foreground"
+            >
                 {{ product.short_description }}
             </div>
         </div>

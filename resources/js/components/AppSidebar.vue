@@ -105,30 +105,32 @@ const navSecondary = [
 
 <template>
     <Sidebar :collapsible="collapsible" :variant="variant">
-        <SidebarHeader>
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton
-                        as-child
-                        class="data-[slot=sidebar-menu-button]:!p-1.5"
-                    >
-                        <Link :href="home()">
-                            <IconInnerShadowTop class="!size-5" />
-                            <span class="text-base font-semibold">{{
-                                appName
-                            }}</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </SidebarMenu>
-        </SidebarHeader>
-        <SidebarContent>
-            <NavMain :items="navMain" />
-            <NavMain label="E-commerce" :items="navEcommerce" />
-            <NavSecondary :items="navSecondary" class="mt-auto" />
-        </SidebarContent>
-        <SidebarFooter>
-            <NavUser :user="user" />
-        </SidebarFooter>
+        <div class="admin-sidebar-wash flex h-full min-h-0 flex-col">
+            <SidebarHeader>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton
+                            as-child
+                            class="data-[slot=sidebar-menu-button]:!p-1.5"
+                        >
+                            <Link :href="home()">
+                                <IconInnerShadowTop class="!size-5" />
+                                <span class="text-base font-semibold">{{
+                                    appName
+                                }}</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarHeader>
+            <SidebarContent>
+                <NavMain :items="navMain" />
+                <NavMain label="E-commerce" :items="navEcommerce" />
+                <NavSecondary :items="navSecondary" class="mt-auto" />
+            </SidebarContent>
+            <SidebarFooter>
+                <NavUser :user="user" />
+            </SidebarFooter>
+        </div>
     </Sidebar>
 </template>

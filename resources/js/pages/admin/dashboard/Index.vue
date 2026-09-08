@@ -40,12 +40,29 @@ const lowStockThreshold = useLowStockThreshold();
 <template>
     <Head title="Dashboard" />
 
-    <div class="flex flex-1 flex-col gap-6 px-4 py-6 lg:px-6">
-        <header class="space-y-1">
-            <h1 class="text-2xl font-semibold tracking-tight">Dashboard</h1>
-            <p class="text-sm text-muted-foreground">
-                What needs you right now, and how the month is going.
-            </p>
+    <div class="flex flex-1 flex-col gap-5 px-4 py-5 sm:gap-6 sm:py-6 lg:px-6">
+        <header
+            class="relative isolate flex min-h-44 items-center overflow-hidden rounded-xl border border-white/60 px-6 py-8 shadow-xs sm:min-h-[11.25rem] sm:px-8 lg:px-10"
+        >
+            <img
+                src="/images/admin/dashboard-banner.png"
+                alt=""
+                class="absolute inset-0 -z-10 size-full object-cover object-center"
+                aria-hidden="true"
+            />
+
+            <div class="max-w-2xl text-sf-ink">
+                <h1
+                    class="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl"
+                >
+                    Dashboard
+                </h1>
+                <p
+                    class="mt-2 text-base leading-relaxed text-sf-text sm:text-lg"
+                >
+                    What needs you right now, and how the month is going.
+                </p>
+            </div>
         </header>
 
         <StatsCards :stats="stats" :low-stock-threshold="lowStockThreshold" />

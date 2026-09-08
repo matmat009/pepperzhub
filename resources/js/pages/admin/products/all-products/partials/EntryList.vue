@@ -65,6 +65,16 @@ const update = (id: string, key: 'label' | 'value', next: string) => {
 
 <template>
     <div ref="listRef" class="grid gap-2">
+        <div
+            v-if="blueOutline"
+            class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_2.25rem] gap-2 text-xs text-muted-foreground"
+            aria-hidden="true"
+        >
+            <span>Label</span>
+            <span>Value</span>
+            <span></span>
+        </div>
+
         <TransitionGroup
             tag="div"
             class="grid gap-2"

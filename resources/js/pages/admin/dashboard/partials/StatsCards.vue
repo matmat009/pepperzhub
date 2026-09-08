@@ -61,28 +61,32 @@ const cards = computed(() => [
 </script>
 
 <template>
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
         <section
             v-for="card in cards"
             :key="card.key"
-            class="rounded-xl border bg-card p-5"
+            class="min-h-32 rounded-xl border border-border/90 bg-card p-5 shadow-xs"
         >
             <div class="flex items-start justify-between gap-3">
-                <span class="text-sm text-muted-foreground">
+                <span class="text-sm font-medium text-muted-foreground">
                     {{ card.label }}
                 </span>
                 <component
                     :is="card.icon"
-                    class="size-4 shrink-0 text-muted-foreground"
+                    class="size-4 shrink-0 text-muted-foreground/90"
                 />
             </div>
             <p
-                class="mt-3 text-3xl font-semibold tabular-nums"
-                :class="card.emphasis ? 'text-amber-600' : ''"
+                class="mt-3 text-3xl leading-none font-semibold tracking-tight tabular-nums"
+                :class="
+                    card.emphasis
+                        ? 'text-orange-600 dark:text-orange-400'
+                        : 'text-foreground'
+                "
             >
                 {{ card.value }}
             </p>
-            <p class="mt-1 text-xs text-muted-foreground">{{ card.hint }}</p>
+            <p class="mt-2 text-xs text-muted-foreground">{{ card.hint }}</p>
         </section>
     </div>
 </template>

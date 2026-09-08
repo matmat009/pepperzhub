@@ -36,6 +36,16 @@ const additionalImages = computed(() => images.value.slice(1));
 const canAddImage = computed(
     () => !props.blueOutline || images.value.length < 10,
 );
+const additionalPlaceholderCount = computed(() => {
+    const available = Math.max(0, 9 - additionalImages.value.length);
+
+    return Math.min(
+        available,
+        additionalImages.value.length < 4
+            ? 4 - additionalImages.value.length
+            : 1,
+    );
+});
 
 const browseInput = ref<HTMLInputElement | null>(null);
 const replaceInput = ref<HTMLInputElement | null>(null);
@@ -96,59 +106,69 @@ const onDrop = (event: DragEvent) => {
 </script>
 
 <template>
-    <div v-if="blueOutline" class="space-y-4">
-        <div
-            :class="[
-                'relative flex aspect-square items-center justify-center overflow-hidden rounded-lg border bg-background transition-colors duration-200 ease-out',
-                primaryImage
-                    ? readonly
-                        ? 'border-2 border-border'
-                        : 'border-2 border-primary'
-                    : 'border-dashed border-border',
-                dragging && !readonly && 'border-primary bg-primary/5',
-            ]"
-            @dragover.prevent="!readonly && (dragging = true)"
-            @dragleave.prevent="dragging = false"
-            @drop.prevent="onDrop"
-        >
-            <img
-                v-if="primaryImage"
-                :src="primaryImage.url"
-                alt="Primary product image"
-                class="size-full bg-muted/10 object-contain"
-            />
+    <div v-if="blueOutline" class="space-y-5">
+        <div class="space-y-2.5">
+            <p class="text-sm font-medium">Product Image</p>
+
             <div
-                v-else
-                class="flex flex-col items-center gap-2 px-6 text-center"
+                :class="[
+                    'relative flex aspect-square items-center justify-center overflow-hidden rounded-xl border bg-background/75 transition-colors duration-200 ease-out',
+                    primaryImage
+                        ? readonly
+                            ? 'border-border'
+                            : 'border-primary/70'
+                        : 'border-dashed border-primary/30 hover:border-primary/55',
+                    dragging && !readonly && 'border-primary bg-primary/5',
+                ]"
+                @dragover.prevent="!readonly && (dragging = true)"
+                @dragleave.prevent="dragging = false"
+                @drop.prevent="onDrop"
             >
-                <ImageIcon class="size-6 text-muted-foreground" />
-                <p v-if="readonly" class="text-sm text-muted-foreground">
-                    No image for this product
-                </p>
-                <p v-else class="text-sm text-muted-foreground">
-                    Drop an image here, or
-                    <button
+                <img
+                    v-if="primaryImage"
+                    :src="primaryImage.url"
+                    alt="Primary product image"
+                    class="size-full bg-background/70 object-contain"
+                />
+                <div
+                    v-else
+                    class="flex flex-col items-center gap-3 px-6 text-center"
+                >
+                    <ImageIcon class="size-7 text-muted-foreground" />
+                    <p class="text-sm text-muted-foreground">
+                        {{
+                            readonly
+                                ? 'No image for this product'
+                                : 'Drop an image here, or browse'
+                        }}
+                    </p>
+                    <Button
+                        v-if="!readonly"
                         type="button"
-                        class="font-medium text-primary hover:underline"
+                        variant="outline"
+                        size="sm"
+                        :class="blueOutlineButton"
                         @click="browseInput?.click()"
                     >
-                        browse
-                    </button>
-                </p>
-            </div>
+                        Browse
+                    </Button>
+                </div>
 
-            <span
-                v-if="primaryImage"
-                class="absolute top-2 right-2 grid size-5 place-items-center rounded-full bg-primary text-primary-foreground shadow-sm"
-                aria-label="Primary image selected"
-            >
-                <Check class="size-3.5" />
-            </span>
+                <span
+                    v-if="primaryImage"
+                    class="absolute top-2 right-2 grid size-5 place-items-center rounded-full bg-primary text-primary-foreground shadow-sm"
+                    aria-label="Primary image selected"
+                >
+                    <Check class="size-3.5" />
+                </span>
+            </div>
         </div>
 
-        <div v-if="!readonly" class="flex flex-wrap items-center gap-2">
+        <div
+            v-if="!readonly && primaryImage"
+            class="flex flex-wrap items-center gap-2"
+        >
             <Button
-                v-if="primaryImage"
                 type="button"
                 variant="outline"
                 size="sm"
@@ -159,18 +179,6 @@ const onDrop = (event: DragEvent) => {
                 Replace
             </Button>
             <Button
-                v-else
-                type="button"
-                variant="outline"
-                size="sm"
-                :class="blueOutlineButton"
-                @click="browseInput?.click()"
-            >
-                <ImageIcon />
-                Browse
-            </Button>
-            <Button
-                v-if="primaryImage"
                 type="button"
                 variant="outline"
                 size="sm"
@@ -182,11 +190,16 @@ const onDrop = (event: DragEvent) => {
             </Button>
         </div>
 
-        <p v-if="!readonly" class="text-xs text-muted-foreground">
-            Recommended: 1000 × 1000px, JPG, PNG, WEBP, or SVG (max 5MB).
-        </p>
+        <div
+            v-if="!readonly"
+            class="space-y-1 text-xs leading-relaxed text-muted-foreground"
+        >
+            <p>Recommended: 1200 × 1200 px</p>
+            <p>Formats: JPG, PNG, WebP, or SVG</p>
+            <p>Max size: 5 MB</p>
+        </div>
 
-        <div class="space-y-3 border-t pt-4">
+        <div class="space-y-3 border-t border-primary/10 pt-4">
             <div class="flex items-baseline gap-2">
                 <p class="text-sm font-medium">Additional Images</p>
                 <span class="text-xs text-muted-foreground">
@@ -196,7 +209,7 @@ const onDrop = (event: DragEvent) => {
 
             <TransitionGroup
                 tag="div"
-                class="grid grid-cols-3 gap-3"
+                class="grid grid-cols-2 gap-3"
                 enter-active-class="transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity"
                 enter-from-class="scale-95 opacity-0 motion-reduce:scale-100"
                 leave-active-class="absolute transition-[opacity,transform] duration-150 ease-out motion-reduce:transition-opacity"
@@ -226,16 +239,26 @@ const onDrop = (event: DragEvent) => {
                 </div>
 
                 <button
-                    v-if="!readonly && canAddImage"
-                    key="add-tile"
+                    v-for="slot in !readonly && canAddImage
+                        ? additionalPlaceholderCount
+                        : 0"
+                    :key="`add-tile-${slot}`"
                     type="button"
-                    class="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-primary/55 text-primary transition-colors duration-200 ease-out hover:border-primary hover:bg-primary/10 hover:text-primary"
+                    class="flex aspect-square flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-primary/35 bg-background/45 text-muted-foreground transition-colors duration-200 ease-out hover:border-primary hover:bg-primary/10 hover:text-primary"
+                    :aria-label="`Add additional image ${additionalImages.length + slot}`"
                     @click="browseInput?.click()"
                 >
                     <Plus class="size-5" />
                     <span class="text-xs font-medium">Add Image</span>
                 </button>
             </TransitionGroup>
+
+            <p
+                v-if="!readonly"
+                class="text-xs leading-relaxed text-muted-foreground"
+            >
+                You can add up to 9 additional images.
+            </p>
         </div>
     </div>
 
@@ -354,7 +377,7 @@ const onDrop = (event: DragEvent) => {
     <input
         ref="browseInput"
         type="file"
-        accept="image/*"
+        accept=".jpg,.jpeg,.png,.webp,.svg,image/jpeg,image/png,image/webp,image/svg+xml"
         multiple
         class="sr-only"
         @change="addFiles(($event.target as HTMLInputElement).files)"
@@ -362,7 +385,7 @@ const onDrop = (event: DragEvent) => {
     <input
         ref="replaceInput"
         type="file"
-        accept="image/*"
+        accept=".jpg,.jpeg,.png,.webp,.svg,image/jpeg,image/png,image/webp,image/svg+xml"
         class="sr-only"
         @change="replaceActive(($event.target as HTMLInputElement).files)"
     />

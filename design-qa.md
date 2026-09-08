@@ -1,59 +1,118 @@
-# Checkout payment-proof preview — design QA
+# Design QA
 
-- Source visual truth: `C:\Users\mathe\Downloads\ChatGPT Image Sep 6, 2026, 03_18_50 AM.png`
-- Implementation: `resources/js/pages/storefront/Checkout.vue`
-- Implementation screenshot: unavailable because no in-app or connected browser was exposed to this session
-- Intended viewport: desktop, matching the 1368 × 1149 source capture; mobile is also in scope
-- Source pixels: 1368 × 1149
-- Source CSS size and density: not embedded in the PNG; comparison would use 1368 × 1149 CSS pixels at device scale factor 1
-- Implementation pixels, CSS size, and density normalization: unavailable without a browser-rendered capture
-- State: a valid JPG or PNG payment proof selected and its preview fully loaded
+- **Source visual truth:** Two user-provided All Products mockups in the conversation; no filesystem paths were exposed.
+- **Implementation screenshot:** Unavailable because no in-app or connected browser is available in this session.
+- **Viewport:** Source images are 1162 × 869 px and 994 × 308 px; implementation viewport and density could not be captured.
+- **State:** Populated All Products page, including default and expanded-row states.
+- **Full-view comparison:** Blocked because the rendered implementation could not be captured.
+- **Focused comparison:** Blocked for the toolbar, product row, and expanded-format regions for the same reason.
+- **Primary interactions tested:** Not browser-tested. Existing handlers and shared table state were preserved in source.
+- **Console errors:** Not checked because no browser was available.
 
-**Findings**
+## Findings
 
-- [P1] Browser-rendered visual comparison is blocked.
-  Location: checkout payment-proof uploaded state.
-  Evidence: the source visual was opened and inspected, but the implementation could not be opened in the required browser because both the in-app browser and connected Chrome were unavailable.
-  Impact: exact rendered proportions, responsive wrapping, focus treatment, and lightbox behavior cannot be signed off from source code alone.
-  Fix: capture the uploaded state at 1368 × 1149 and a representative mobile viewport in the integrated browser, then compare those captures with the source.
+- **[P2] Responsive fidelity and interaction states are not visually verified**
+  - **Location:** All Products toolbar, desktop table, mobile cards, and expanded formats.
+  - **Evidence:** The implementation follows the supplied structure and tokens, but there is no browser-rendered screenshot at the requested breakpoints or themes.
+  - **Impact:** Wrapping, density, overflow, and dark-mode balance may still need visual adjustment.
+  - **Fix:** Capture the page at the specified desktop and mobile widths, exercise selection, expansion, filters, pagination, sidebar states, and dark mode, then compare against the mockups.
 
-**Required fidelity surfaces**
+## Comparison History
 
-- Fonts and typography: implementation reuses the storefront's Lora `font-display` and inherited `font-body` conventions. Rendered weight, line height, wrapping, and antialiasing remain unverified.
-- Spacing and layout rhythm: the implementation uses a 43/57 desktop split, 330 px minimum panel height, 12 px radii, a stacked mobile layout, and balanced internal padding. Rendered dimensions remain unverified.
-- Colors and visual tokens: Blue Serenity tokens drive interaction and focus treatments; Rose Quartz is limited to a subtle panel border; green is limited to the success indicator. Rendered contrast remains unverified.
-- Image quality and asset fidelity: both inline and enlarged previews use `object-contain`; no replacement raster assets, custom SVGs, CSS art, or gradients were introduced. Portrait, landscape, and square rendering remains unverified in-browser.
-- Copy and content: the real filename, “Image attached successfully,” “Click to enlarge,” Replace, Remove, and the server-aligned `JPG, PNG or PDF · Max 5MB` guidance are present.
+- Initial implementation: source mockups inspected; post-build browser capture unavailable, so no visual iteration was possible.
 
-**Full-view comparison evidence**
+## Required Fidelity Surfaces
 
-- Source visual: opened at its native 1368 × 1149 resolution.
-- Implementation capture: unavailable, so no same-viewport combined comparison could be made.
+- **Fonts and typography:** Existing admin Geist typography is preserved; rendered hierarchy is not visually verified.
+- **Spacing and layout rhythm:** Toolbar, product hierarchy, selected-row tint, and expanded formats were adjusted to the mockups; breakpoint behavior is not visually verified.
+- **Colors and visual tokens:** Existing neutral, primary, emerald, amber, red, and dark-mode tokens are reused; rendered contrast is not visually verified.
+- **Image quality and asset fidelity:** Existing product images remain data-driven; no replacement assets were introduced.
+- **Copy and content:** Existing product data and interface copy are preserved.
 
-**Focused region comparison evidence**
+## Implementation Checklist
 
-- The payment-proof panel is the required focused region. A rendered crop is unavailable, so its comparison is blocked.
+- Capture populated and expanded-row desktop states at 768, 1024, 1440, and 2048 px.
+- Capture mobile-card states at 375 and 390 px.
+- Check filters, selection, expansion, columns, pagination, sidebar states, light/dark themes, overflow, and console warnings.
 
-**Interaction verification**
+**All Products result:** blocked
 
-- Static inspection confirms object URLs are revoked on replacement, removal, failed preview generation, and unmount.
-- TypeScript, ESLint, Prettier, Pint, the PHP test suite, and the production build pass.
-- Upload, keyboard activation, Escape/close behavior, focus restoration, replace/remove behavior, responsive behavior, and browser console errors could not be exercised without a browser surface.
+---
 
-**Comparison history**
+## Add Product Redesign
 
-- Pass 1: source opened; implementation capture blocked because no browser surface was available. No visual fixes were made from a rendered comparison.
+- **Source visual truth:** Two user-provided Add Product mockups in the conversation; no filesystem paths were exposed.
+- **Implementation screenshot:** Unavailable because no in-app or connected browser is available in this session.
+- **Viewport:** Source images are 769 × 917 px and 339 × 859 px; implementation viewport, CSS size, device density, and normalization could not be captured.
+- **State:** Empty Add Product form with the primary and additional image upload controls visible.
+- **Full-view comparison:** Blocked because the rendered implementation could not be captured.
+- **Focused comparison:** Blocked for the section headers, form density, and Serenity Blue image-upload panel for the same reason.
+- **Primary interactions tested:** Not browser-tested. Existing submit, discard, format, repeatable-entry, image browse/drop/replace/remove, and responsive state logic were preserved in source.
+- **Console errors:** Not checked because no browser was available.
 
-**Implementation checklist**
+### Findings
 
-- Capture the loaded image state at the matching desktop viewport.
-- Exercise click and keyboard opening, visible close, Escape, and focus restoration.
-- Test replacement, removal, invalid file handling, JPG/PNG/PDF selection, and repeated selection of the same file.
-- Capture portrait, landscape, square, and mobile states.
-- Check the console and repeat the combined visual comparison.
+- **[P2] Rendered fidelity and interaction states are not visually verified**
+  - **Location:** Add Product header, form cards, image dropzone, and responsive grid.
+  - **Evidence:** The implementation follows the supplied card hierarchy, spacing, upload layout, and subtle Serenity Blue treatment, but there is no browser-rendered screenshot at matching viewports.
+  - **Impact:** Wrapping, card proportions, the light-blue wash, overflow, and dark-mode balance may still need visual adjustment.
+  - **Fix:** Capture the empty form at desktop and mobile widths, exercise the image and format controls, inspect the console, and compare the result with both supplied mockups.
 
-**Follow-up polish**
+### Comparison History
 
-- None identified without rendered evidence.
+- Initial implementation: both source mockups were inspected; post-build browser capture was unavailable, so no visual comparison iteration was possible.
 
-final result: blocked
+### Required Fidelity Surfaces
+
+- **Fonts and typography:** Existing admin Geist typography is preserved, with the mockup's heading/subtitle hierarchy reflected in source; rendered wrapping and optical weight are not visually verified.
+- **Spacing and layout rhythm:** Card padding, section gaps, responsive columns, radii, and upload-tile proportions were adjusted to the mockups; rendered rhythm is not visually verified.
+- **Colors and visual tokens:** The existing Serenity Blue token is mixed at 8% into the image card background, with token-based borders and dark-mode handling; rendered contrast is not visually verified.
+- **Image quality and asset fidelity:** The source contains no custom imagery; existing Lucide icons and data-driven product previews remain in use.
+- **Copy and content:** Reference headings and helper copy were adopted while the application's actual one-primary-plus-nine-additional limit and all existing fields were preserved.
+
+### Implementation Checklist
+
+- Capture empty and populated Add Product states at desktop and mobile widths.
+- Test format add/edit/remove, repeatable technical fields, browse/drop/replace/remove uploads, discard, publish validation, dark mode, overflow, and console warnings.
+
+**Add Product result:** blocked
+
+---
+
+## Dashboard Redesign
+
+- **Source visual truth:** User-provided dashboard screenshot in the conversation; no filesystem path was exposed.
+- **Implementation screenshot:** Unavailable because no in-app or connected browser is available in this session.
+- **Viewport:** Source image is 1430 × 762 px; implementation viewport, CSS size, device density, and normalization could not be captured.
+- **State:** Dashboard with four live summary metrics and the oldest pending-payment rows.
+- **Full-view comparison:** Blocked because the browser-rendered implementation could not be captured.
+- **Focused comparison:** Blocked for the banner artwork, metric cards, and pending-payment row for the same reason.
+- **Primary interactions tested:** Not browser-tested. Existing dashboard route, live Inertia props, order links, and responsive component behavior were preserved in source.
+- **Console errors:** Not checked because no browser was available.
+
+### Findings
+
+- **[P2] Desktop and mobile rendered fidelity are not visually verified**
+  - **Location:** Dashboard banner, summary-card grid, and pending-payments panel.
+  - **Evidence:** Source code follows the screenshot's proportions, responsive breakpoints, and hierarchy, but no implementation capture is available for direct comparison.
+  - **Impact:** Banner cropping, text wrapping, card rhythm, and mobile stacking may still require visual adjustment.
+  - **Fix:** Capture the dashboard at the source desktop size and representative 390 px mobile width, inspect links and console output, then compare both captures with the supplied screenshot.
+
+### Comparison History
+
+- Initial implementation: the source screenshot and generated text-free banner asset were inspected; browser capture was unavailable, so no visual comparison iteration was possible.
+
+### Required Fidelity Surfaces
+
+- **Fonts and typography:** Existing admin Geist typography is retained with the screenshot's large banner heading and compact metric hierarchy; rendered weight, wrapping, and optical balance are not visually verified.
+- **Spacing and layout rhythm:** Page padding, 180 px banner, four-column desktop metrics, two-column tablet layout, single-column mobile layout, card radii, and panel spacing follow the reference in source; rendered rhythm is not visually verified.
+- **Colors and visual tokens:** The banner uses the approved Serenity Blue and Rose Quartz palette, while cards retain existing semantic and dark-mode tokens; rendered contrast is not visually verified.
+- **Image quality and asset fidelity:** A 2172 × 724 px text-free raster banner was generated from the supplied reference and saved in the project; browser crop and sharpness are not visually verified.
+- **Copy and content:** Dashboard headings, helper text, live metric labels, live values, pending customer/order data, and links are preserved.
+
+### Implementation Checklist
+
+- Capture and compare desktop and mobile dashboard states.
+- Check pending-order links, card wrapping, banner crop, sidebar states, light/dark themes, overflow, and console warnings.
+
+**final result: blocked**

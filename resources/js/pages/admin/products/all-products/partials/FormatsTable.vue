@@ -70,11 +70,11 @@ const emit = defineEmits<{
                     <TableHead
                         v-if="!readonly"
                         :class="[
-                            'w-20 text-xs font-medium text-muted-foreground',
+                            'w-20 text-right text-xs font-medium text-muted-foreground',
                             compact ? 'h-9' : 'h-10',
                         ]"
                     >
-                        <span class="sr-only">Actions</span>
+                        <span :class="compact ? '' : 'sr-only'">Actions</span>
                     </TableHead>
                 </TableRow>
             </TableHeader>

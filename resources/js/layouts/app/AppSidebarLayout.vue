@@ -20,7 +20,7 @@ withDefaults(defineProps<Props>(), {
         variant="sidebar"
         class="[--header-height:calc(var(--spacing)*12)] [--sidebar-width:calc(var(--spacing)*72)]"
     >
-        <AppSidebar collapsible="icon" variant="inset" />
+        <AppSidebar collapsible="icon" variant="sidebar" class="border-r-0!" />
         <!-- Keep the horizontal-overflow guard *below* the header: any ancestor
              with a non-visible overflow becomes the sticky containing block, and
              SidebarInset never scrolls (the document does), which would pin the

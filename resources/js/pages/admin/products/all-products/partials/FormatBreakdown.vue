@@ -17,12 +17,15 @@ defineProps<{
 </script>
 
 <template>
-    <div class="py-1 pr-4 pl-14">
-        <ul class="divide-y divide-border/60">
+    <div class="px-3 pt-2 pb-3">
+        <p class="mb-2 text-xs font-medium text-muted-foreground">Formats</p>
+        <ul
+            class="divide-y divide-border/70 overflow-hidden rounded-lg border bg-background"
+        >
             <li
                 v-for="variant in product.variants"
                 :key="variant.id"
-                class="flex items-center gap-4 py-2.5"
+                class="grid min-w-96 grid-cols-[minmax(12rem,1fr)_5rem_7rem] items-center gap-4 px-4 py-3"
             >
                 <div class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-center gap-2">
@@ -49,14 +52,7 @@ defineProps<{
                     </p>
                 </div>
 
-                <div class="w-24 shrink-0 text-right">
-                    <div class="text-sm font-medium tabular-nums">
-                        {{ formatPrice(variant.price) }}
-                    </div>
-                    <div class="text-xs text-muted-foreground">price</div>
-                </div>
-
-                <div class="w-20 shrink-0 text-right">
+                <div class="text-right">
                     <div
                         :class="[
                             'text-sm tabular-nums',
@@ -68,6 +64,13 @@ defineProps<{
                         {{ variant.stock }}
                     </div>
                     <div class="text-xs text-muted-foreground">in stock</div>
+                </div>
+
+                <div class="text-right">
+                    <div class="text-sm font-semibold tabular-nums">
+                        {{ formatPrice(variant.price) }}
+                    </div>
+                    <div class="text-xs text-muted-foreground">price</div>
                 </div>
             </li>
         </ul>

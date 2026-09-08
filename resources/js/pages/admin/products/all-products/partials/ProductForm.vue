@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import { FlaskConical, Info, Plus, Tag } from '@lucide/vue';
+import { FlaskConical, Package, Plus, Tag } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardAction,
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -114,7 +120,7 @@ const removeFormat = (variant: ProductVariant) => {
         :class="[
             'grid',
             createStyle
-                ? 'gap-4 md:grid-cols-[minmax(0,1.8fr)_minmax(19rem,1fr)]'
+                ? 'gap-4 xl:grid-cols-[minmax(0,1.8fr)_minmax(19rem,0.85fr)]'
                 : 'gap-6 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]',
         ]"
     >
@@ -123,21 +129,34 @@ const removeFormat = (variant: ProductVariant) => {
             <Card
                 :class="
                     createStyle
-                        ? 'gap-0 rounded-xl border-border/90 py-0 shadow-xs'
+                        ? 'gap-0 rounded-xl border-primary/10 py-0 shadow-sm shadow-sf-serenity-blue/10 dark:border-primary/20 dark:shadow-none'
                         : 'border-transparent shadow-sm shadow-black/5'
                 "
             >
-                <CardHeader :class="createStyle ? 'px-4 pt-4 pb-3' : ''">
-                    <div class="flex items-center gap-2.5">
-                        <Info
+                <CardHeader :class="createStyle ? 'px-5 pt-5 pb-4' : ''">
+                    <div class="flex items-start gap-3">
+                        <span
                             v-if="createStyle"
-                            class="size-4 text-muted-foreground"
-                        />
-                        <CardTitle class="text-base">Basic Details</CardTitle>
+                            class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sf-serenity-blue/20 text-primary dark:bg-primary/15"
+                        >
+                            <Tag class="size-5" />
+                        </span>
+                        <div class="space-y-1">
+                            <CardTitle class="text-base">
+                                Basic Details
+                            </CardTitle>
+                            <p
+                                v-if="createStyle"
+                                class="text-sm text-muted-foreground"
+                            >
+                                Add the essential information about your
+                                product.
+                            </p>
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent
-                    :class="['grid', createStyle ? 'gap-4 px-4 pb-4' : 'gap-5']"
+                    :class="['grid', createStyle ? 'gap-4 px-5 pb-5' : 'gap-5']"
                 >
                     <div class="grid gap-2">
                         <Label for="name">Product Name</Label>
@@ -293,25 +312,47 @@ const removeFormat = (variant: ProductVariant) => {
             <Card
                 :class="
                     createStyle
-                        ? 'gap-0 rounded-xl border-border/90 py-0 shadow-xs'
+                        ? 'gap-0 rounded-xl border-primary/10 py-0 shadow-sm shadow-sf-serenity-blue/10 dark:border-primary/20 dark:shadow-none'
                         : 'border-transparent shadow-sm shadow-black/5'
                 "
             >
-                <CardHeader :class="createStyle ? 'px-4 pt-4 pb-3' : ''">
-                    <div class="flex items-start gap-2.5">
-                        <Tag
-                            v-if="createStyle"
-                            class="mt-0.5 size-4 text-muted-foreground"
-                        />
-                        <div class="space-y-1">
-                            <CardTitle class="text-base">
-                                Formats &amp; Pricing
-                            </CardTitle>
-                            <p class="text-sm text-muted-foreground">
-                                Each format is bought separately and carries its
-                                own price and stock.
-                            </p>
+                <CardHeader :class="createStyle ? 'px-5 pt-5 pb-4' : ''">
+                    <div
+                        :class="[
+                            'flex items-start gap-3',
+                            createStyle &&
+                                'flex-col sm:flex-row sm:justify-between',
+                        ]"
+                    >
+                        <div class="flex items-start gap-3">
+                            <span
+                                v-if="createStyle"
+                                class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sf-serenity-blue/20 text-primary dark:bg-primary/15"
+                            >
+                                <Package class="size-5" />
+                            </span>
+                            <div class="space-y-1">
+                                <CardTitle class="text-base">
+                                    Formats &amp; Pricing
+                                </CardTitle>
+                                <p class="text-sm text-muted-foreground">
+                                    Each format is bought separately and carries
+                                    its own price and stock.
+                                </p>
+                            </div>
                         </div>
+
+                        <Button
+                            v-if="!readonly && createStyle"
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            :class="['shrink-0', blueOutlineButton]"
+                            @click="openAddFormat"
+                        >
+                            <Plus />
+                            Add Format
+                        </Button>
                     </div>
                     <CardAction v-if="!readonly && !createStyle">
                         <Button
@@ -325,18 +366,7 @@ const removeFormat = (variant: ProductVariant) => {
                         </Button>
                     </CardAction>
                 </CardHeader>
-                <CardContent :class="createStyle ? 'px-4 pb-4' : ''">
-                    <Button
-                        v-if="!readonly && createStyle"
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        :class="['mb-3', blueOutlineButton]"
-                        @click="openAddFormat"
-                    >
-                        <Plus />
-                        Add Format
-                    </Button>
+                <CardContent :class="createStyle ? 'px-5 pb-5' : ''">
                     <FormatsTable
                         :variants="fields.variants"
                         :readonly="readonly"
@@ -354,16 +384,18 @@ const removeFormat = (variant: ProductVariant) => {
             <Card
                 :class="
                     createStyle
-                        ? 'gap-0 rounded-xl border-border/90 py-0 shadow-xs'
+                        ? 'gap-0 rounded-xl border-primary/10 py-0 shadow-sm shadow-sf-serenity-blue/10 dark:border-primary/20 dark:shadow-none'
                         : 'border-transparent shadow-sm shadow-black/5'
                 "
             >
-                <CardHeader :class="createStyle ? 'px-4 pt-4 pb-3' : ''">
-                    <div class="flex items-start gap-2.5">
-                        <FlaskConical
+                <CardHeader :class="createStyle ? 'px-5 pt-5 pb-4' : ''">
+                    <div class="flex items-start gap-3">
+                        <span
                             v-if="createStyle"
-                            class="mt-0.5 size-4 text-muted-foreground"
-                        />
+                            class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sf-serenity-blue/20 text-primary dark:bg-primary/15"
+                        >
+                            <FlaskConical class="size-5" />
+                        </span>
                         <div class="space-y-1">
                             <CardTitle class="text-base">
                                 Technical Details
@@ -376,7 +408,7 @@ const removeFormat = (variant: ProductVariant) => {
                     </div>
                 </CardHeader>
                 <CardContent
-                    :class="['grid', createStyle ? 'gap-5 px-4 pb-4' : 'gap-6']"
+                    :class="['grid', createStyle ? 'gap-5 px-5 pb-5' : 'gap-6']"
                 >
                     <div class="grid gap-2">
                         <Label>Purity</Label>
@@ -414,18 +446,22 @@ const removeFormat = (variant: ProductVariant) => {
             <Card
                 :class="
                     createStyle
-                        ? 'gap-0 rounded-xl border-border/90 py-0 shadow-xs'
+                        ? 'admin-product-image-wash gap-0 rounded-xl border-primary/15 py-0 shadow-sm shadow-sf-serenity-blue/10 dark:border-primary/25 dark:shadow-none'
                         : 'border-transparent shadow-sm shadow-black/5'
                 "
             >
-                <CardHeader :class="createStyle ? 'px-4 pt-4 pb-3' : ''">
+                <CardHeader :class="createStyle ? 'px-5 pt-5 pb-4' : ''">
                     <div class="flex items-center">
                         <CardTitle class="text-base">
-                            Product Images
+                            {{
+                                createStyle
+                                    ? 'Upload Product Image'
+                                    : 'Product Images'
+                            }}
                         </CardTitle>
                     </div>
                 </CardHeader>
-                <CardContent :class="createStyle ? 'px-4 pb-4' : ''">
+                <CardContent :class="createStyle ? 'px-5 pb-5' : ''">
                     <ImageUpload
                         v-model="fields.images"
                         :readonly="readonly"

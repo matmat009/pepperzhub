@@ -46,7 +46,9 @@ const submit = () => {
     <Head title="New product" />
 
     <div class="flex flex-1 flex-col gap-5 px-4 py-6 lg:px-6">
-        <header class="flex items-center justify-between gap-4">
+        <header
+            class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+        >
             <div class="flex items-center gap-3">
                 <Button
                     as-child
@@ -59,12 +61,17 @@ const submit = () => {
                         <span class="sr-only">Back to products</span>
                     </Link>
                 </Button>
-                <h1 class="text-2xl font-semibold tracking-tight">
-                    Add Products
-                </h1>
+                <div class="space-y-0.5">
+                    <h1 class="text-2xl font-semibold tracking-tight">
+                        Add Product
+                    </h1>
+                    <p class="text-sm text-muted-foreground">
+                        Create a new product to add to your store.
+                    </p>
+                </div>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 self-end sm:self-auto">
                 <Button
                     variant="outline"
                     :class="blueOutlineButton"

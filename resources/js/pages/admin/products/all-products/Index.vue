@@ -232,7 +232,7 @@ watch(
 
     <div
         :class="[
-            'flex flex-1 flex-col gap-6 px-4 py-6 lg:px-6',
+            'flex flex-1 flex-col gap-5 px-4 py-6 lg:px-6',
             hasSelection && 'pb-24 md:pb-6',
         ]"
     >
@@ -240,12 +240,14 @@ watch(
             class="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-start md:justify-between"
         >
             <div class="space-y-1">
-                <h1 class="text-2xl font-semibold tracking-tight">Products</h1>
+                <h1 class="text-2xl font-semibold tracking-tight md:text-3xl">
+                    Products
+                </h1>
                 <p class="text-sm text-muted-foreground">
                     Browse and manage your product catalog.
                 </p>
             </div>
-            <Button as-child class="w-full md:w-auto">
+            <Button as-child class="h-10 w-full rounded-lg px-4 md:w-auto">
                 <Link :href="create()">
                     <Plus />
                     Add Product
@@ -261,239 +263,266 @@ watch(
             :can-expand-row="canExpandRow"
             row-clickable
             empty-message="No products match these filters."
+            class="gap-5 [&_[data-slot=table-row][data-state=selected]]:bg-primary/5"
             @row-click="goToProduct"
         >
             <template #toolbar="{ table }">
-                <!--
+                <div
+                    class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between"
+                >
+                    <!--
                     Four tabs do not fit a 375px viewport without wrapping to a
                     second row, so below `md` the same filter collapses to a
                     Select. One source of truth either way: both read and write
                     the status column's filter value.
                 -->
-                <div class="md:hidden">
-                    <Select
+                    <div class="md:hidden">
+                        <Select
+                            :model-value="activeStatus(table as ProductTable)"
+                            @update:model-value="
+                                (value) =>
+                                    setStatus(
+                                        table as ProductTable,
+                                        String(value),
+                                    )
+                            "
+                        >
+                            <SelectTrigger
+                                class="h-10 w-full"
+                                aria-label="Status"
+                            >
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">
+                                    All ({{ statusCounts.all }})
+                                </SelectItem>
+                                <SelectItem
+                                    v-for="status in PRODUCT_STATUSES"
+                                    :key="status"
+                                    :value="status"
+                                >
+                                    {{ status }} ({{ statusCounts[status] }})
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <Tabs
+                        class="hidden shrink-0 md:flex"
                         :model-value="activeStatus(table as ProductTable)"
                         @update:model-value="
                             (value) =>
                                 setStatus(table as ProductTable, String(value))
                         "
                     >
-                        <SelectTrigger class="h-9 w-full" aria-label="Status">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">
-                                All ({{ statusCounts.all }})
-                            </SelectItem>
-                            <SelectItem
+                        <TabsList
+                            class="h-10 rounded-lg border bg-muted/40 p-1 shadow-none"
+                        >
+                            <TabsTrigger
+                                value="all"
+                                class="gap-1.5 rounded-md px-3 text-sm data-[state=active]:border-primary/25 data-[state=active]:text-primary data-[state=active]:shadow-none"
+                            >
+                                All
+                                <span
+                                    class="rounded bg-muted px-1.5 py-0.5 text-[11px] leading-none text-muted-foreground"
+                                >
+                                    {{ statusCounts.all }}
+                                </span>
+                            </TabsTrigger>
+                            <TabsTrigger
                                 v-for="status in PRODUCT_STATUSES"
                                 :key="status"
                                 :value="status"
+                                class="gap-1.5 rounded-md px-3 text-sm data-[state=active]:border-primary/25 data-[state=active]:text-primary data-[state=active]:shadow-none"
                             >
-                                {{ status }} ({{ statusCounts[status] }})
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <Tabs
-                    class="hidden md:flex"
-                    :model-value="activeStatus(table as ProductTable)"
-                    @update:model-value="
-                        (value) =>
-                            setStatus(table as ProductTable, String(value))
-                    "
-                >
-                    <TabsList class="h-9">
-                        <TabsTrigger value="all" class="gap-1.5 text-sm">
-                            All
-                            <span class="text-xs text-muted-foreground">
-                                {{ statusCounts.all }}
-                            </span>
-                        </TabsTrigger>
-                        <TabsTrigger
-                            v-for="status in PRODUCT_STATUSES"
-                            :key="status"
-                            :value="status"
-                            class="gap-1.5 text-sm"
-                        >
-                            {{ status }}
-                            <span class="text-xs text-muted-foreground">
-                                {{ statusCounts[status] }}
-                            </span>
-                        </TabsTrigger>
-                    </TabsList>
-                </Tabs>
-
-                <div class="flex flex-wrap items-center gap-2">
-                    <div class="relative flex-1 sm:max-w-xs">
-                        <Search
-                            class="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-                        />
-                        <Input
-                            :model-value="searchValue(table as ProductTable)"
-                            placeholder="Search products..."
-                            class="h-9 pl-8"
-                            @update:model-value="
-                                (value) =>
-                                    setSearch(table as ProductTable, value)
-                            "
-                        />
-                    </div>
-
-                    <DropdownMenu>
-                        <DropdownMenuTrigger as-child>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                class="hidden h-9 md:inline-flex"
-                            >
-                                <ListFilter />
-                                Category
+                                {{ status }}
                                 <span
-                                    v-if="
-                                        selectedCategories(
-                                            table as ProductTable,
-                                        ).length
-                                    "
-                                    class="ml-1 rounded bg-primary px-1.5 text-xs text-primary-foreground"
+                                    class="rounded bg-muted px-1.5 py-0.5 text-[11px] leading-none text-muted-foreground"
                                 >
-                                    {{
+                                    {{ statusCounts[status] }}
+                                </span>
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+
+                    <div
+                        class="flex min-w-0 flex-wrap items-center gap-2 xl:flex-1 xl:justify-end"
+                    >
+                        <div
+                            class="relative min-w-48 flex-1 sm:max-w-md xl:max-w-lg"
+                        >
+                            <Search
+                                class="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+                            />
+                            <Input
+                                :model-value="
+                                    searchValue(table as ProductTable)
+                                "
+                                placeholder="Search products..."
+                                class="h-10 rounded-lg pl-9 shadow-none"
+                                @update:model-value="
+                                    (value) =>
+                                        setSearch(table as ProductTable, value)
+                                "
+                            />
+                        </div>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger as-child>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    class="hidden h-10 rounded-lg px-3 shadow-none md:inline-flex"
+                                >
+                                    <ListFilter />
+                                    Category
+                                    <span
+                                        v-if="
+                                            selectedCategories(
+                                                table as ProductTable,
+                                            ).length
+                                        "
+                                        class="ml-1 rounded bg-primary/10 px-1.5 text-xs text-primary"
+                                    >
+                                        {{
+                                            selectedCategories(
+                                                table as ProductTable,
+                                            ).length
+                                        }}
+                                    </span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" class="w-48">
+                                <DropdownMenuLabel>
+                                    Filter by category
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuCheckboxItem
+                                    v-for="category in categories"
+                                    :key="category"
+                                    :model-value="
                                         selectedCategories(
                                             table as ProductTable,
-                                        ).length
-                                    }}
-                                </span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="w-48">
-                            <DropdownMenuLabel>
-                                Filter by category
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuCheckboxItem
-                                v-for="category in categories"
-                                :key="category"
-                                :model-value="
-                                    selectedCategories(
-                                        table as ProductTable,
-                                    ).includes(category)
-                                "
-                                @select="
-                                    (event: Event) => event.preventDefault()
-                                "
-                                @update:model-value="
-                                    () =>
-                                        toggleCategory(
-                                            table as ProductTable,
-                                            category,
-                                        )
-                                "
-                            >
-                                {{ category }}
-                            </DropdownMenuCheckboxItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                                        ).includes(category)
+                                    "
+                                    @select="
+                                        (event: Event) => event.preventDefault()
+                                    "
+                                    @update:model-value="
+                                        () =>
+                                            toggleCategory(
+                                                table as ProductTable,
+                                                category,
+                                            )
+                                    "
+                                >
+                                    {{ category }}
+                                </DropdownMenuCheckboxItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
 
-                    <DropdownMenu>
-                        <DropdownMenuTrigger as-child>
-                            <!--
+                        <DropdownMenu>
+                            <DropdownMenuTrigger as-child>
+                                <!--
                                 Column visibility has nothing to act on in card
                                 view, so the control goes with the table.
                             -->
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                class="hidden h-9 md:inline-flex"
-                            >
-                                <Columns3 />
-                                Columns
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="w-44">
-                            <DropdownMenuLabel>
-                                Toggle columns
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuCheckboxItem
-                                v-for="column in hideableColumns(
-                                    table as ProductTable,
-                                )"
-                                :key="column.id"
-                                class="capitalize"
-                                :model-value="column.getIsVisible()"
-                                @select="
-                                    (event: Event) => event.preventDefault()
-                                "
-                                @update:model-value="
-                                    (value) => column.toggleVisibility(!!value)
-                                "
-                            >
-                                {{ column.id.replace('_', ' ') }}
-                            </DropdownMenuCheckboxItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    class="hidden h-10 rounded-lg px-3 shadow-none md:inline-flex"
+                                >
+                                    <Columns3 />
+                                    Columns
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" class="w-44">
+                                <DropdownMenuLabel>
+                                    Toggle columns
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuCheckboxItem
+                                    v-for="column in hideableColumns(
+                                        table as ProductTable,
+                                    )"
+                                    :key="column.id"
+                                    class="capitalize"
+                                    :model-value="column.getIsVisible()"
+                                    @select="
+                                        (event: Event) => event.preventDefault()
+                                    "
+                                    @update:model-value="
+                                        (value) =>
+                                            column.toggleVisibility(!!value)
+                                    "
+                                >
+                                    {{ column.id.replace('_', ' ') }}
+                                </DropdownMenuCheckboxItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
 
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        class="hidden h-9 md:inline-flex"
-                    >
-                        <Download />
-                        Export
-                    </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            class="hidden h-10 rounded-lg px-3 shadow-none md:inline-flex"
+                        >
+                            <Download />
+                            Export
+                        </Button>
 
-                    <!--
+                        <!--
                         Below `md` the category filter and Export fold into one
                         overflow menu, leaving the search field the full width
                         of the row rather than a third of it.
                     -->
-                    <DropdownMenu>
-                        <DropdownMenuTrigger as-child>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                class="size-9 shrink-0 md:hidden"
-                            >
-                                <MoreHorizontal />
-                                <span class="sr-only">
-                                    More filters and actions
-                                </span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="w-56">
-                            <DropdownMenuLabel>
-                                Filter by category
-                            </DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuCheckboxItem
-                                v-for="category in categories"
-                                :key="category"
-                                :model-value="
-                                    selectedCategories(
-                                        table as ProductTable,
-                                    ).includes(category)
-                                "
-                                @select="
-                                    (event: Event) => event.preventDefault()
-                                "
-                                @update:model-value="
-                                    () =>
-                                        toggleCategory(
+                        <DropdownMenu>
+                            <DropdownMenuTrigger as-child>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    class="size-10 shrink-0 rounded-lg shadow-none md:hidden"
+                                >
+                                    <MoreHorizontal />
+                                    <span class="sr-only">
+                                        More filters and actions
+                                    </span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" class="w-56">
+                                <DropdownMenuLabel>
+                                    Filter by category
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuCheckboxItem
+                                    v-for="category in categories"
+                                    :key="category"
+                                    :model-value="
+                                        selectedCategories(
                                             table as ProductTable,
-                                            category,
-                                        )
-                                "
-                            >
-                                {{ category }}
-                            </DropdownMenuCheckboxItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>
-                                <Download />
-                                Export
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                                        ).includes(category)
+                                    "
+                                    @select="
+                                        (event: Event) => event.preventDefault()
+                                    "
+                                    @update:model-value="
+                                        () =>
+                                            toggleCategory(
+                                                table as ProductTable,
+                                                category,
+                                            )
+                                    "
+                                >
+                                    {{ category }}
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem>
+                                    <Download />
+                                    Export
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
             </template>
 

@@ -97,6 +97,7 @@
     --color-sf-primary-hover: var(--sf-primary-hover);
     --color-sf-primary-deep: var(--sf-primary-deep);
     --color-sf-primary-soft: var(--sf-primary-soft);
+    --color-sf-serenity-blue: var(--sf-serenity-blue);
 
     --color-sf-rose: var(--sf-rose);
     --color-sf-rose-quartz: var(--sf-rose-quartz);
@@ -199,6 +200,7 @@
     --sf-primary-hover: oklch(0.48 0.145 264);
     --sf-primary-deep: oklch(0.5 0.145 264);
     --sf-primary-soft: oklch(0.42 0.1 264);
+    --sf-serenity-blue: #92a8d1;
 
     --sf-rose: oklch(0.8 0.105 14);
     /*
@@ -240,6 +242,42 @@
        brand pair so headline copy still clears contrast over them. */
     --sf-hero-blue: oklch(0.89 0.07 250);
     --sf-hero-rose: oklch(0.89 0.075 20);
+}
+
+@layer components {
+    .admin-sidebar-wash {
+        --sidebar-background: transparent;
+        --sidebar-foreground: oklch(0.34 0.025 264);
+        --sidebar-accent: color-mix(
+            in oklab,
+            var(--sf-serenity-blue) 22%,
+            white
+        );
+        --sidebar-accent-foreground: oklch(0.45 0.14 264);
+        --sidebar-border: color-mix(
+            in oklab,
+            var(--sf-serenity-blue) 16%,
+            white
+        );
+        --sidebar-ring: var(--sf-primary);
+
+        color: var(--sidebar-foreground);
+        background: linear-gradient(
+            180deg,
+            color-mix(in oklab, var(--sf-serenity-blue) 20%, white) 0%,
+            white 38%,
+            white 64%,
+            color-mix(in oklab, var(--sf-rose-quartz) 32%, white) 100%
+        );
+    }
+
+    .admin-product-image-wash {
+        background-color: color-mix(
+            in oklab,
+            var(--sf-serenity-blue) 8%,
+            var(--card)
+        );
+    }
 }
 
 .dark {

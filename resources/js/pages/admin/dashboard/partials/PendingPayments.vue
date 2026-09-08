@@ -18,10 +18,12 @@ defineProps<{
 </script>
 
 <template>
-    <section class="rounded-xl border bg-card p-5">
-        <div class="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 class="font-semibold">Pending payments</h2>
-            <span class="text-sm text-muted-foreground">
+    <section class="rounded-xl border border-border/90 bg-card p-5 shadow-xs">
+        <div
+            class="flex flex-col gap-1.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
+        >
+            <h2 class="text-base font-semibold">Pending payments</h2>
+            <span class="text-sm leading-relaxed text-muted-foreground">
                 Oldest first — these customers are waiting.
             </span>
         </div>
@@ -31,7 +33,7 @@ defineProps<{
                 v-for="payment in payments"
                 :key="payment.id"
                 :href="orderShow(payment.id)"
-                class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3 transition-colors duration-200 ease-out first:pt-0 hover:bg-muted/50"
+                class="-mx-2 flex flex-col gap-2 rounded-md px-2 py-3 transition-colors duration-200 ease-out first:pt-0 hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
             >
                 <div class="min-w-0">
                     <div class="truncate font-medium tabular-nums">
@@ -41,7 +43,9 @@ defineProps<{
                         {{ payment.name }}
                     </div>
                 </div>
-                <div class="flex items-center gap-4 text-right">
+                <div
+                    class="flex w-full items-center justify-between gap-4 sm:w-auto sm:justify-end sm:text-right"
+                >
                     <span class="text-sm text-muted-foreground">
                         {{ payment.waiting_for ?? '—' }}
                     </span>
