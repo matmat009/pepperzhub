@@ -93,6 +93,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('orders.cancel');
 
         /*
+         * Contact and shipping details only — never items, pricing or payment.
+         * PUT because it replaces a known set of columns on a row that already
+         * exists, and whereNumber for the same reason the reads above carry it.
+         */
+        Route::put('orders/{order}/contact', [OrderController::class, 'updateContact'])
+            ->whereNumber('order')
+            ->name('orders.update-contact');
+
+        /*
          * Checkout's reference data. Both resources delete for real — their
          * order FKs are nullOnDelete and every order snapshots the names it
          * displays, so removing a row cannot alter order history.

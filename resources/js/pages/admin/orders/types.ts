@@ -132,6 +132,14 @@ export const canMarkCompleted = (order: OrderState): boolean =>
 export const canCancel = (order: OrderState): boolean =>
     order.order_status === 'pending' || order.order_status === 'processing';
 
+/**
+ * Contact and shipping details stay editable only while the parcel is still in
+ * the operator's hands. Once it ships, the address it went out to is a matter
+ * of record rather than a field. Mirrors updateContact's guard.
+ */
+export const canEditContact = (order: OrderState): boolean =>
+    order.order_status === 'pending' || order.order_status === 'processing';
+
 export const formatDateTime = (value: string | null): string =>
     value
         ? new Intl.DateTimeFormat('en-PH', {

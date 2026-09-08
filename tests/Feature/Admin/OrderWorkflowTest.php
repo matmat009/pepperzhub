@@ -583,4 +583,149 @@ class OrderWorkflowTest extends TestCase
         $this->get(route('admin.orders.payment-proof', $order))->assertRedirect(route('login'));
         $this->post(route('admin.orders.verify-payment', $order))->assertRedirect(route('login'));
     }
+
+    // ----- contact / shipping details ---------------------------------------
+
+    /**
+     * The nine editable columns, all different from the fixture's values so a
+     * field that silently failed to write shows up as a failure.
+     */
+    private const CONTACT = [
+        'name' => 'Maria Santos',
+        'social_handle' => 'fb.com/mariasantos',
+        'phone' => '0918 765 4321',
+        'street' => '88 Rizal Ave',
+        'barangay' => 'Poblacion',
+        'city' => 'Cebu City',
+        'province' => 'Cebu',
+        'zip' => '6000',
+        'notes' => 'Leave with the guard.',
+    ];
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function editableStatuses(): array
+    {
+        return [
+            'pending' => ['pending'],
+            'processing' => ['processing'],
+        ];
+    }
+
+    #[DataProvider('editableStatuses')]
+    public function test_an_editable_order_accepts_new_contact_details(string $status): void
+    {
+        $order = $this->order([
+            'payment_status' => $status === 'processing' ? 'verified' : 'unverified',
+            'order_status' => $status,
+        ]);
+
+        $this->put(route('admin.orders.update-contact', $order), self::CONTACT)
+            ->assertRedirect();
+
+        $order->refresh();
+
+        foreach (self::CONTACT as $column => $value) {
+            $this->assertSame($value, $order->{$column}, $column.' was not updated');
+        }
+
+        // Nothing outside the nine fields moves.
+        $this->assertSame($status, $order->order_status);
+        $this->assertSame(2450 * 3 + 150, (int) $order->total);
+    }
+
+    /** notes is the one nullable column: emptying the box clears it. */
+    public function test_blank_notes_are_stored_as_null(): void
+    {
+        $order = $this->order(['notes' => 'Original note.']);
+
+        $this->put(route('admin.orders.update-contact', $order), [
+            ...self::CONTACT,
+            'notes' => null,
+        ]);
+
+        $this->assertNull($order->fresh()->notes);
+    }
+
+    public function test_the_eight_required_fields_are_validated(): void
+    {
+        $order = $this->order();
+
+        $this->put(route('admin.orders.update-contact', $order), [
+            ...self::CONTACT,
+            'name' => '',
+            'zip' => str_repeat('9', 17),
+        ])->assertSessionHasErrors(['name', 'zip']);
+
+        $this->assertSame('Juan Dela Cruz', $order->fresh()->name);
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function lockedStatuses(): array
+    {
+        return [
+            'shipped' => ['shipped'],
+            'completed' => ['completed'],
+            'cancelled' => ['cancelled'],
+        ];
+    }
+
+    /**
+     * Past processing the parcel is out of the operator's hands, so the address
+     * it went out to is a record rather than a field. The refusal names the
+     * status that blocked it, like every other guard in the controller.
+     */
+    #[DataProvider('lockedStatuses')]
+    public function test_a_settled_order_refuses_contact_edits(string $status): void
+    {
+        $order = $this->order([
+            'payment_status' => $status === 'cancelled' ? 'rejected' : 'verified',
+            'order_status' => $status,
+        ]);
+
+        $this->put(route('admin.orders.update-contact', $order), self::CONTACT);
+
+        $this->assertSame('Juan Dela Cruz', $order->fresh()->name);
+        $this->assertStringContainsString(
+            'can no longer be edited',
+            session('inertia.flash_data.toast.message', ''),
+        );
+    }
+
+    /**
+     * The guard reads the row as locked, not as the page rendered it.
+     *
+     * Sequential rather than genuinely parallel, for the reason given above the
+     * cancellation pair: a real race needs a second connection and buys more
+     * flakiness than coverage. What this pins is the part that matters — an edit
+     * submitted against a stale "pending" page is refused once the row has
+     * moved on, and the values already saved are left intact rather than half
+     * overwritten.
+     */
+    public function test_an_edit_against_a_stale_status_is_refused_without_corrupting_the_row(): void
+    {
+        $order = $this->order(['payment_status' => 'verified', 'order_status' => 'processing']);
+
+        $this->put(route('admin.orders.update-contact', $order), self::CONTACT)
+            ->assertRedirect();
+
+        // The order moves on between the admin loading the form and submitting.
+        $this->post(route('admin.orders.ship', $order), ['tracking_number' => 'JT1']);
+
+        $this->put(route('admin.orders.update-contact', $order), [
+            ...self::CONTACT,
+            'name' => 'Someone Else',
+            'city' => 'Davao City',
+        ]);
+
+        $order->refresh();
+
+        // The first write stands whole; the second changed nothing at all.
+        $this->assertSame('Maria Santos', $order->name);
+        $this->assertSame('Cebu City', $order->city);
+        $this->assertSame('shipped', $order->order_status);
+    }
 }

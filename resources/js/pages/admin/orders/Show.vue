@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import {
     ArrowLeft,
     Ban,
@@ -7,11 +7,16 @@ import {
     ExternalLink,
     FileText,
     Package,
+    Pencil,
     Truck,
 } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
+import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
 import {
     cancel,
@@ -21,11 +26,13 @@ import {
     processing,
     rejectPayment,
     ship,
+    updateContact,
     verifyPayment,
 } from '@/routes/admin/orders';
 import ActionDialog from './partials/ActionDialog.vue';
 import {
     canCancel as canCancelOrder,
+    canEditContact,
     canMarkCompleted,
     canMarkProcessing,
     canMarkShipped,
@@ -71,6 +78,7 @@ const canProcess = computed(() => canMarkProcessing(props.order));
 const canShip = computed(() => canMarkShipped(props.order));
 const canComplete = computed(() => canMarkCompleted(props.order));
 const canCancel = computed(() => canCancelOrder(props.order));
+const canEditDetails = computed(() => canEditContact(props.order));
 
 /** Why "Prepare order" is absent while payment is still unverified. */
 const processingBlockedReason = computed(() =>
@@ -87,6 +95,72 @@ const proofIsImage = computed(() =>
 );
 
 const post = (url: string) => router.post(url, {}, { preserveScroll: true });
+
+/*
+ * Contact/shipping editing, scoped to the Customer section alone.
+ *
+ * Same shape as the product editor on admin/products/all-products/Show.vue: a
+ * local `editing` flag, a form seeded from props, and a watch that rebases the
+ * form on the props a successful save re-renders with — without which Cancel
+ * would revert to the values the page first loaded rather than the last saved
+ * ones. Deliberately local to this section: the header's status buttons are a
+ * separate concern and stay untouched.
+ */
+type ContactFields = {
+    name: string;
+    social_handle: string;
+    phone: string;
+    street: string;
+    barangay: string;
+    city: string;
+    province: string;
+    zip: string;
+    notes: string;
+};
+
+/** notes is nullable server-side; the textarea wants a string either way. */
+const toContactForm = (order: OrderDetail): ContactFields => ({
+    name: order.name,
+    social_handle: order.social_handle,
+    phone: order.phone,
+    street: order.street,
+    barangay: order.barangay,
+    city: order.city,
+    province: order.province,
+    zip: order.zip,
+    notes: order.notes ?? '',
+});
+
+const contactForm = useForm<ContactFields>(toContactForm(props.order));
+
+const editingContact = ref(false);
+
+watch(
+    () => props.order,
+    (order) => {
+        contactForm.defaults(toContactForm(order));
+        contactForm.reset();
+    },
+);
+
+const startEditingContact = () => {
+    editingContact.value = true;
+};
+
+const cancelContactEdit = () => {
+    contactForm.clearErrors();
+    contactForm.reset();
+    editingContact.value = false;
+};
+
+const submitContact = () => {
+    contactForm.put(updateContact(props.order.id).url, {
+        preserveScroll: true,
+        onSuccess: () => {
+            editingContact.value = false;
+        },
+    });
+};
 
 const timeline = computed(() =>
     [
@@ -285,8 +359,168 @@ const timeline = computed(() =>
 
             <div class="flex flex-col gap-6">
                 <section class="rounded-xl border bg-card p-5">
-                    <h2 class="font-semibold">Customer</h2>
-                    <dl class="mt-4 flex flex-col gap-3 text-sm">
+                    <div class="flex items-start justify-between gap-3">
+                        <h2 class="font-semibold">Customer</h2>
+
+                        <div
+                            v-if="editingContact"
+                            class="flex items-center gap-2"
+                        >
+                            <Button
+                                variant="outline"
+                                size="xs"
+                                :disabled="contactForm.processing"
+                                @click="cancelContactEdit"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                size="xs"
+                                :loading="contactForm.processing"
+                                @click="submitContact"
+                            >
+                                Save
+                            </Button>
+                        </div>
+                        <!--
+                            Serenity Blue, filled rather than the tint used for
+                            the product cards — this is an affordance that has
+                            to be found, and ghost read as page furniture next
+                            to the status buttons. Paired with --sf-ink, never
+                            white: the swatch is light enough that white text
+                            lands at 2.4:1, where ink gives 6.9:1. Dark mode
+                            drops to the primary tint the rest of admin uses,
+                            since the swatch needs a light ground to read.
+                        -->
+                        <Button
+                            v-else-if="canEditDetails"
+                            variant="default"
+                            size="xs"
+                            :class="[
+                                '-mr-2 border-sf-serenity-blue bg-sf-serenity-blue text-sf-ink',
+                                'hover:border-sf-serenity-blue hover:bg-sf-serenity-blue hover:brightness-95',
+                                'dark:border-primary/40 dark:bg-primary/25 dark:text-foreground dark:hover:border-primary/40 dark:hover:bg-primary/25',
+                            ]"
+                            @click="startEditingContact"
+                        >
+                            <Pencil class="size-3.5" />
+                            Edit
+                        </Button>
+                    </div>
+
+                    <form
+                        v-if="editingContact"
+                        class="mt-4 flex flex-col gap-4"
+                        @submit.prevent="submitContact"
+                    >
+                        <div class="grid gap-2">
+                            <Label for="contact-name">Name</Label>
+                            <Input
+                                id="contact-name"
+                                v-model="contactForm.name"
+                                autocomplete="off"
+                            />
+                            <InputError :message="contactForm.errors.name" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="contact-phone">Phone</Label>
+                            <Input
+                                id="contact-phone"
+                                v-model="contactForm.phone"
+                                autocomplete="off"
+                            />
+                            <InputError :message="contactForm.errors.phone" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="contact-social"
+                                >Facebook / WhatsApp</Label
+                            >
+                            <Input
+                                id="contact-social"
+                                v-model="contactForm.social_handle"
+                                autocomplete="off"
+                            />
+                            <InputError
+                                :message="contactForm.errors.social_handle"
+                            />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="contact-street">Street</Label>
+                            <Input
+                                id="contact-street"
+                                v-model="contactForm.street"
+                                autocomplete="off"
+                            />
+                            <InputError :message="contactForm.errors.street" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="contact-barangay">Barangay</Label>
+                            <Input
+                                id="contact-barangay"
+                                v-model="contactForm.barangay"
+                                autocomplete="off"
+                            />
+                            <InputError
+                                :message="contactForm.errors.barangay"
+                            />
+                        </div>
+
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="grid gap-2">
+                                <Label for="contact-city">City</Label>
+                                <Input
+                                    id="contact-city"
+                                    v-model="contactForm.city"
+                                    autocomplete="off"
+                                />
+                                <InputError
+                                    :message="contactForm.errors.city"
+                                />
+                            </div>
+                            <div class="grid gap-2">
+                                <Label for="contact-province">Province</Label>
+                                <Input
+                                    id="contact-province"
+                                    v-model="contactForm.province"
+                                    autocomplete="off"
+                                />
+                                <InputError
+                                    :message="contactForm.errors.province"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="contact-zip">ZIP</Label>
+                            <Input
+                                id="contact-zip"
+                                v-model="contactForm.zip"
+                                autocomplete="off"
+                            />
+                            <InputError :message="contactForm.errors.zip" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="contact-notes">
+                                Notes
+                                <span class="font-normal text-muted-foreground">
+                                    (Optional)
+                                </span>
+                            </Label>
+                            <Textarea
+                                id="contact-notes"
+                                v-model="contactForm.notes"
+                                :rows="3"
+                            />
+                            <InputError :message="contactForm.errors.notes" />
+                        </div>
+                    </form>
+
+                    <dl v-else class="mt-4 flex flex-col gap-3 text-sm">
                         <div>
                             <dt class="text-muted-foreground">Name</dt>
                             <dd class="font-medium">{{ order.name }}</dd>

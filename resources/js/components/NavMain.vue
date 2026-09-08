@@ -3,6 +3,7 @@ import type { InertiaLinkProps } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
 import { ChevronRight } from '@lucide/vue';
 import type { Component } from 'vue';
+import { Badge } from '@/components/ui/badge';
 import {
     Collapsible,
     CollapsibleContent,
@@ -33,11 +34,19 @@ export type NavSubItem = {
     icon?: Component;
 };
 
+/**
+ * `badge` is an attention count, rendered only when it is above zero — a badge
+ * reading "0" is noise, and the absence of one is the same information. Honoured
+ * on linked leaf items only: a parent's own row is a collapsible trigger, and an
+ * item with no route is a placeholder for a page that does not exist, so neither
+ * has a count to report.
+ */
 export type NavMainItem = {
     title: string;
     url?: Href;
     icon?: Component;
     items?: NavSubItem[];
+    badge?: number;
 };
 
 const props = defineProps<{
@@ -139,6 +148,17 @@ const navItemWeight = 'font-medium data-[active=true]:font-semibold';
                             <Link v-if="item.url" :href="item.url">
                                 <component :is="item.icon" v-if="item.icon" />
                                 <span>{{ item.title }}</span>
+                                <!--
+                                    Hidden when the rail is collapsed to icons:
+                                    the button is size-8 with overflow hidden
+                                    there, so the pill would only be clipped.
+                                -->
+                                <Badge
+                                    v-if="item.badge"
+                                    class="ml-auto h-5 min-w-5 px-1.5 tabular-nums group-data-[collapsible=icon]:hidden"
+                                >
+                                    {{ item.badge }}
+                                </Badge>
                             </Link>
                             <a v-else href="#">
                                 <component :is="item.icon" v-if="item.icon" />

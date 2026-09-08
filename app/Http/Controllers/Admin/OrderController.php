@@ -378,6 +378,61 @@ class OrderController extends Controller
         );
     }
 
+    /**
+     * Edit the contact and shipping details on an order.
+     *
+     * Not a status change, but it runs through transition() for the same reason
+     * the transitions do: the guard has to read order_status off the row as
+     * locked. Trusting the status the page rendered with would let an edit land
+     * on an order someone else shipped in the meantime — rewriting the address
+     * the parcel has already gone out to.
+     *
+     * Scope is deliberately contact and shipping only. Items, pricing and
+     * payment carry stock and money implications the status machine owns, and
+     * are not editable here at all.
+     */
+    public function updateContact(Request $request, Order $order): RedirectResponse
+    {
+        // Same rules as checkout (StoreCheckoutRequest) for the same columns,
+        // so a value the storefront accepted cannot be rejected on edit.
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'social_handle' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:32'],
+
+            'street' => ['required', 'string', 'max:255'],
+            'barangay' => ['required', 'string', 'max:255'],
+            'city' => ['required', 'string', 'max:255'],
+            'province' => ['required', 'string', 'max:255'],
+            'zip' => ['required', 'string', 'max:16'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        return $this->transition(
+            $order,
+            fn (Order $locked): ?string => in_array($locked->order_status, ['pending', 'processing'], true)
+                ? null
+                : sprintf(
+                    'This order is already %s — its details can no longer be edited.',
+                    OrderStatuses::orderLabel($locked->order_status),
+                ),
+            fn (Order $locked) => $locked->forceFill([
+                'name' => $data['name'],
+                'social_handle' => $data['social_handle'],
+                'phone' => $data['phone'],
+                'street' => $data['street'],
+                'barangay' => $data['barangay'],
+                'city' => $data['city'],
+                'province' => $data['province'],
+                'zip' => $data['zip'],
+                // Nullable text column: an emptied box clears it rather than
+                // storing an empty string.
+                'notes' => $data['notes'] ?? null,
+            ])->save(),
+            'Order details updated.',
+        );
+    }
+
     private function reason(Request $request): ?string
     {
         $data = $request->validate([

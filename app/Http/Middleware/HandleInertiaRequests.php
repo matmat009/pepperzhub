@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Support\SessionCart;
 use Illuminate\Http\Request;
@@ -58,6 +59,27 @@ class HandleInertiaRequests extends Middleware
              * place. A constant, so this costs nothing.
              */
             'lowStockThreshold' => ProductVariant::LOW_STOCK_THRESHOLD,
+            /*
+             * The sidebar renders on every admin page, so the count it badges
+             * cannot come from any one page's props — Orders/Index would leave
+             * every other screen showing a stale number, or none at all.
+             *
+             * Deliberately narrower than "not finished": just placed, payment
+             * not yet looked at. That is the queue the operator actually has to
+             * act on, and it empties as they work. Counting everything short of
+             * completed would badge orders already in hand and never reach
+             * zero, which is how a badge stops being read at all. Same reason
+             * the low-stock badge counts what is running out rather than the
+             * whole catalogue.
+             *
+             * One COUNT, no rows hydrated, and the two equality predicates are
+             * the orders table's composite (payment_status, order_status)
+             * index in that order.
+             */
+            'pendingOrdersCount' => Order::query()
+                ->where('payment_status', 'unverified')
+                ->where('order_status', 'pending')
+                ->count(),
         ];
     }
 }

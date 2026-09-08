@@ -21,6 +21,12 @@ declare module '@inertiajs/core' {
             sidebarOpen: boolean;
             /** App\Models\ProductVariant::LOW_STOCK_THRESHOLD, shared on every response. */
             lowStockThreshold: number;
+            /**
+             * Orders placed but not yet looked at (unverified payment, pending
+             * fulfillment) — the sidebar's attention badge. Shared on every
+             * response, so it is current on whichever admin page is open.
+             */
+            pendingOrdersCount: number;
             [key: string]: unknown;
         };
     }

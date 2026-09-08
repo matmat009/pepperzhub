@@ -53,9 +53,22 @@ const navMain: NavMainItem[] = [
     },
 ];
 
+/*
+ * Read the same way as `name` and `auth.user` above: straight off the shared
+ * props, typed in resources/js/types/global.d.ts. HandleInertiaRequests puts it
+ * on every response.
+ */
+const pendingOrdersCount = computed(() => page.props.pendingOrdersCount);
+
 // Items without a `url` have no route yet and render as inert placeholders.
 // Add the route helper to each one as its page lands.
-const navEcommerce: NavMainItem[] = [
+//
+// A computed rather than a plain array: the sidebar sits in the persistent
+// layout, so its setup runs once and a count read into a literal here would
+// stay frozen at whatever it was when the admin first landed. Recomputing off
+// the shared prop is what lets verifying a payment drop the badge on the next
+// Inertia visit rather than needing a full reload.
+const navEcommerce = computed<NavMainItem[]>(() => [
     {
         title: 'Products',
         icon: Package,
@@ -79,6 +92,7 @@ const navEcommerce: NavMainItem[] = [
         title: 'Orders',
         icon: ShoppingCart,
         url: ordersIndex(),
+        badge: pendingOrdersCount.value,
     },
     // Checkout's reference data, editable since Phase 3. Both were previously
     // seeder-only, so changing a rate or adding a method meant a redeploy.
@@ -92,7 +106,7 @@ const navEcommerce: NavMainItem[] = [
         icon: Truck,
         url: shippingCouriersIndex(),
     },
-];
+]);
 
 const navSecondary = [
     {
