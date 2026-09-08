@@ -17,6 +17,8 @@ class OrderItem extends Model
         'product_variant_id',
         'product_name',
         'variant_label',
+        'is_kit',
+        'kit_inclusions',
         'unit_price',
         'quantity',
         'line_total',
@@ -27,6 +29,8 @@ class OrderItem extends Model
         return [
             'unit_price' => 'decimal:2',
             'line_total' => 'decimal:2',
+            'is_kit' => 'boolean',
+            'kit_inclusions' => 'array',
         ];
     }
 

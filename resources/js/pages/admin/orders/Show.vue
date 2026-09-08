@@ -279,7 +279,7 @@ const timeline = computed(() =>
                         <div
                             v-for="item in order.items"
                             :key="item.id"
-                            class="flex items-center justify-between gap-4 py-3"
+                            class="flex items-start justify-between gap-4 py-3"
                         >
                             <div class="min-w-0">
                                 <div class="truncate font-medium">
@@ -290,6 +290,30 @@ const timeline = computed(() =>
                                     {{ item.quantity }} @
                                     {{ formatPrice(item.unit_price) }}
                                 </div>
+                                <!--
+                                    Snapshotted at order time, so this is the
+                                    packing list as it stood then — null on
+                                    orders that predate the snapshot, which
+                                    renders as nothing.
+                                -->
+                                <ul
+                                    v-if="
+                                        item.is_kit &&
+                                        item.kit_inclusions?.length
+                                    "
+                                    class="mt-1 flex flex-col gap-0.5"
+                                >
+                                    <li
+                                        v-for="inclusion in item.kit_inclusions"
+                                        :key="inclusion"
+                                        class="flex items-start gap-2 text-sm text-muted-foreground"
+                                    >
+                                        <span
+                                            class="mt-2 size-1 shrink-0 rounded-full bg-muted-foreground/50"
+                                        />
+                                        <span>{{ inclusion }}</span>
+                                    </li>
+                                </ul>
                             </div>
                             <div class="font-medium tabular-nums">
                                 {{ formatPrice(item.line_total) }}

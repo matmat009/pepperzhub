@@ -110,6 +110,10 @@ class OrderController extends Controller
                     'id' => $item->id,
                     'product_name' => $item->product_name,
                     'variant_label' => $item->variant_label,
+                    // Null on orders placed before the snapshot existed, which
+                    // reads as "not recorded" rather than "not a kit".
+                    'is_kit' => $item->is_kit,
+                    'kit_inclusions' => $item->kit_inclusions,
                     'unit_price' => (float) $item->unit_price,
                     'quantity' => (int) $item->quantity,
                     'line_total' => (float) $item->line_total,

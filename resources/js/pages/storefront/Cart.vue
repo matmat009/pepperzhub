@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import {
     ArrowRight,
+    Check,
     FlaskConical,
     Lock,
     Minus,
@@ -143,6 +144,30 @@ const wellClass = (index: number) =>
                                             line.variant_label
                                         }}</span>
                                     </div>
+                                    <!--
+                                        Same check-mark list the product page
+                                        uses for "Kit includes", scaled down —
+                                        a kit's contents should not be a
+                                        surprise at checkout.
+                                    -->
+                                    <ul
+                                        v-if="
+                                            line.is_kit &&
+                                            line.kit_inclusions.length
+                                        "
+                                        class="mt-2 flex flex-col gap-1"
+                                    >
+                                        <li
+                                            v-for="inclusion in line.kit_inclusions"
+                                            :key="inclusion"
+                                            class="flex items-start gap-2 text-sm text-sf-muted"
+                                        >
+                                            <Check
+                                                class="mt-0.5 size-3.5 shrink-0 text-sf-primary"
+                                            />
+                                            <span>{{ inclusion }}</span>
+                                        </li>
+                                    </ul>
                                 </div>
 
                                 <div class="shrink-0 text-right">

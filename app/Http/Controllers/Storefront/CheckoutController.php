@@ -252,6 +252,11 @@ class CheckoutController extends Controller
                         'product_variant_id' => $variant->id,
                         'product_name' => $variant->product->name,
                         'variant_label' => $variant->label,
+                        // Snapshotted with the rest of the line: a kit's
+                        // contents can be edited later, and the order has to
+                        // keep showing what was actually packed.
+                        'is_kit' => (bool) $variant->is_kit,
+                        'kit_inclusions' => $variant->kit_inclusions ?? [],
                         'unit_price' => $line['unit_price'],
                         'quantity' => $line['quantity'],
                         'line_total' => $line['line_total'],

@@ -32,6 +32,8 @@ export type CartLine = {
     /** Live stock, so the stepper can stop at what is actually available. */
     stock: number;
     image_url: string | null;
+    is_kit: boolean;
+    kit_inclusions: string[];
 };
 
 /**

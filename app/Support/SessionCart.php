@@ -125,6 +125,8 @@ class SessionCart
                 'line_total' => $lineTotal,
                 'stock' => (int) $variant->stock,
                 'image_url' => $variant->product->images->first()?->url(),
+                'is_kit' => (bool) $variant->is_kit,
+                'kit_inclusions' => $variant->kit_inclusions ?? [],
             ];
         }
 
