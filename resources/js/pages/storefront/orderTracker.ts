@@ -38,6 +38,9 @@ export type OrderTracker = {
 export type OrderItemLine = {
     product_name: string;
     variant_label: string;
+    /** Null on orders placed before kit contents were snapshotted. */
+    is_kit: boolean | null;
+    kit_inclusions: string[] | null;
     unit_price: number;
     quantity: number;
     line_total: number;

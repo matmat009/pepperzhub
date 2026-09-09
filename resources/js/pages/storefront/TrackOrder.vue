@@ -311,9 +311,9 @@ const fieldClass =
                     <div
                         v-for="item in result?.items ?? []"
                         :key="`${item.product_name}-${item.variant_label}`"
-                        class="flex items-center justify-between gap-4 py-3.5"
+                        class="flex items-start justify-between gap-4 py-3.5"
                     >
-                        <span>
+                        <div>
                             <span class="block font-medium text-sf-ink">{{
                                 item.product_name
                             }}</span>
@@ -321,7 +321,29 @@ const fieldClass =
                                 >{{ item.variant_label }} ×
                                 {{ item.quantity }}</span
                             >
-                        </span>
+                            <!--
+                                Same check-mark list the cart uses for this
+                                data — null on orders placed before kit
+                                contents were snapshotted, which shows nothing.
+                            -->
+                            <ul
+                                v-if="
+                                    item.is_kit && item.kit_inclusions?.length
+                                "
+                                class="mt-2 flex flex-col gap-1"
+                            >
+                                <li
+                                    v-for="inclusion in item.kit_inclusions"
+                                    :key="inclusion"
+                                    class="flex items-start gap-2 text-sm text-sf-muted"
+                                >
+                                    <Check
+                                        class="mt-0.5 size-3.5 shrink-0 text-sf-primary"
+                                    />
+                                    <span>{{ inclusion }}</span>
+                                </li>
+                            </ul>
+                        </div>
                         <span class="font-medium text-sf-ink">{{
                             formatPrice(item.line_total)
                         }}</span>

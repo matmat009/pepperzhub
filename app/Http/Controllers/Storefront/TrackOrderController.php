@@ -99,6 +99,10 @@ class TrackOrderController extends Controller
                     ->map(fn ($item) => [
                         'product_name' => $item->product_name,
                         'variant_label' => $item->variant_label,
+                        // Snapshotted at order time, so this is what was
+                        // actually packed rather than what the variant says now.
+                        'is_kit' => $item->is_kit,
+                        'kit_inclusions' => $item->kit_inclusions,
                         'unit_price' => (float) $item->unit_price,
                         'quantity' => $item->quantity,
                         'line_total' => (float) $item->line_total,
