@@ -18,6 +18,9 @@ class ShippingCourierRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            // Optional. Blanked to null in prepareForValidation, so an empty
+            // input is "not set" rather than a url-rule failure.
+            'tracking_url' => ['nullable', 'url', 'max:255'],
             'is_active' => ['boolean'],
             'sort_order' => ['required', 'integer', 'min:0'],
 
@@ -47,6 +50,7 @@ class ShippingCourierRequest extends FormRequest
             'regions.*.rate.required' => 'Every region needs a rate.',
             'regions.*.rate.min' => 'Region rates cannot be negative.',
             'regions.*.rate.numeric' => 'Region rates must be a number.',
+            'tracking_url.url' => 'The tracking page must be a full URL, including https://.',
         ];
     }
 
@@ -66,6 +70,9 @@ class ShippingCourierRequest extends FormRequest
 
         $this->merge([
             'regions' => $regions,
+            'tracking_url' => blank($this->input('tracking_url'))
+                ? null
+                : trim((string) $this->input('tracking_url')),
             'is_active' => $this->boolean('is_active'),
             'sort_order' => $this->input('sort_order', 0),
         ]);

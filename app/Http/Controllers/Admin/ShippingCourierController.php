@@ -32,6 +32,7 @@ class ShippingCourierController extends Controller
         return [
             'id' => $courier->id,
             'name' => $courier->name,
+            'tracking_url' => $courier->tracking_url,
             'is_active' => (bool) $courier->is_active,
             'sort_order' => (int) $courier->sort_order,
             'regions' => $courier->regions
@@ -129,6 +130,7 @@ class ShippingCourierController extends Controller
 
         return [
             'name' => $validated['name'],
+            'tracking_url' => $validated['tracking_url'] ?? null,
             'is_active' => $validated['is_active'] ?? true,
             'sort_order' => $validated['sort_order'],
         ];

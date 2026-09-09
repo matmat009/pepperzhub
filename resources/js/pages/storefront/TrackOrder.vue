@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { Check, CircleAlert, Copy, Search, Truck } from '@lucide/vue';
+import {
+    Check,
+    CircleAlert,
+    Copy,
+    ExternalLink,
+    Search,
+    Truck,
+} from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
 import { home } from '@/routes';
@@ -25,6 +32,8 @@ type TrackResult = {
     /** Resolved snapshot (shipped_via, else the checkout-time courier name) — not a live join. */
     courier: string | null;
     tracking_number: string | null;
+    /** Looked up live by courier name, so null when no courier matches. */
+    tracking_url: string | null;
     items: OrderItemLine[];
     tracker: OrderTracker;
 };
@@ -266,15 +275,31 @@ const fieldClass =
                             </div>
                         </div>
                     </div>
-                    <button
-                        v-if="result?.tracking_number"
-                        type="button"
-                        class="inline-flex items-center gap-2 rounded-full border border-sf-line-strong bg-white px-4 py-2 text-sm font-medium text-sf-text transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary"
-                        @click="copyTracking"
-                    >
-                        <Copy class="size-3.5" />
-                        {{ copied ? 'Copied' : 'Copy' }}
-                    </button>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button
+                            v-if="result?.tracking_number"
+                            type="button"
+                            class="inline-flex items-center gap-2 rounded-full border border-sf-line-strong bg-white px-4 py-2 text-sm font-medium text-sf-text transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary"
+                            @click="copyTracking"
+                        >
+                            <Copy class="size-3.5" />
+                            {{ copied ? 'Copied' : 'Copy' }}
+                        </button>
+                        <!--
+                            Only when a courier actually matched by name — no
+                            URL means no link at all, rather than a dead one.
+                        -->
+                        <a
+                            v-if="result?.tracking_url"
+                            :href="result.tracking_url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="inline-flex items-center gap-2 rounded-full bg-sf-primary px-4 py-2 text-sm font-medium text-white transition-colors duration-200 ease-out hover:bg-sf-primary-deep"
+                        >
+                            Track with {{ result.courier }}
+                            <ExternalLink class="size-3.5" />
+                        </a>
+                    </div>
                 </div>
             </div>
 

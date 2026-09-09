@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\ShippingCourier;
 use App\Support\OrderTracker;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -53,6 +54,34 @@ class TrackOrderController extends Controller
             ]);
         }
 
+        /*
+         * Snapshot only, never the live courier relation. The FK is
+         * nullOnDelete, so a join would blank the courier on every historical
+         * order the day one is retired, and renaming one would silently rewrite
+         * what the customer was told.
+         *
+         * shipped_via wins once it is set: the courier chosen at checkout was a
+         * rate quote, and what actually carried the parcel is what the customer
+         * needs when chasing it.
+         */
+        $courier = filled($order->shipped_via)
+            ? $order->shipped_via
+            : $order->shipping_courier_name;
+
+        /*
+         * Looked up fresh by that name on every visit, deliberately not stored
+         * on the order. The name is the customer-facing snapshot and must not
+         * move; the URL is infrastructure, so filling one in today should light
+         * up the link on orders shipped months ago.
+         *
+         * Exact match only. A renamed courier, a deleted one, or a shipped_via
+         * typed slightly differently resolves to null and simply shows no link
+         * — a near-miss here would send someone to the wrong carrier's site.
+         */
+        $trackingUrl = filled($courier)
+            ? ShippingCourier::query()->where('name', $courier)->value('tracking_url')
+            : null;
+
         return Inertia::render('storefront/TrackOrder', [
             'notFound' => false,
             'result' => [
@@ -63,20 +92,9 @@ class TrackOrderController extends Controller
                 'shipping_fee' => (float) $order->shipping_fee,
                 'total' => (float) $order->total,
                 'shipping_region_label' => $order->shipping_region_label,
-                /*
-                 * Snapshot only, never the live courier relation. The FK is
-                 * nullOnDelete, so a join would blank the courier on every
-                 * historical order the day one is retired, and renaming one
-                 * would silently rewrite what the customer was told.
-                 *
-                 * shipped_via wins once it is set: the courier chosen at
-                 * checkout was a rate quote, and what actually carried the
-                 * parcel is what the customer needs when chasing it.
-                 */
-                'courier' => filled($order->shipped_via)
-                    ? $order->shipped_via
-                    : $order->shipping_courier_name,
+                'courier' => $courier,
                 'tracking_number' => $order->tracking_number,
+                'tracking_url' => $trackingUrl,
                 'items' => $order->items
                     ->map(fn ($item) => [
                         'product_name' => $item->product_name,

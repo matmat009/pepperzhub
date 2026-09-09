@@ -108,6 +108,28 @@ const submit = () => {
                     <InputError :message="errors.name" />
                 </div>
 
+                <div class="grid gap-2">
+                    <Label for="courier-tracking-url">
+                        Tracking page URL
+                        <span class="font-normal text-muted-foreground">
+                            (optional)
+                        </span>
+                    </Label>
+                    <Input
+                        id="courier-tracking-url"
+                        v-model="fields.tracking_url"
+                        type="url"
+                        placeholder="e.g. https://www.jtexpress.ph/track"
+                        autocomplete="off"
+                    />
+                    <p class="text-sm text-muted-foreground">
+                        Customers see a link to this on Track Order once an
+                        order ships with this courier. Matched by name, so it
+                        applies to past orders too.
+                    </p>
+                    <InputError :message="errors.tracking_url" />
+                </div>
+
                 <div class="grid gap-2 sm:max-w-40">
                     <Label for="courier-sort">Sort order</Label>
                     <Input

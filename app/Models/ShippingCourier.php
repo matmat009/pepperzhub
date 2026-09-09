@@ -9,6 +9,7 @@ class ShippingCourier extends Model
 {
     protected $fillable = [
         'name',
+        'tracking_url',
         'is_active',
         'sort_order',
     ];

@@ -26,6 +26,8 @@ export type ShippingRegion = {
 export type ShippingCourier = {
     id: number;
     name: string;
+    /** The courier's own tracking page. Optional, and null until one is set. */
+    tracking_url: string | null;
     is_active: boolean;
     sort_order: number;
     regions: ShippingRegion[];
@@ -44,6 +46,8 @@ export type RegionRow = {
 
 export type CourierFormFields = {
     name: string;
+    /** Empty string while editing; the payload sends null for a blank field. */
+    tracking_url: string;
     is_active: boolean;
     sort_order: number;
     regions: RegionRow[];
@@ -60,6 +64,7 @@ export const emptyRegionRow = (): RegionRow => ({
 
 export const emptyCourierForm = (): CourierFormFields => ({
     name: '',
+    tracking_url: '',
     is_active: true,
     sort_order: 0,
     regions: [emptyRegionRow()],
@@ -67,6 +72,7 @@ export const emptyCourierForm = (): CourierFormFields => ({
 
 export const toCourierForm = (courier: ShippingCourier): CourierFormFields => ({
     name: courier.name,
+    tracking_url: courier.tracking_url ?? '',
     is_active: courier.is_active,
     sort_order: courier.sort_order,
     regions: courier.regions.map((region) => ({
@@ -88,6 +94,7 @@ export const toCourierForm = (courier: ShippingCourier): CourierFormFields => ({
  */
 export const toCourierPayload = (fields: CourierFormFields) => ({
     name: fields.name,
+    tracking_url: fields.tracking_url,
     is_active: fields.is_active,
     sort_order: fields.sort_order,
     regions: fields.regions.map((region) => ({
