@@ -84,9 +84,13 @@ const submit = () => {
 
 <template>
     <Dialog v-model:open="open">
-        <DialogContent class="sm:max-w-xl">
-            <DialogHeader>
-                <DialogTitle>
+        <DialogContent
+            class="max-h-[calc(100vh-2rem)] grid-rows-[auto_minmax(0,1fr)_auto_auto] gap-0 overflow-hidden p-0 sm:max-w-4xl [&_[data-slot=dialog-close]]:top-6 [&_[data-slot=dialog-close]]:right-6"
+        >
+            <DialogHeader
+                class="border-b border-sf-serenity-blue/20 bg-linear-to-r from-sf-serenity-blue/20 via-background to-sf-rose-quartz/25 px-6 py-6 pr-14 sm:px-8 sm:pr-16"
+            >
+                <DialogTitle class="text-2xl leading-tight">
                     {{ isEdit ? 'Edit payment method' : 'New payment method' }}
                 </DialogTitle>
                 <DialogDescription>
@@ -98,8 +102,10 @@ const submit = () => {
                 </DialogDescription>
             </DialogHeader>
 
-            <div class="grid max-h-[60vh] gap-5 overflow-y-auto px-1">
-                <div class="grid gap-2">
+            <div
+                class="grid min-h-0 gap-5 overflow-y-auto px-6 py-6 sm:px-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.95fr)] lg:gap-x-8"
+            >
+                <div class="grid gap-2 lg:col-start-1 lg:row-start-1">
                     <Label for="payment-method-name">Name</Label>
                     <Input
                         id="payment-method-name"
@@ -110,7 +116,7 @@ const submit = () => {
                     <InputError :message="form.errors.name" />
                 </div>
 
-                <div class="grid gap-2">
+                <div class="grid gap-2 lg:col-start-1 lg:row-start-2">
                     <Label>Payment details</Label>
                     <p class="text-sm text-muted-foreground">
                         Shown to the customer at checkout, in this order.
@@ -122,7 +128,9 @@ const submit = () => {
                     <InputError :message="form.errors.details" />
                 </div>
 
-                <div class="grid gap-2">
+                <div
+                    class="grid gap-2 lg:col-start-2 lg:row-start-1 lg:row-end-4 lg:border-l lg:border-sf-serenity-blue/20 lg:pl-8"
+                >
                     <Label>QR code</Label>
                     <QrCodeUpload
                         v-model:file="form.qr_code"
@@ -132,7 +140,9 @@ const submit = () => {
                     <InputError :message="form.errors.qr_code" />
                 </div>
 
-                <div class="grid gap-2 sm:max-w-40">
+                <div
+                    class="grid gap-2 sm:max-w-40 lg:col-start-1 lg:row-start-3"
+                >
                     <Label for="payment-method-sort">Sort order</Label>
                     <Input
                         id="payment-method-sort"
@@ -143,7 +153,9 @@ const submit = () => {
                     />
                     <InputError :message="form.errors.sort_order" />
                 </div>
+            </div>
 
+            <div class="px-6 pb-6 sm:px-8">
                 <div
                     class="flex items-start justify-between gap-4 rounded-lg border p-3"
                 >
@@ -161,7 +173,7 @@ const submit = () => {
                 </div>
             </div>
 
-            <DialogFooter>
+            <DialogFooter class="border-t px-6 py-4 sm:px-8">
                 <Button
                     variant="outline"
                     :disabled="form.processing"

@@ -7,9 +7,11 @@ const props = withDefaults(
     defineProps<{
         product: Product;
         showDescription?: boolean;
+        tableStyle?: boolean;
     }>(),
     {
         showDescription: true,
+        tableStyle: false,
     },
 );
 
@@ -20,7 +22,11 @@ const thumbnail = computed(() => props.product.images[0]?.url ?? null);
 <template>
     <div class="flex min-w-0 items-center gap-3">
         <div
-            class="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted/60"
+            :class="[
+                'flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-muted/60',
+                tableStyle &&
+                    'size-11 rounded-xl border-sf-serenity-blue/30 bg-sf-serenity-blue/10',
+            ]"
         >
             <img
                 v-if="thumbnail"
@@ -28,10 +34,21 @@ const thumbnail = computed(() => props.product.images[0]?.url ?? null);
                 :alt="product.name"
                 class="size-full object-cover"
             />
-            <FlaskConical v-else class="size-4 text-muted-foreground" />
+            <FlaskConical
+                v-else
+                :class="[
+                    'size-4 text-muted-foreground',
+                    tableStyle && 'text-sf-primary-soft',
+                ]"
+            />
         </div>
         <div class="max-w-60 min-w-0">
-            <div class="truncate text-sm leading-5 font-semibold">
+            <div
+                :class="[
+                    'truncate text-sm leading-5 font-semibold',
+                    tableStyle && 'text-sf-ink',
+                ]"
+            >
                 {{ product.name }}
             </div>
             <div

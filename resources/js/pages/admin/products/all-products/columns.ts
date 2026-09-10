@@ -79,7 +79,7 @@ export const createProductColumns = (
                           {
                               variant: 'ghost',
                               size: 'icon',
-                              class: 'size-7 text-muted-foreground',
+                              class: 'size-7 text-sf-primary transition-colors hover:bg-sf-serenity-blue/15 hover:text-sf-primary-deep focus-visible:ring-sf-primary/25',
                               // Distinct from the row-actions trigger, which
                               // also carries aria-expanded.
                               'data-slot': 'row-expander',
@@ -125,6 +125,7 @@ export const createProductColumns = (
                 h(ProductCell, {
                     product: row.original,
                     showDescription: false,
+                    tableStyle: true,
                 }),
             enableHiding: false,
         }),
@@ -139,8 +140,8 @@ export const createProductColumns = (
                 return h(
                     Badge,
                     {
-                        variant: 'secondary',
-                        class: 'rounded-md font-normal text-muted-foreground',
+                        variant: 'outline',
+                        class: 'rounded-md border-sf-serenity-blue/40 bg-sf-serenity-blue/20 px-2.5 py-1 font-medium text-sf-primary-soft shadow-none dark:border-sf-serenity-blue/30 dark:bg-primary/15 dark:text-sf-serenity-blue',
                     },
                     () => `${count} format${count === 1 ? '' : 's'}`,
                 );
@@ -160,7 +161,10 @@ export const createProductColumns = (
             cell: ({ row }) =>
                 h(
                     Badge,
-                    { variant: 'outline', class: 'rounded-md font-normal' },
+                    {
+                        variant: 'outline',
+                        class: 'rounded-md border-sf-serenity-blue/45 bg-sf-serenity-blue/[0.06] px-2.5 py-1 font-medium text-sf-primary-soft shadow-none dark:border-sf-serenity-blue/30 dark:bg-primary/10 dark:text-sf-serenity-blue',
+                    },
                     () => row.original.category,
                 ),
         }),
@@ -184,8 +188,8 @@ export const createProductColumns = (
                         h(
                             Badge,
                             {
-                                variant: 'secondary',
-                                class: 'rounded-md font-normal text-muted-foreground',
+                                variant: 'outline',
+                                class: 'rounded-md border-sf-rose-line bg-sf-rose-quartz/40 px-2.5 py-1 font-medium text-sf-rose-deep shadow-none dark:border-sf-rose/35 dark:bg-sf-rose/10 dark:text-sf-rose',
                             },
                             () => `${entries.length} entries`,
                         ),
@@ -203,7 +207,11 @@ export const createProductColumns = (
             header: 'Status',
             filterFn: (row, columnId, filterValue) =>
                 !filterValue || row.getValue(columnId) === filterValue,
-            cell: ({ row }) => h(StatusBadge, { status: row.original.status }),
+            cell: ({ row }) =>
+                h(StatusBadge, {
+                    status: row.original.status,
+                    tableStyle: true,
+                }),
         }),
         // Stock and price are now aggregates across the product's formats.
         columnHelper.accessor((row) => totalStock(row.variants), {
@@ -270,6 +278,7 @@ export const createProductColumns = (
                     { class: 'flex justify-end' },
                     h(RowActions, {
                         product: row.original,
+                        tableStyle: true,
                         onView: () => actions.onView(row.original),
                         onEdit: () => actions.onEdit(row.original),
                         onDuplicate: () => actions.onDuplicate(row.original),

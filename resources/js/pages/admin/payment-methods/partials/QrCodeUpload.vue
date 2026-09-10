@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ImageOff, Upload, X } from '@lucide/vue';
+import { QrCode, Upload, X } from '@lucide/vue';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { Button } from '@/components/ui/button';
 
@@ -78,27 +78,38 @@ const clear = () => {
 </script>
 
 <template>
-    <div class="flex items-start gap-4">
+    <div class="grid gap-3">
         <div
-            class="grid size-28 shrink-0 place-items-center overflow-hidden rounded-lg border bg-muted/30"
+            class="grid min-h-64 place-items-center overflow-hidden rounded-xl border border-sf-serenity-blue/25 bg-linear-to-br from-sf-serenity-blue/15 via-background to-sf-rose-quartz/25 p-4"
         >
-            <img
+            <div
                 v-if="shownUrl"
-                :src="shownUrl"
-                alt="Payment QR code"
-                class="size-full object-contain"
-            />
-            <ImageOff v-else class="size-6 text-muted-foreground" />
+                class="grid aspect-square w-full max-w-64 place-items-center overflow-hidden rounded-lg border border-sf-serenity-blue/20 bg-white p-3 shadow-sm"
+            >
+                <img
+                    :src="shownUrl"
+                    alt="Payment QR code"
+                    class="size-full object-contain"
+                />
+            </div>
+            <div v-else class="grid place-items-center gap-3 text-center">
+                <div
+                    class="grid size-32 place-items-center rounded-xl border border-sf-serenity-blue/30 bg-background/85 shadow-sm"
+                >
+                    <QrCode class="size-24 text-sf-primary-soft" />
+                </div>
+                <p class="text-xs text-muted-foreground">Sample preview</p>
+            </div>
         </div>
 
-        <div class="grid gap-2">
-            <input
-                ref="input"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                class="hidden"
-                @change="pick"
-            />
+        <input
+            ref="input"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            class="hidden"
+            @change="pick"
+        />
+        <div class="flex flex-wrap items-center gap-2">
             <Button
                 type="button"
                 variant="outline"
@@ -120,9 +131,9 @@ const clear = () => {
                 <X />
                 Remove
             </Button>
-            <p class="text-xs text-muted-foreground">
-                JPG, PNG or WebP, up to 5MB. Shown to customers at checkout.
-            </p>
         </div>
+        <p class="text-xs text-muted-foreground">
+            JPG, PNG or WebP, up to 5MB. Shown to customers at checkout.
+        </p>
     </div>
 </template>

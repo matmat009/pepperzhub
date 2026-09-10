@@ -263,7 +263,7 @@ watch(
             :can-expand-row="canExpandRow"
             row-clickable
             empty-message="No products match these filters."
-            class="gap-5 [&_[data-slot=table-row][data-state=selected]]:bg-primary/5"
+            class="gap-5 [&_[data-slot=table-body]_[data-slot=table-cell]:not(.p-0)]:py-3.5 [&_[data-slot=table-body]>[data-slot=table-row]]:border-sf-serenity-blue/25 [&_[data-slot=table-container]]:ring-1 [&_[data-slot=table-container]]:ring-sf-serenity-blue/35 [&_[data-slot=table-container]]:ring-inset [&_[data-slot=table-head]]:h-12 [&_[data-slot=table-head]]:text-sf-primary-soft [&_[data-slot=table-header]]:bg-sf-serenity-blue/[0.08] [&_[data-slot=table-header]>[data-slot=table-row]]:border-sf-serenity-blue/30 [&_[data-slot=table-row][data-state=selected]]:bg-primary/5"
             @row-click="goToProduct"
         >
             <template #toolbar="{ table }">

@@ -4,6 +4,7 @@ import type { ProductStatus } from '../types';
 
 defineProps<{
     status: ProductStatus;
+    tableStyle?: boolean;
 }>();
 
 const tone: Record<ProductStatus, string> = {
@@ -11,6 +12,13 @@ const tone: Record<ProductStatus, string> = {
     Draft: 'border-border bg-muted text-muted-foreground',
     Archived:
         'border-red-600/20 bg-red-500/10 text-red-700 dark:border-red-400/20 dark:text-red-400',
+};
+
+const tableTone: Record<ProductStatus, string> = {
+    Active: 'border-emerald-400/35 bg-emerald-100/70 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-400',
+    Draft: 'border-slate-200 bg-slate-100/80 text-slate-600 dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-300',
+    Archived:
+        'border-rose-300/60 bg-rose-100/75 text-rose-700 dark:border-rose-400/25 dark:bg-rose-400/10 dark:text-rose-400',
 };
 
 const dot: Record<ProductStatus, string> = {
@@ -25,7 +33,8 @@ const dot: Record<ProductStatus, string> = {
         variant="outline"
         :class="[
             'gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium',
-            tone[status],
+            tableStyle ? tableTone[status] : tone[status],
+            tableStyle && 'rounded-md px-2.5 py-1',
         ]"
     >
         <span :class="['size-1.5 rounded-full', dot[status]]" />
