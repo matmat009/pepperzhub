@@ -3,9 +3,15 @@ import { FlaskConical } from '@lucide/vue';
 import { computed } from 'vue';
 import type { Product } from '../types';
 
-const props = defineProps<{
-    product: Product;
-}>();
+const props = withDefaults(
+    defineProps<{
+        product: Product;
+        showDescription?: boolean;
+    }>(),
+    {
+        showDescription: true,
+    },
+);
 
 /** The gallery's first image doubles as the list thumbnail. */
 const thumbnail = computed(() => props.product.images[0]?.url ?? null);
@@ -29,6 +35,7 @@ const thumbnail = computed(() => props.product.images[0]?.url ?? null);
                 {{ product.name }}
             </div>
             <div
+                v-if="showDescription"
                 class="line-clamp-2 text-xs leading-4 whitespace-normal text-muted-foreground"
             >
                 {{ product.short_description }}

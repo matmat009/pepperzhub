@@ -121,7 +121,11 @@ export const createProductColumns = (
                     String(row.getValue(columnId)).toLowerCase().includes(query)
                 );
             },
-            cell: ({ row }) => h(ProductCell, { product: row.original }),
+            cell: ({ row }) =>
+                h(ProductCell, {
+                    product: row.original,
+                    showDescription: false,
+                }),
             enableHiding: false,
         }),
         // Replaces the old flat Kit/Vial "Type" column: a product now carries a
