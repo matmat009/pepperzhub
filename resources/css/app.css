@@ -9,12 +9,12 @@
 
 @theme inline {
     /*
-     * Admin face — Geist, applied app-wide through `font-sans` on
+     * Admin face — Poppins, applied app-wide through `font-sans` on
      * <body>. The storefront opts out of it via `font-body` on
      * StorefrontLayout, which resolves to Lora.
      */
     --font-sans:
-        'Geist', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Poppins', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
         'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     --radius-lg: var(--radius);
@@ -147,8 +147,9 @@
     body,
     html {
         --font-sans:
-            'Geist', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-            'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+            'Poppins', ui-sans-serif, system-ui, sans-serif,
+            'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+            'Noto Color Emoji';
     }
 }
 

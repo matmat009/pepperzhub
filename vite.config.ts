@@ -19,9 +19,9 @@ export default defineConfig({
                     weights: [400, 500, 600],
                     styles: ['normal', 'italic'],
                 }),
-                // Admin: Geist throughout, applied via `font-sans`.
+                // Admin: Poppins throughout, applied via `font-sans`.
                 // 700 is loaded for table headers and primary buttons.
-                bunny('Geist', {
+                bunny('Poppins', {
                     weights: [400, 500, 600, 700],
                 }),
             ],
