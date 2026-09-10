@@ -262,14 +262,20 @@ export const createProductColumns = (
             id: 'actions',
             meta: { ...NO_ROW_CLICK, headerClass: 'text-right' },
             header: 'Action',
+            // justify-end rather than text-right: this is a button, not text,
+            // the same distinction the purity column draws for its Badge.
             cell: ({ row }) =>
-                h(RowActions, {
-                    product: row.original,
-                    onView: () => actions.onView(row.original),
-                    onEdit: () => actions.onEdit(row.original),
-                    onDuplicate: () => actions.onDuplicate(row.original),
-                    onRemove: () => actions.onDelete(row.original),
-                }),
+                h(
+                    'div',
+                    { class: 'flex justify-end' },
+                    h(RowActions, {
+                        product: row.original,
+                        onView: () => actions.onView(row.original),
+                        onEdit: () => actions.onEdit(row.original),
+                        onDuplicate: () => actions.onDuplicate(row.original),
+                        onRemove: () => actions.onDelete(row.original),
+                    }),
+                ),
             enableHiding: false,
         }),
     ]);
