@@ -80,23 +80,23 @@ const clear = () => {
 <template>
     <div class="grid gap-3">
         <div
-            class="grid min-h-64 place-items-center overflow-hidden rounded-xl border border-sf-serenity-blue/25 bg-linear-to-br from-sf-serenity-blue/15 via-background to-sf-rose-quartz/25 p-4"
+            class="grid min-h-64 place-items-center rounded-xl border border-sf-serenity-blue/25 bg-linear-to-br from-sf-serenity-blue/15 via-background to-sf-rose-quartz/25 p-4"
         >
             <div
                 v-if="shownUrl"
-                class="grid aspect-square w-full max-w-64 place-items-center overflow-hidden rounded-lg border border-sf-serenity-blue/20 bg-white p-3 shadow-sm"
+                class="grid w-fit max-w-full place-items-center rounded-lg border border-sf-serenity-blue/20 bg-white p-3 shadow-sm"
             >
                 <img
                     :src="shownUrl"
                     alt="Payment QR code"
-                    class="size-full object-contain"
+                    class="block h-auto max-h-96 w-auto max-w-full object-contain"
                 />
             </div>
             <div v-else class="grid place-items-center gap-3 text-center">
                 <div
-                    class="grid size-32 place-items-center rounded-xl border border-sf-serenity-blue/30 bg-background/85 shadow-sm"
+                    class="grid place-items-center rounded-xl border border-sf-serenity-blue/30 bg-background/85 p-4 shadow-sm"
                 >
-                    <QrCode class="size-24 text-sf-primary-soft" />
+                    <QrCode class="size-24 max-w-full text-sf-primary-soft" />
                 </div>
                 <p class="text-xs text-muted-foreground">Sample preview</p>
             </div>

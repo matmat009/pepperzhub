@@ -63,11 +63,17 @@ export const createPaymentMethodColumns = (
             header: 'QR',
             cell: ({ row }) =>
                 row.original.qr_code_url
-                    ? h('img', {
-                          src: row.original.qr_code_url,
-                          alt: `${row.original.name} QR code`,
-                          class: 'size-10 rounded border object-contain',
-                      })
+                    ? h(
+                          'div',
+                          {
+                              class: 'inline-grid min-h-16 min-w-16 place-items-center rounded-md border bg-muted/30 p-1',
+                          },
+                          h('img', {
+                              src: row.original.qr_code_url,
+                              alt: `${row.original.name} QR code`,
+                              class: 'block h-auto max-h-20 w-auto max-w-16 object-contain',
+                          }),
+                      )
                     : h(
                           'span',
                           { class: 'text-sm text-muted-foreground' },

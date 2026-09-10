@@ -1,65 +1,65 @@
-# Design QA — Payment Method Dialog
+# Design QA — Payments Table and View Dialog
 
-- Source visual truth: `C:\Users\mathe\Downloads\ChatGPT Image Sep 11, 2026, 04_03_40 AM.png`
-- Source pixels: 1777 × 885 at 96 DPI
+- Source visual truths:
+  - `C:\Users\mathe\Downloads\ChatGPT Image Sep 11, 2026, 05_24_32 AM.png` — table, 1672 × 941 at 96 DPI
+  - `C:\Users\mathe\Downloads\ChatGPT Image Sep 11, 2026, 05_24_22 AM.png` — View dialog, 1779 × 884 at 96 DPI
 - Implementation route: `/admin/payment-methods`
-- Implementation screenshot: unavailable — neither the in-app browser nor Chrome was available
-- Target CSS viewport: 1777 × 885 at device scale factor 1 (inferred from the source pixels and 96 DPI)
-- States: authenticated admin, light theme, Add New and Edit dialogs; empty, stored, uploaded, replaced, and removed QR states
+- Implementation screenshot: unavailable — no in-app or connected browser surface was available
+- Target CSS viewports: 1672 × 941 and 1779 × 884 at device scale factor 1
+- States: authenticated admin, light theme; table with and without QR images; View dialog with QR image and empty QR state; desktop and narrow responsive layouts
 
 ## Full-view comparison evidence
 
-The source mockup was opened at original resolution and inspected before implementation. A browser-rendered implementation capture could not be obtained, so the required combined same-viewport comparison was not possible.
+Both source images were opened at original resolution before implementation. A browser-rendered implementation capture could not be obtained, so the required same-state combined comparison was not possible.
 
 Source inspection established these target treatments:
 
-- A wider centered dialog with a subtle blue-to-pink header wash.
-- A two-column desktop body with form fields on the left and QR content on the right.
-- A full-width Active panel and footer below both columns.
-- A large QR preview inside a softly tinted rounded panel.
-- Upload/Replace and Remove controls below the preview.
-
-The implementation maps those treatments to existing Serenity Blue and Rose Quartz tokens and preserves the shared component's Add/Edit behavior.
+- Always-visible Edit and Delete actions with blue and red outlined surfaces, icons, and compact horizontal alignment.
+- A larger table QR thumbnail that preserves the full image.
+- A View dialog with a pastel Serenity Blue-to-Rose Quartz header wash.
+- A two-column desktop body: payment details, sort order, and status on the left; QR content on the right.
+- A friendly QR-icon empty state inside a softly tinted panel.
 
 ## Focused region comparison evidence
 
 Focused implementation captures were unavailable. Code-level inspection confirms:
 
-- The dialog switches to two columns at `lg` and retains the original Name → Payment details → QR code → Sort order → Active order below that breakpoint.
-- The Active section remains full width beneath the scrollable form grid.
-- The empty QR state uses the existing Lucide `QrCode` icon and the caption “Sample preview.”
-- Existing and object-URL image previews still render from the unchanged `shownUrl` computed value.
-- Upload/Replace and Remove retain their original conditions, handlers, labels, accepted formats, and hidden file input.
+- Table action handlers and emitted records are unchanged; only variants, icons, labels, and classes changed.
+- Table QR images use intrinsic `width: auto` and `height: auto`, with only maximum width/height bounds. The thumbnail wrapper has no aspect-ratio or overflow-clipping class.
+- View QR images use the same intrinsic sizing approach. The image wrapper and QR panel have no fixed aspect ratio and no overflow-clipping class.
+- The View dialog switches to two columns at `lg` and stacks in source order below that breakpoint.
+- Close and Edit handlers are unchanged.
 
 ## Required fidelity surfaces
 
-- **Fonts and typography:** Existing admin typography is preserved. The title is enlarged to establish the hierarchy shown in the mockup; all form labels, help text, and button copy remain unchanged. Browser rendering remains unverified.
-- **Spacing and layout rhythm:** The dialog uses a wider `sm:max-w-4xl` shell, an asymmetric two-column desktop grid, a divider before the QR column, larger section padding, and a full-width Active row. Mobile stacking and vertical scrolling are retained. Browser measurements remain unverified.
-- **Colors and visual tokens:** Header and QR-panel gradients use only `sf-serenity-blue`, `sf-rose-quartz`, `sf-primary-soft`, and existing background/border tokens at low opacity. No new color values were introduced.
-- **Image quality and asset fidelity:** Real QR image sources, object-fit behavior, and stored/uploaded image selection are unchanged. The empty illustration uses the project's existing icon library rather than a new or fabricated asset.
-- **Copy and content:** Dialog titles, descriptions, field labels, validation output, help text, Active copy, action text, and conditional Upload/Replace wording are preserved; only “Sample preview” was added for the illustrative empty state.
-- **Responsiveness and interaction:** Desktop column placement and mobile DOM order are encoded in responsive classes. Add/Edit submission, file selection, replacement, removal, cancellation, and toggle behavior are unchanged at code level but could not be exercised in a browser.
+- **Fonts and typography:** Existing admin font, hierarchy, labels, values, and table copy are preserved. The View title uses the same enlarged treatment as the Create/Edit dialog. Browser rendering remains unverified.
+- **Spacing and layout rhythm:** Table actions use compact small buttons; the QR thumbnail has a 64px minimum neutral frame and scales up to 64px wide or 80px high. The View dialog uses a wider 3xl shell, responsive asymmetric columns, and a divided QR column. Browser measurements remain unverified.
+- **Colors and visual tokens:** Edit, header, QR panel, and empty-state icon use existing Serenity Blue and Rose Quartz tokens. Delete uses the existing destructive token. No new color values were introduced.
+- **Image quality and asset fidelity:** Real QR sources are unchanged. Both table and modal images retain their natural proportions, use `max-width`/`max-height` caps, and have no fixed-square or hidden-overflow image wrapper. No image asset was generated or substituted.
+- **Copy and content:** Existing table data, modal title/description, payment details, sort order, status, and Close/Edit copy are unchanged. “No QR code uploaded.” remains and is now integrated with the empty-state icon.
+- **Responsiveness and interaction:** The View content stacks on smaller screens. Existing row click, Edit, Delete, Close, and View-to-Edit behavior is unchanged at code level, but could not be exercised in a browser.
 
 ## Findings
 
 - **P1 — Browser-rendered fidelity and interaction verification unavailable**
-  - Location: `/admin/payment-methods`, Add New and Edit modes at desktop and mobile widths.
-  - Evidence: browser discovery returned no available in-app or Chrome surface, so no implementation screenshot, combined comparison, keyboard pass, QR-state interaction pass, or console check could be produced.
-  - Impact: exact visual fidelity, responsive overflow, focus behavior, and real stored/uploaded QR presentation cannot be confirmed from rendered evidence.
-  - Fix: capture both dialog modes at 1777 × 885 and a narrow mobile viewport, compare the desktop capture alongside the source, then exercise upload, replace, remove, cancel, submit, toggle, focus, and keyboard-close behavior.
+  - Location: `/admin/payment-methods`, table and View dialog at the source desktop sizes and a narrow viewport.
+  - Evidence: browser discovery returned no available surface, so no implementation screenshot, combined comparison, hover/focus check, QR-state check, or console inspection could be produced.
+  - Impact: exact visual fidelity, responsive wrapping, row density, and the real portrait/landscape/square QR rendering cannot be certified from rendered evidence.
+  - Fix: capture the authenticated table and both View QR states at the matching desktop sizes, compare each beside its source, then repeat at a narrow viewport and with portrait, landscape, and square images.
 
 ## Comparison history
 
-- Initial source review: catalogued dialog proportions, header wash, two-column structure, QR panel, action placement, and full-width Active row.
-- Implementation pass: applied responsive layout and token-based surface styling without changing validation, submission, or file-preview logic.
+- Initial source review: catalogued action-button treatment, QR thumbnail scale, modal gradient, two-column grouping, and empty state.
+- Implementation pass: applied scoped table and View-dialog styling while preserving data and event behavior.
 - Post-fix visual evidence: unavailable because no browser surface was connected.
 
 ## Implementation checklist
 
-- Capture Add New and Edit at 1777 × 885 in light mode.
-- Compare full-dialog and focused header/QR/action regions alongside the source image.
-- Exercise stored, uploaded, replaced, removed, and empty QR states.
-- Verify focus order, keyboard operation, close behavior, validation, and browser console output.
-- Capture a narrow viewport and confirm the original top-to-bottom field order and usable scrolling.
+- Capture the Payments table at 1672 × 941 with a QR-bearing row.
+- Open a method with a QR code at 1779 × 884 and verify the complete image is visible.
+- Open a method without a QR code and compare the empty state to the modal source.
+- Exercise Edit, Delete, Close, row View, and View-to-Edit behavior with keyboard focus and hover states.
+- Repeat QR checks with portrait, landscape, and square files and at a narrow viewport.
+- Check browser console output and update this report with the final comparison.
 
 final result: blocked

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Pencil, Trash2 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import type { PaymentMethod } from '../types';
 
@@ -23,21 +24,25 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <div class="flex items-center justify-end gap-1">
+    <div class="flex items-center justify-end gap-1.5 whitespace-nowrap">
         <Button
-            variant="ghost"
-            size="xs"
-            class="hover:text-foreground"
+            variant="outline"
+            size="sm"
+            class="rounded-full border-sf-serenity-blue/80 bg-sf-serenity-blue/10 px-3 text-sf-primary-soft hover:border-sf-serenity-blue hover:bg-sf-serenity-blue/20 hover:text-sf-primary-deep dark:border-sf-serenity-blue/50 dark:bg-sf-serenity-blue/10 dark:text-sf-serenity-blue dark:hover:bg-sf-serenity-blue/20"
+            :aria-label="`Edit ${method.name}`"
             @click="emit('edit', method)"
         >
+            <Pencil aria-hidden="true" />
             Edit
         </Button>
         <Button
-            variant="ghost"
-            size="xs"
-            class="text-destructive hover:text-destructive"
+            variant="destructive"
+            size="sm"
+            class="rounded-full px-3"
+            :aria-label="`Delete ${method.name}`"
             @click="emit('remove', method)"
         >
+            <Trash2 aria-hidden="true" />
             Delete
         </Button>
     </div>

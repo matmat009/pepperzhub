@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ImageOff, Pencil } from '@lucide/vue';
+import { Pencil, QrCode } from '@lucide/vue';
 import { computed } from 'vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -53,81 +53,105 @@ const requestEdit = () => {
 
 <template>
     <Dialog v-model:open="open">
-        <DialogContent v-if="method" class="sm:max-w-xl">
-            <DialogHeader>
-                <DialogTitle>{{ method.name }}</DialogTitle>
+        <DialogContent
+            v-if="method"
+            class="max-h-[calc(100vh-2rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-w-3xl [&_[data-slot=dialog-close]]:top-6 [&_[data-slot=dialog-close]]:right-6"
+        >
+            <DialogHeader
+                class="border-b border-sf-serenity-blue/20 bg-linear-to-r from-sf-serenity-blue/20 via-background to-sf-rose-quartz/25 px-6 py-6 pr-14 sm:px-8 sm:pr-16"
+            >
+                <DialogTitle class="text-2xl leading-tight">
+                    {{ method.name }}
+                </DialogTitle>
                 <DialogDescription>
                     How this method appears to customers at checkout.
                 </DialogDescription>
             </DialogHeader>
 
-            <div class="grid max-h-[60vh] gap-5 overflow-y-auto px-1">
-                <div class="grid gap-2">
-                    <span class="text-sm font-medium">Payment details</span>
-                    <dl
-                        v-if="method.details.length"
-                        class="grid gap-2 rounded-lg border p-3"
-                    >
-                        <div
-                            v-for="(detail, index) in method.details"
-                            :key="index"
-                            class="flex flex-wrap items-baseline justify-between gap-2"
+            <div
+                class="grid min-h-0 gap-5 overflow-y-auto px-6 py-6 sm:px-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(16rem,0.85fr)] lg:gap-x-8"
+            >
+                <div class="grid content-start gap-5">
+                    <div class="grid gap-2">
+                        <span class="text-sm font-medium">
+                            Payment details
+                        </span>
+                        <dl
+                            v-if="method.details.length"
+                            class="grid gap-2 rounded-lg border p-3"
                         >
-                            <dt class="text-sm text-muted-foreground">
-                                {{ detail.label }}
-                            </dt>
-                            <dd class="text-sm font-medium">
-                                {{ detail.value }}
-                            </dd>
+                            <div
+                                v-for="(detail, index) in method.details"
+                                :key="index"
+                                class="flex flex-wrap items-baseline justify-between gap-2"
+                            >
+                                <dt class="text-sm text-muted-foreground">
+                                    {{ detail.label }}
+                                </dt>
+                                <dd class="text-sm font-medium">
+                                    {{ detail.value }}
+                                </dd>
+                            </div>
+                        </dl>
+                        <p v-else class="text-sm text-muted-foreground">
+                            No details recorded.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 border-t pt-4">
+                        <div class="grid gap-1">
+                            <span class="text-sm font-medium">Sort order</span>
+                            <span class="text-sm tabular-nums">
+                                {{ method.sort_order }}
+                            </span>
                         </div>
-                    </dl>
-                    <p v-else class="text-sm text-muted-foreground">
-                        No details recorded.
-                    </p>
+                        <div class="grid gap-1">
+                            <span class="text-sm font-medium">Status</span>
+                            <Badge
+                                variant="outline"
+                                class="w-fit rounded-md font-normal"
+                                :class="availabilityTone[statusKey]"
+                            >
+                                {{ availabilityLabels[statusKey] }}
+                            </Badge>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="grid gap-2">
+                <div
+                    class="grid content-start gap-2 lg:border-l lg:border-sf-serenity-blue/20 lg:pl-8"
+                >
                     <span class="text-sm font-medium">QR code</span>
                     <div
-                        class="grid size-28 place-items-center overflow-hidden rounded-lg border bg-muted/30"
+                        class="grid min-h-56 place-items-center rounded-xl border border-sf-serenity-blue/25 bg-linear-to-br from-sf-serenity-blue/15 via-background to-sf-rose-quartz/25 p-4"
                     >
-                        <img
+                        <div
                             v-if="method.qr_code_url"
-                            :src="method.qr_code_url"
-                            :alt="`${method.name} QR code`"
-                            class="size-full object-contain"
-                        />
-                        <ImageOff v-else class="size-6 text-muted-foreground" />
-                    </div>
-                    <p
-                        v-if="!method.qr_code_url"
-                        class="text-sm text-muted-foreground"
-                    >
-                        No QR code uploaded.
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="grid gap-1">
-                        <span class="text-sm font-medium">Sort order</span>
-                        <span class="text-sm tabular-nums">
-                            {{ method.sort_order }}
-                        </span>
-                    </div>
-                    <div class="grid gap-1">
-                        <span class="text-sm font-medium">Status</span>
-                        <Badge
-                            variant="outline"
-                            class="w-fit rounded-md font-normal"
-                            :class="availabilityTone[statusKey]"
+                            class="grid w-fit max-w-full place-items-center rounded-lg border border-sf-serenity-blue/20 bg-white p-3 shadow-sm"
                         >
-                            {{ availabilityLabels[statusKey] }}
-                        </Badge>
+                            <img
+                                :src="method.qr_code_url"
+                                :alt="`${method.name} QR code`"
+                                class="block h-auto max-h-96 w-auto max-w-full object-contain"
+                            />
+                        </div>
+                        <div
+                            v-else
+                            class="grid place-items-center gap-3 text-center"
+                        >
+                            <QrCode
+                                class="size-16 text-sf-primary-soft/70"
+                                aria-hidden="true"
+                            />
+                            <p class="text-sm text-muted-foreground">
+                                No QR code uploaded.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <DialogFooter>
+            <DialogFooter class="border-t px-6 py-4 sm:px-8">
                 <Button variant="outline" @click="open = false">Close</Button>
                 <Button @click="requestEdit">
                     <Pencil />
