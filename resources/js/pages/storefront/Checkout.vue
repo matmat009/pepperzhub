@@ -493,43 +493,47 @@ const fieldClass =
 
                     <div
                         v-if="selectedPayment"
-                        class="mt-6 grid grid-cols-1 gap-6 rounded-xl border border-sf-line bg-sf-tint p-6 sm:grid-cols-[1fr_auto]"
+                        class="mt-6 grid grid-cols-1 gap-6 rounded-xl border border-sf-line bg-sf-tint p-6 md:grid-cols-2 md:gap-0"
                     >
-                        <dl class="flex flex-col gap-3 text-[15px]">
-                            <div
-                                v-for="detail in selectedPayment.details"
-                                :key="detail.label"
-                                class="flex justify-between gap-6"
-                            >
-                                <dt class="text-sf-muted">
-                                    {{ detail.label }}
-                                </dt>
-                                <dd class="font-semibold text-sf-ink">
-                                    {{ detail.value }}
-                                </dd>
-                            </div>
-                        </dl>
                         <!--
                             qr_code_path is nullable and currently unset — the
                             placeholder is the expected state, not a failure.
                         -->
                         <div
-                            v-if="selectedPayment?.qr_code_url"
-                            class="size-32 shrink-0 overflow-hidden rounded-xl border border-sf-line bg-white"
+                            class="flex min-w-0 items-center justify-center md:pr-6"
                         >
                             <img
+                                v-if="selectedPayment.qr_code_url"
                                 :src="selectedPayment.qr_code_url"
                                 :alt="`${selectedPayment.name} payment QR`"
-                                class="size-full object-contain p-1"
+                                class="block h-auto max-h-96 w-auto max-w-full rounded-xl border border-sf-line bg-white object-contain p-1"
                             />
+                            <div
+                                v-else
+                                class="flex min-h-64 w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-sf-line-strong bg-white text-sf-subtle"
+                            >
+                                <QrCode class="size-14" />
+                                <span class="text-sm">QR coming soon</span>
+                            </div>
                         </div>
-                        <div
-                            v-else
-                            class="grid size-32 shrink-0 place-items-center gap-1 rounded-xl border border-dashed border-sf-line-strong bg-white text-sf-subtle"
+                        <dl
+                            class="flex min-w-0 flex-col justify-center gap-6 border-t border-sf-line-strong pt-6 md:border-t-0 md:border-l md:pt-0 md:pl-6"
                         >
-                            <QrCode class="size-10" />
-                            <span class="text-xs">QR coming soon</span>
-                        </div>
+                            <div
+                                v-for="detail in selectedPayment.details"
+                                :key="detail.label"
+                                class="flex min-w-0 flex-col gap-1"
+                            >
+                                <dt class="text-sm text-sf-muted">
+                                    {{ detail.label }}
+                                </dt>
+                                <dd
+                                    class="font-display text-lg font-semibold break-words text-sf-ink"
+                                >
+                                    {{ detail.value }}
+                                </dd>
+                            </div>
+                        </dl>
                     </div>
                 </section>
 
