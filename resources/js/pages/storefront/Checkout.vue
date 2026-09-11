@@ -4,9 +4,15 @@ import {
     Check,
     FileText,
     FlaskConical,
+    MapPin,
+    NotebookPen,
     QrCode,
+    ReceiptText,
     Search,
+    Truck,
     Upload,
+    User,
+    Wallet,
     X,
 } from '@lucide/vue';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
@@ -23,6 +29,10 @@ import { formatPrice } from '@/pages/admin/products/all-products/types';
 import { home } from '@/routes';
 import { index as catalog } from '@/routes/storefront/products';
 import { store as submitCheckout } from '@/routes/storefront/checkout';
+
+// One class string for every section-heading badge so all seven stay identical.
+const headingBadge =
+    'flex size-8 shrink-0 items-center justify-center rounded-full bg-sf-primary/10 text-sf-primary';
 
 /**
  * Couriers, regions and payment methods are seeded rows now, not hardcoded
@@ -297,7 +307,12 @@ const fieldClass =
         >
             <div class="flex flex-col gap-10">
                 <section>
-                    <h2 class="font-display text-xl font-semibold text-sf-ink">
+                    <h2
+                        class="flex items-center gap-3 font-display text-xl font-semibold text-sf-ink"
+                    >
+                        <span :class="headingBadge" aria-hidden="true">
+                            <User class="size-4" />
+                        </span>
                         Customer Details
                     </h2>
                     <div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -338,7 +353,12 @@ const fieldClass =
                 </section>
 
                 <section>
-                    <h2 class="font-display text-xl font-semibold text-sf-ink">
+                    <h2
+                        class="flex items-center gap-3 font-display text-xl font-semibold text-sf-ink"
+                    >
+                        <span :class="headingBadge" aria-hidden="true">
+                            <MapPin class="size-4" />
+                        </span>
                         Shipping Address
                     </h2>
                     <div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -401,7 +421,12 @@ const fieldClass =
                 </section>
 
                 <section>
-                    <h2 class="font-display text-xl font-semibold text-sf-ink">
+                    <h2
+                        class="flex items-center gap-3 font-display text-xl font-semibold text-sf-ink"
+                    >
+                        <span :class="headingBadge" aria-hidden="true">
+                            <Truck class="size-4" />
+                        </span>
                         Select Courier
                     </h2>
                     <label class="mt-5 flex flex-col gap-2">
@@ -466,7 +491,12 @@ const fieldClass =
                 </section>
 
                 <section>
-                    <h2 class="font-display text-xl font-semibold text-sf-ink">
+                    <h2
+                        class="flex items-center gap-3 font-display text-xl font-semibold text-sf-ink"
+                    >
+                        <span :class="headingBadge" aria-hidden="true">
+                            <Wallet class="size-4" />
+                        </span>
                         Select Payment Method
                     </h2>
                     <label class="mt-5 flex flex-col gap-2">
@@ -538,9 +568,17 @@ const fieldClass =
                 </section>
 
                 <section>
-                    <h2 class="font-display text-xl font-semibold text-sf-ink">
-                        Upload Proof of Payment
-                        <span class="text-sf-rose-deep">*</span>
+                    <h2
+                        class="flex items-center gap-3 font-display text-xl font-semibold text-sf-ink"
+                    >
+                        <span :class="headingBadge" aria-hidden="true">
+                            <Upload class="size-4" />
+                        </span>
+                        <!-- Wrapped so the flex gap doesn't push the asterisk away from the text. -->
+                        <span>
+                            Upload Proof of Payment
+                            <span class="text-sf-rose-deep">*</span>
+                        </span>
                     </h2>
                     <input
                         ref="proofInput"
@@ -759,7 +797,12 @@ const fieldClass =
                 </section>
 
                 <section>
-                    <h2 class="font-display text-xl font-semibold text-sf-ink">
+                    <h2
+                        class="flex items-center gap-3 font-display text-xl font-semibold text-sf-ink"
+                    >
+                        <span :class="headingBadge" aria-hidden="true">
+                            <NotebookPen class="size-4" />
+                        </span>
                         Notes
                     </h2>
                     <textarea
@@ -774,7 +817,12 @@ const fieldClass =
 
             <aside class="lg:sticky lg:top-28 lg:self-start">
                 <div class="rounded-2xl border border-sf-line bg-sf-tint p-7">
-                    <h2 class="font-display text-xl font-semibold text-sf-ink">
+                    <h2
+                        class="flex items-center gap-3 font-display text-xl font-semibold text-sf-ink"
+                    >
+                        <span :class="headingBadge" aria-hidden="true">
+                            <ReceiptText class="size-4" />
+                        </span>
                         Order Summary
                     </h2>
 
