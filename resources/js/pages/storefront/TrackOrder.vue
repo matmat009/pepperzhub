@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import {
+    ArrowRight,
     Check,
     CircleAlert,
     Copy,
     ExternalLink,
-    Search,
     Truck,
 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
-import { home } from '@/routes';
 import { index as catalog } from '@/routes/storefront/products';
 import { lookup as lookupRoute } from '@/routes/storefront/track';
 import { cancellationMessage, isCancelled, trackerSteps } from './orderTracker';
@@ -91,38 +90,70 @@ const copyTracking = async () => {
 };
 
 const fieldClass =
-    'w-full rounded-xl border border-sf-line-strong bg-white px-4 py-3 text-[15px] text-sf-ink outline-none transition-colors duration-200 ease-out focus:border-sf-primary';
+    'h-12 w-full rounded-xl border border-sf-line-strong bg-white px-4 text-base text-sf-ink outline-none transition-[border-color,box-shadow] duration-200 ease-out placeholder:text-sf-subtle focus-visible:border-sf-primary focus-visible:ring-2 focus-visible:ring-sf-primary/20 sm:text-[15px]';
 </script>
 
 <template>
     <Head title="Track Order" />
 
-    <div class="mx-auto w-full max-w-[980px] px-5 pt-10 pb-24 sm:px-10">
-        <div class="flex items-center gap-2 text-sm text-sf-subtle">
-            <Link
-                :href="home()"
-                class="transition-colors duration-200 ease-out hover:text-sf-primary"
-                >Home</Link
-            >
-            <span>/</span>
-            <span class="text-sf-ink">Track Order</span>
-        </div>
-
-        <h1
-            class="mt-5 font-display text-[34px] font-medium tracking-[-0.02em] text-sf-ink"
+    <div>
+        <section
+            class="relative isolate px-5 py-14 text-center sm:px-10 sm:py-16"
         >
-            Track Your Order
-        </h1>
-        <p class="mt-3 text-[17px] leading-[1.7] text-sf-muted">
-            Enter your order number and the phone number you checked out with.
-        </p>
+            <!-- Reuse Home's offset wash so the shared floating nav sits on it. -->
+            <div
+                aria-hidden="true"
+                class="pointer-events-none absolute inset-x-0 -top-24 -bottom-px -z-10 bg-[linear-gradient(125deg,var(--color-sf-hero-blue)_0%,#fff_48%,var(--color-sf-hero-rose)_100%)]"
+            />
+
+            <div class="mx-auto max-w-3xl">
+                <p
+                    class="text-[11px] font-semibold tracking-[0.28em] text-sf-primary uppercase"
+                >
+                    Order lookup
+                </p>
+                <h1
+                    class="mt-4 font-display text-[36px] font-medium tracking-[-0.025em] text-sf-ink sm:text-[46px]"
+                >
+                    Track your order
+                </h1>
+                <p
+                    class="mt-3 text-base leading-relaxed text-sf-muted italic sm:text-[17px]"
+                >
+                    Follow your parcel from payment verification to your door.
+                </p>
+                <div
+                    class="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-sf-muted sm:text-sm"
+                >
+                    <span class="inline-flex items-center gap-2">
+                        <Check class="size-4 text-sf-primary" />
+                        Manual payment verification
+                    </span>
+                    <span
+                        aria-hidden="true"
+                        class="hidden h-4 w-px bg-sf-line-strong sm:block"
+                    />
+                    <span class="inline-flex items-center gap-2">
+                        <Truck class="size-4 text-sf-primary" />
+                        Courier link when available
+                    </span>
+                </div>
+            </div>
+        </section>
 
         <form
             v-if="!found"
-            class="mt-8 rounded-2xl border border-sf-line bg-white p-7"
+            class="mx-auto mt-10 mb-24 w-[calc(100%-2rem)] max-w-[440px] rounded-xl border border-sf-line-strong bg-white p-6 shadow-lg shadow-sf-ink/5 sm:mt-12 sm:w-full sm:p-8"
             @submit.prevent="lookup"
         >
-            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <h2 class="font-display text-xl font-semibold text-sf-ink">
+                Enter your details
+            </h2>
+            <p class="mt-1 text-sm leading-relaxed text-sf-muted">
+                Both must match what you used at checkout.
+            </p>
+
+            <div class="mt-7 flex flex-col gap-5">
                 <label class="flex flex-col gap-2">
                     <span class="text-sm font-medium text-sf-text"
                         >Order Number</span
@@ -140,17 +171,17 @@ const fieldClass =
                     <input
                         v-model="form.phone"
                         :class="fieldClass"
-                        placeholder="0917 123 4567"
+                        placeholder="Phone used at checkout"
                     />
                 </label>
             </div>
 
             <button
                 type="submit"
-                class="mt-6 inline-flex items-center gap-2.5 rounded-full bg-sf-primary px-9 py-3.5 font-display text-base font-medium text-white transition-colors duration-200 ease-out hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                class="mt-6 inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-sf-primary px-6 font-display text-base font-medium text-white shadow-md shadow-sf-primary/20 transition-colors duration-200 ease-out hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
             >
-                <Search class="size-4" />
-                Track order
+                Track Order
+                <ArrowRight class="size-4" />
             </button>
 
             <div
@@ -174,9 +205,26 @@ const fieldClass =
                     </p>
                 </div>
             </div>
+
+            <div
+                class="mt-5 border-t border-sf-line pt-4 text-center text-sm leading-relaxed"
+            >
+                <p class="text-sf-subtle italic">
+                    Can’t find your order number? Check your order confirmation.
+                </p>
+                <a
+                    href="mailto:support@pepperzhub.ph"
+                    class="mt-2 inline-block font-medium text-sf-primary transition-colors duration-200 ease-out hover:text-sf-primary-hover"
+                >
+                    Message us for help
+                </a>
+            </div>
         </form>
 
-        <div v-else class="mt-8 flex flex-col gap-8">
+        <div
+            v-else
+            class="mx-auto mt-8 flex w-full max-w-[980px] flex-col gap-8 px-5 pb-24 sm:px-10"
+        >
             <div class="rounded-2xl border border-sf-line bg-white p-7">
                 <div
                     class="flex flex-wrap items-baseline justify-between gap-3"
