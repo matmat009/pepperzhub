@@ -200,9 +200,14 @@ const openLegal = (title: string) => {
                     >
                         Terms of Service
                     </button>
-                </span>
-                <span class="text-sf-subtle italic">
-                    For laboratory research use only. Not for human consumption.
+                    <span class="size-1 rounded-full bg-sf-line-strong" />
+                    <button
+                        type="button"
+                        class="text-sf-subtle transition-colors duration-200 ease-out hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        @click="openLegal('Shipping Policy')"
+                    >
+                        Shipping Policy
+                    </button>
                 </span>
             </div>
         </div>
