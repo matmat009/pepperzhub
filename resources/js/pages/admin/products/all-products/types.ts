@@ -50,12 +50,21 @@ export type Product = {
     slug: string;
     short_description: string;
     full_description: string;
+    /**
+     * Protocol fields. At most one of each per product, so they are plain
+     * strings rather than lists; empty means the owner has not set one, which
+     * is what keeps a product off the storefront's Protocols page.
+     */
+    dosage: string;
+    frequency: string;
+    duration: string;
     /** Name, for the table's badge and category filter. */
     category: string;
     /** Id, for the form's select. */
     category_id: number;
     purity_entries: LabeledEntry[];
     storage_instructions: LabeledEntry[];
+    protocol_notes: LabeledEntry[];
     status: ProductStatus;
     featured: boolean;
     images: ProductImage[];
@@ -75,8 +84,17 @@ export type ProductFormFields = {
     featured: boolean;
     short_description: string;
     full_description: string;
+    dosage: string;
+    frequency: string;
+    duration: string;
     purity_entries: LabeledEntry[];
     storage_instructions: LabeledEntry[];
+    /**
+     * A note is one plain line, so the form edits `value` alone and never shows
+     * a label field. It still travels as a `LabeledEntry` because the id is
+     * what lets the server update a note in place instead of churning it.
+     */
+    protocol_notes: LabeledEntry[];
     variants: ProductVariant[];
     images: ProductImage[];
 };
@@ -94,8 +112,14 @@ export const emptyProductForm = (): ProductFormFields => ({
     featured: false,
     short_description: '',
     full_description: '',
+    dosage: '',
+    frequency: '',
+    duration: '',
     purity_entries: [emptyEntry()],
     storage_instructions: [emptyEntry()],
+    // Starts empty, like a variant's kit inclusions: a product without a
+    // protocol should not open with a blank row inviting one.
+    protocol_notes: [],
     variants: [],
     images: [],
 });
@@ -112,8 +136,14 @@ export const toProductForm = (product: Product): ProductFormFields => ({
     featured: product.featured,
     short_description: product.short_description,
     full_description: product.full_description,
+    dosage: product.dosage,
+    frequency: product.frequency,
+    duration: product.duration,
     purity_entries: withAtLeastOneRow(product.purity_entries),
     storage_instructions: withAtLeastOneRow(product.storage_instructions),
+    protocol_notes: JSON.parse(
+        JSON.stringify(product.protocol_notes ?? []),
+    ) as LabeledEntry[],
     variants: JSON.parse(JSON.stringify(product.variants)) as ProductVariant[],
     images: JSON.parse(JSON.stringify(product.images)) as ProductImage[],
 });
@@ -231,6 +261,9 @@ export const toSubmitPayload = (fields: ProductFormFields) => ({
     featured: fields.featured,
     short_description: fields.short_description,
     full_description: fields.full_description,
+    dosage: fields.dosage,
+    frequency: fields.frequency,
+    duration: fields.duration,
     variants: fields.variants.map((variant) => ({
         id: persistedId(variant.id),
         label: variant.label,
@@ -247,6 +280,11 @@ export const toSubmitPayload = (fields: ProductFormFields) => ({
     storage: fields.storage_instructions.map(({ id, label, value }) => ({
         id: persistedId(id),
         label,
+        value,
+    })),
+    // No label key at all, so the server stores the note with a null label.
+    protocol: fields.protocol_notes.map(({ id, value }) => ({
+        id: persistedId(id),
         value,
     })),
     kept_image_ids: fields.images

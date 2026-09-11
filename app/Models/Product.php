@@ -22,6 +22,9 @@ class Product extends Model
         'featured',
         'short_description',
         'full_description',
+        'dosage',
+        'frequency',
+        'duration',
     ];
 
     protected function casts(): array
@@ -74,5 +77,11 @@ class Product extends Model
     public function storageDetails(): HasMany
     {
         return $this->technicalDetails()->where('type', ProductTechnicalDetail::TYPE_STORAGE);
+    }
+
+    /** @return HasMany<ProductTechnicalDetail, $this> */
+    public function protocolNotes(): HasMany
+    {
+        return $this->technicalDetails()->where('type', ProductTechnicalDetail::TYPE_PROTOCOL);
     }
 }

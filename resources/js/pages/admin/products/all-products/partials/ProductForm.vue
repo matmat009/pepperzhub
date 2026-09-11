@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { FlaskConical, Package, Plus, Tag } from '@lucide/vue';
+import {
+    ClipboardList,
+    FlaskConical,
+    Package,
+    Plus,
+    Tag,
+    X,
+} from '@lucide/vue';
 import { computed, ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -21,7 +28,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { PRODUCT_STATUSES } from '../types';
+import { emptyEntry, PRODUCT_STATUSES } from '../types';
 import type {
     CategoryOption,
     ProductFormFields,
@@ -109,6 +116,19 @@ const removeFormat = (variant: ProductVariant) => {
     fields.value.variants = fields.value.variants.filter(
         (item) => item.id !== variant.id,
     );
+};
+
+/**
+ * Protocol notes are a plain list of lines, the same interaction as a variant's
+ * kit inclusions — push a blank row, splice one out. They are not label/value
+ * pairs, so EntryList is deliberately not used here.
+ */
+const addNote = () => {
+    fields.value.protocol_notes.push(emptyEntry());
+};
+
+const removeNote = (index: number) => {
+    fields.value.protocol_notes.splice(index, 1);
 };
 </script>
 
@@ -433,6 +453,164 @@ const removeFormat = (variant: ProductVariant) => {
                             :blue-outline="createStyle"
                         />
                         <InputError :message="firstError('storage')" />
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card
+                :class="
+                    createStyle
+                        ? 'gap-0 rounded-xl border-primary/10 py-0 shadow-sm shadow-sf-serenity-blue/10 dark:border-primary/20 dark:shadow-none'
+                        : 'border-transparent shadow-sm shadow-black/5'
+                "
+            >
+                <CardHeader :class="createStyle ? 'px-5 pt-5 pb-4' : ''">
+                    <div class="flex items-start gap-3">
+                        <span
+                            v-if="createStyle"
+                            class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sf-serenity-blue/20 text-primary dark:bg-primary/15"
+                        >
+                            <ClipboardList class="size-5" />
+                        </span>
+                        <div class="space-y-1">
+                            <CardTitle class="text-base">Protocol</CardTitle>
+                            <p class="text-sm text-muted-foreground">
+                                Dosage guidance for the storefront's Protocols
+                                page. Leave it all blank and this product stays
+                                off that page entirely.
+                            </p>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent
+                    :class="['grid', createStyle ? 'gap-5 px-5 pb-5' : 'gap-6']"
+                >
+                    <div class="grid gap-5 sm:grid-cols-3">
+                        <div class="grid gap-2">
+                            <Label for="dosage">
+                                Dosage
+                                <span class="font-normal text-muted-foreground">
+                                    (Optional)
+                                </span>
+                            </Label>
+                            <Input
+                                id="dosage"
+                                v-model="fields.dosage"
+                                :disabled="readonly"
+                                :class="inert"
+                                placeholder="e.g. 250-500mcg"
+                                autocomplete="off"
+                            />
+                            <InputError :message="errors.dosage" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="frequency">
+                                Frequency
+                                <span class="font-normal text-muted-foreground">
+                                    (Optional)
+                                </span>
+                            </Label>
+                            <Input
+                                id="frequency"
+                                v-model="fields.frequency"
+                                :disabled="readonly"
+                                :class="inert"
+                                placeholder="e.g. Once daily"
+                                autocomplete="off"
+                            />
+                            <InputError :message="errors.frequency" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="duration">
+                                Duration
+                                <span class="font-normal text-muted-foreground">
+                                    (Optional)
+                                </span>
+                            </Label>
+                            <Input
+                                id="duration"
+                                v-model="fields.duration"
+                                :disabled="readonly"
+                                :class="inert"
+                                placeholder="e.g. 4-6 weeks"
+                                autocomplete="off"
+                            />
+                            <InputError :message="errors.duration" />
+                        </div>
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label>
+                            Protocol Notes
+                            <span class="font-normal text-muted-foreground">
+                                (Optional)
+                            </span>
+                        </Label>
+
+                        <TransitionGroup
+                            tag="div"
+                            class="grid gap-2"
+                            enter-active-class="transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-opacity"
+                            enter-from-class="-translate-y-1 opacity-0 motion-reduce:translate-y-0"
+                            leave-active-class="transition-[opacity,transform] duration-150 ease-out motion-reduce:transition-opacity"
+                            leave-to-class="-translate-y-1 opacity-0 motion-reduce:translate-y-0"
+                        >
+                            <div
+                                v-for="(note, index) in fields.protocol_notes"
+                                :key="note.id"
+                                class="flex items-center gap-2"
+                            >
+                                <Input
+                                    :id="`protocol-note-${index}`"
+                                    :model-value="note.value"
+                                    :disabled="readonly"
+                                    :class="['h-9 flex-1', inert]"
+                                    placeholder="e.g. Rotate injection sites."
+                                    autocomplete="off"
+                                    @update:model-value="
+                                        (next) => {
+                                            fields.protocol_notes[index].value =
+                                                String(next);
+                                        }
+                                    "
+                                />
+                                <Button
+                                    v-if="!readonly"
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    class="shrink-0 hover:text-destructive"
+                                    @click="removeNote(index)"
+                                >
+                                    <X class="size-4" />
+                                    <span class="sr-only">
+                                        Remove note {{ index + 1 }}
+                                    </span>
+                                </Button>
+                            </div>
+                        </TransitionGroup>
+
+                        <p
+                            v-if="!fields.protocol_notes.length"
+                            class="text-xs text-muted-foreground"
+                        >
+                            Nothing listed yet.
+                        </p>
+
+                        <Button
+                            v-if="!readonly"
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            class="mt-1 w-fit"
+                            @click="addNote"
+                        >
+                            <Plus />
+                            Add Note
+                        </Button>
+                        <InputError :message="firstError('protocol')" />
                     </div>
                 </CardContent>
             </Card>

@@ -4,6 +4,7 @@ use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\OrderConfirmationController;
 use App\Http\Controllers\Storefront\ProductController;
+use App\Http\Controllers\Storefront\ProtocolController;
 use App\Http\Controllers\Storefront\TrackOrderController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,13 @@ Route::name('storefront.')->group(function () {
     Route::get('products/{slug}', [ProductController::class, 'show'])
         ->where('slug', '[A-Za-z0-9\-_]+')
         ->name('products.show');
+
+    /*
+     * Dosage reference. Not a second catalogue: it lists only the products that
+     * actually carry protocol data, so it is usually a subset.
+     */
+    Route::get('protocols', [ProtocolController::class, 'index'])
+        ->name('protocols');
 
     /*
      * Cart lives in the session. Names and paths are unchanged from the stub

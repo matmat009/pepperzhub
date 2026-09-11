@@ -30,6 +30,12 @@ class ProductRequest extends FormRequest
             ],
             'full_description' => ['nullable', 'string', 'max:5000'],
 
+            // Protocol fields are optional for every status: a product is
+            // simply left off /protocols until the owner fills them in.
+            'dosage' => ['nullable', 'string', 'max:255'],
+            'frequency' => ['nullable', 'string', 'max:255'],
+            'duration' => ['nullable', 'string', 'max:255'],
+
             'variants' => ['array'],
             // Present for a row that already exists; null for one added in the
             // form. The controller re-checks it against this product's rows.
@@ -53,6 +59,12 @@ class ProductRequest extends FormRequest
             'storage.*.label' => ['nullable', 'string', 'max:255'],
             'storage.*.value' => ['required', 'string', 'max:255'],
 
+            // Same rows, minus the label: a protocol note is a single line, so
+            // the form never sends one.
+            'protocol' => ['array'],
+            'protocol.*.id' => ['nullable', 'integer'],
+            'protocol.*.value' => ['required', 'string', 'max:255'],
+
             'kept_image_ids' => ['array'],
             'kept_image_ids.*' => ['integer'],
             'new_images' => ['array', 'max:10'],
@@ -72,6 +84,7 @@ class ProductRequest extends FormRequest
             'short_description.required' => 'A short description is required for active products.',
             'purity.*.value.required' => 'Remove the empty purity row, or give it a value.',
             'storage.*.value.required' => 'Remove the empty storage row, or give it an instruction.',
+            'protocol.*.value.required' => 'Remove the empty protocol note, or give it text.',
             'new_images.*.max' => 'Each image must be 5MB or smaller.',
         ];
     }
@@ -104,8 +117,15 @@ class ProductRequest extends FormRequest
         $this->merge([
             'short_description' => $this->normalizedDescription('short_description'),
             'full_description' => $this->normalizedDescription('full_description'),
+            // Trimmed to null for the same reason as the descriptions: an empty
+            // string would count as "has a protocol" and put the product on
+            // /protocols with a blank line.
+            'dosage' => $this->normalizedDescription('dosage'),
+            'frequency' => $this->normalizedDescription('frequency'),
+            'duration' => $this->normalizedDescription('duration'),
             'purity' => $strip($this->input('purity')),
             'storage' => $storage,
+            'protocol' => $strip($this->input('protocol')),
         ]);
     }
 

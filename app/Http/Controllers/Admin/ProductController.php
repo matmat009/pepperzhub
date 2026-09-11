@@ -40,8 +40,12 @@ class ProductController extends Controller
             'featured' => (bool) $product->featured,
             'short_description' => (string) $product->short_description,
             'full_description' => (string) $product->full_description,
+            'dosage' => (string) $product->dosage,
+            'frequency' => (string) $product->frequency,
+            'duration' => (string) $product->duration,
             'purity_entries' => $this->entries($product, ProductTechnicalDetail::TYPE_PURITY),
             'storage_instructions' => $this->entries($product, ProductTechnicalDetail::TYPE_STORAGE),
+            'protocol_notes' => $this->entries($product, ProductTechnicalDetail::TYPE_PROTOCOL),
             'images' => $product->images
                 ->map(fn ($image) => ['id' => $image->id, 'url' => $image->url()])
                 ->values()
@@ -261,6 +265,9 @@ class ProductController extends Controller
             'featured' => $request->boolean('featured'),
             'short_description' => $request->input('short_description'),
             'full_description' => $request->input('full_description'),
+            'dosage' => $request->input('dosage'),
+            'frequency' => $request->input('frequency'),
+            'duration' => $request->input('duration'),
         ];
     }
 
@@ -329,6 +336,9 @@ class ProductController extends Controller
         foreach ([
             ProductTechnicalDetail::TYPE_PURITY => $request->input('purity', []),
             ProductTechnicalDetail::TYPE_STORAGE => $request->input('storage', []),
+            // Protocol notes are the same rows under a third type, so they get
+            // the same upsert rather than a parallel one of their own.
+            ProductTechnicalDetail::TYPE_PROTOCOL => $request->input('protocol', []),
         ] as $type => $rows) {
             $ofType = $existing->where('type', $type)->keyBy('id');
 
