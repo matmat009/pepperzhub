@@ -56,8 +56,14 @@ class ProductController extends Controller
             'featured' => (bool) $product->featured,
             'short_description' => (string) $product->short_description,
             'full_description' => (string) $product->full_description,
+            'dosage' => (string) $product->dosage,
+            'frequency' => (string) $product->frequency,
+            'duration' => (string) $product->duration,
             'purity_entries' => $this->entries($product, ProductTechnicalDetail::TYPE_PURITY),
             'storage_instructions' => $this->entries($product, ProductTechnicalDetail::TYPE_STORAGE),
+            // Same lookup as the two above, filtered to the protocol type. The
+            // detail page renders these as plain lines; a note carries no label.
+            'protocol_notes' => $this->entries($product, ProductTechnicalDetail::TYPE_PROTOCOL),
             'images' => $product->images
                 ->map(fn ($image) => ['id' => $image->id, 'url' => $image->url()])
                 ->values()

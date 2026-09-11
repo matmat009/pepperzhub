@@ -15,7 +15,7 @@ import { useStorefrontCart } from '@/composables/useStorefrontCart';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
 import type { Product } from '@/pages/admin/products/all-products/types';
 import { home } from '@/routes';
-import { checkout } from '@/routes/storefront';
+import { checkout, protocols } from '@/routes/storefront';
 import { index as catalog } from '@/routes/storefront/products';
 
 const props = defineProps<{
@@ -65,6 +65,25 @@ const details = computed(() => [
     ...props.product.purity_entries,
     ...props.product.storage_instructions,
 ]);
+
+/**
+ * Kept out of `details` on purpose: purity and storage are specifications,
+ * this is how the compound is used. Only the fields the owner actually filled
+ * in appear, which is the same rule /protocols applies to whole products.
+ */
+const protocolSummary = computed(() =>
+    [
+        { label: 'Dosage', value: props.product.dosage },
+        { label: 'Frequency', value: props.product.frequency },
+        { label: 'Duration', value: props.product.duration },
+    ].filter((row) => row.value.trim() !== ''),
+);
+
+const protocolNotes = computed(() => props.product.protocol_notes);
+
+const hasProtocol = computed(
+    () => protocolSummary.value.length > 0 || protocolNotes.value.length > 0,
+);
 
 const shortDescription = computed(() => props.product.short_description.trim());
 const fullDescription = computed(() => props.product.full_description.trim());
@@ -345,6 +364,58 @@ const share = async () => {
                             </dd>
                         </div>
                     </dl>
+                </div>
+
+                <div v-if="hasProtocol" class="mt-7">
+                    <div
+                        class="flex flex-wrap items-baseline justify-between gap-3"
+                    >
+                        <div
+                            class="font-display text-lg font-semibold text-sf-ink"
+                        >
+                            Protocol
+                        </div>
+                        <Link
+                            :href="protocols()"
+                            class="text-sm font-medium text-sf-primary transition-colors duration-200 ease-out hover:text-sf-primary-hover"
+                        >
+                            Compare all protocols
+                        </Link>
+                    </div>
+
+                    <dl
+                        v-if="protocolSummary.length"
+                        class="mt-3 divide-y divide-sf-line"
+                    >
+                        <div
+                            v-for="row in protocolSummary"
+                            :key="row.label"
+                            class="flex items-baseline justify-between gap-6 py-3"
+                        >
+                            <dt class="text-[15px] text-sf-subtle">
+                                {{ row.label }}
+                            </dt>
+                            <dd
+                                class="text-right text-[15px] font-medium text-sf-ink"
+                            >
+                                {{ row.value }}
+                            </dd>
+                        </div>
+                    </dl>
+
+                    <ul v-if="protocolNotes.length" class="mt-3 grid gap-2">
+                        <li
+                            v-for="note in protocolNotes"
+                            :key="note.id"
+                            class="flex gap-3 text-[15px] leading-[1.7] text-sf-muted"
+                        >
+                            <span
+                                class="mt-2.5 size-1.5 shrink-0 rounded-full bg-sf-primary"
+                                aria-hidden="true"
+                            />
+                            {{ note.value }}
+                        </li>
+                    </ul>
                 </div>
 
                 <div
