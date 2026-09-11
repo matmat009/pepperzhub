@@ -278,7 +278,7 @@ const placeOrder = () => {
 };
 
 const fieldClass =
-    'w-full rounded-xl border border-sf-line-strong bg-white px-4 py-3 text-[15px] text-sf-ink outline-none transition-colors duration-200 ease-out focus:border-sf-primary';
+    'w-full rounded-xl border border-sf-rule bg-white px-4 py-3 text-[15px] text-sf-ink outline-none transition-colors duration-200 ease-out placeholder:text-sf-subtle focus:border-sf-primary';
 </script>
 
 <template>
