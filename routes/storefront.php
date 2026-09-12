@@ -5,6 +5,7 @@ use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\OrderConfirmationController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\ProtocolController;
+use App\Http\Controllers\Storefront\ReviewController;
 use App\Http\Controllers\Storefront\TrackOrderController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +35,14 @@ Route::name('storefront.')->group(function () {
      */
     Route::get('protocols', [ProtocolController::class, 'index'])
         ->name('protocols');
+
+    /*
+     * Every active testimonial, including those tied to no product. No category
+     * filtering: a review is not reliably about a product, let alone one
+     * category, so the tabs /protocols carries would have nothing to group on.
+     */
+    Route::get('reviews', [ReviewController::class, 'index'])
+        ->name('reviews');
 
     /*
      * Cart lives in the session. Names and paths are unchanged from the stub

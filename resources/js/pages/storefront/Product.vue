@@ -15,11 +15,28 @@ import { useStorefrontCart } from '@/composables/useStorefrontCart';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
 import type { Product } from '@/pages/admin/products/all-products/types';
 import { home } from '@/routes';
-import { checkout, protocols } from '@/routes/storefront';
+import {
+    checkout,
+    protocols,
+    reviews as reviewsIndex,
+} from '@/routes/storefront';
 import { index as catalog } from '@/routes/storefront/products';
 
+/**
+ * Reviews ride along on the product payload but are not part of the shared
+ * `Product` type — that shape is reused by the admin screens, which have no
+ * business knowing about them. Intersected here instead of widening it.
+ */
+type ProductReview = {
+    id: number;
+    customer_name: string | null;
+    title: string;
+    description: string;
+    image_url: string | null;
+};
+
 const props = defineProps<{
-    product: Product;
+    product: Product & { reviews: ProductReview[] };
     related: Product[];
 }>();
 
@@ -84,6 +101,13 @@ const protocolNotes = computed(() => props.product.protocol_notes);
 const hasProtocol = computed(
     () => protocolSummary.value.length > 0 || protocolNotes.value.length > 0,
 );
+
+/**
+ * Only this product's own active reviews — the server has already filtered
+ * both. Same rule as Protocol: a product with none renders no section at all
+ * rather than an empty heading.
+ */
+const reviews = computed(() => props.product.reviews);
 
 const shortDescription = computed(() => props.product.short_description.trim());
 const fullDescription = computed(() => props.product.full_description.trim());
@@ -479,6 +503,57 @@ const share = async () => {
                 </div>
             </div>
         </div>
+
+        <section v-if="reviews.length" class="mt-24">
+            <div class="flex flex-wrap items-baseline justify-between gap-4">
+                <h2
+                    class="font-display text-[32px] font-medium tracking-[-0.02em] text-sf-ink"
+                >
+                    Customer reviews
+                </h2>
+                <Link
+                    :href="reviewsIndex()"
+                    class="text-sm font-medium text-sf-primary transition-colors duration-200 ease-out hover:text-sf-primary-hover"
+                >
+                    Read all reviews
+                </Link>
+            </div>
+
+            <div
+                class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            >
+                <article
+                    v-for="review in reviews"
+                    :key="review.id"
+                    class="flex flex-col overflow-hidden rounded-2xl border border-sf-line bg-white"
+                >
+                    <img
+                        v-if="review.image_url"
+                        :src="review.image_url"
+                        :alt="review.title"
+                        class="aspect-4/3 w-full object-cover"
+                    />
+                    <div class="flex flex-1 flex-col p-6">
+                        <h3
+                            class="font-display text-lg font-semibold text-sf-ink"
+                        >
+                            {{ review.title }}
+                        </h3>
+                        <p
+                            class="mt-2 flex-1 text-[15px] leading-[1.7] text-sf-muted"
+                        >
+                            {{ review.description }}
+                        </p>
+                        <p
+                            v-if="review.customer_name"
+                            class="mt-4 text-sm font-medium text-sf-subtle"
+                        >
+                            — {{ review.customer_name }}
+                        </p>
+                    </div>
+                </article>
+            </div>
+        </section>
 
         <section v-if="related.length" class="mt-24">
             <h2

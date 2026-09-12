@@ -67,6 +67,23 @@ class Product extends Model
         return $this->hasMany(ProductImage::class)->orderBy('sort_order');
     }
 
+    /** @return HasMany<Review, $this> */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class)->orderBy('sort_order');
+    }
+
+    /**
+     * What the storefront shows. Inactive reviews stay on file for the admin
+     * screen and never reach a public page.
+     *
+     * @return HasMany<Review, $this>
+     */
+    public function activeReviews(): HasMany
+    {
+        return $this->reviews()->where('is_active', true);
+    }
+
     /** @return HasMany<ProductTechnicalDetail, $this> */
     public function purityDetails(): HasMany
     {

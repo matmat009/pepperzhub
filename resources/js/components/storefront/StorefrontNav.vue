@@ -5,7 +5,7 @@ import { computed, ref } from 'vue';
 import BrandWordmark from '@/components/storefront/BrandWordmark.vue';
 import { useStorefrontCart } from '@/composables/useStorefrontCart';
 import { home } from '@/routes';
-import { cart, protocols, track } from '@/routes/storefront';
+import { cart, protocols, reviews, track } from '@/routes/storefront';
 import { index as catalog } from '@/routes/storefront/products';
 
 const { count } = useStorefrontCart();
@@ -13,14 +13,14 @@ const { count } = useStorefrontCart();
 const menuOpen = ref(false);
 
 /**
- * Only destinations that actually resolve. The artboards also show FAQ and
- * Reviews, but those were `href="#"` placeholders with no page behind them —
- * see the deviation note in the handoff report.
+ * Only destinations that actually resolve. FAQ from the artboards is still a
+ * placeholder with no page behind it and stays out; Reviews now has one.
  */
 const links = computed(() => [
     { label: 'Home', href: home() },
     { label: 'Products', href: catalog() },
     { label: 'Protocols', href: protocols() },
+    { label: 'Reviews', href: reviews() },
     { label: 'Track Order', href: track() },
     { label: 'Contact', href: '#contact' },
 ]);

@@ -3,6 +3,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import {
     CreditCard,
     LayoutDashboard,
+    MessageSquareQuote,
     Package,
     Plus,
     ShoppingCart,
@@ -30,6 +31,7 @@ import {
 } from '@/routes/admin/products';
 import { index as ordersIndex } from '@/routes/admin/orders';
 import { index as paymentMethodsIndex } from '@/routes/admin/payment-methods';
+import { index as reviewsIndex } from '@/routes/admin/reviews';
 import { index as shippingCouriersIndex } from '@/routes/admin/shipping-couriers';
 import { index as categoriesIndex } from '@/routes/admin/products/categories';
 import { edit as editProfile } from '@/routes/profile';
@@ -105,6 +107,13 @@ const navEcommerce = computed<NavMainItem[]>(() => [
         title: 'Shipping',
         icon: Truck,
         url: shippingCouriersIndex(),
+    },
+    // Storefront content rather than checkout reference data, but it sits with
+    // them: it is the other thing the owner edits that customers see directly.
+    {
+        title: 'Reviews',
+        icon: MessageSquareQuote,
+        url: reviewsIndex(),
     },
 ]);
 

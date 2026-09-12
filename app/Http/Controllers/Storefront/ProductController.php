@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductTechnicalDetail;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -36,7 +37,10 @@ class ProductController extends Controller
     {
         return Product::query()
             ->where('status', 'active')
-            ->with(['category', 'variants', 'images', 'technicalDetails']);
+            // activeReviews rather than reviews: an inactive testimonial must
+            // not reach a public page, and scoping it on the relation means no
+            // call site can forget the filter.
+            ->with(['category', 'variants', 'images', 'technicalDetails', 'activeReviews']);
     }
 
     /**
@@ -66,6 +70,21 @@ class ProductController extends Controller
             'protocol_notes' => $this->entries($product, ProductTechnicalDetail::TYPE_PROTOCOL),
             'images' => $product->images
                 ->map(fn ($image) => ['id' => $image->id, 'url' => $image->url()])
+                ->values()
+                ->all(),
+            // Only this product's own active reviews, and only the fields the
+            // detail page renders — the same narrow scoping images and
+            // technical details already use.
+            'reviews' => $product->activeReviews
+                ->map(fn ($review) => [
+                    'id' => $review->id,
+                    'customer_name' => $review->customer_name,
+                    'title' => $review->title,
+                    'description' => $review->description,
+                    'image_url' => $review->image_path
+                        ? Storage::disk('public')->url($review->image_path)
+                        : null,
+                ])
                 ->values()
                 ->all(),
             'variants' => $product->variants

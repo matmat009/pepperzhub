@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\ShippingCourierController;
 use Illuminate\Support\Facades\Route;
 
@@ -118,6 +119,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('payment-methods/{paymentMethod}', [PaymentMethodController::class, 'destroy'])
             ->whereNumber('paymentMethod')
             ->name('payment-methods.destroy');
+
+        /*
+         * Customer testimonials. Same shape as payment methods — including the
+         * POST-spoofed PUT, since the review photo rides in the payload.
+         */
+        Route::get('reviews', [ReviewController::class, 'index'])
+            ->name('reviews.index');
+        Route::post('reviews', [ReviewController::class, 'store'])
+            ->name('reviews.store');
+        Route::put('reviews/{review}', [ReviewController::class, 'update'])
+            ->whereNumber('review')
+            ->name('reviews.update');
+        Route::delete('reviews/{review}', [ReviewController::class, 'destroy'])
+            ->whereNumber('review')
+            ->name('reviews.destroy');
 
         Route::get('shipping-couriers', [ShippingCourierController::class, 'index'])
             ->name('shipping-couriers.index');
