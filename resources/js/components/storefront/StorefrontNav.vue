@@ -22,7 +22,6 @@ const links = computed(() => [
     { label: 'Protocols', href: protocols() },
     { label: 'Reviews', href: reviews() },
     { label: 'Track Order', href: track() },
-    { label: 'Contact', href: '#contact' },
 ]);
 </script>
 
