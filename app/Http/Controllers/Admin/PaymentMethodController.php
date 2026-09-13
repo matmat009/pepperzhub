@@ -95,7 +95,7 @@ class PaymentMethodController extends Controller
 
         $paymentMethod->delete();
 
-        $this->toast('Payment method deleted. Existing orders keep their own copy of these details.');
+        $this->toast('Payment method deleted. Existing orders keep their own copy of these details.', 'error');
 
         return back();
     }

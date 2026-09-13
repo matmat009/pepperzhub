@@ -3,6 +3,7 @@ import AppContent from '@/components/AppContent.vue';
 import AppHeader from '@/components/AppHeader.vue';
 import AppShell from '@/components/AppShell.vue';
 import { Toaster } from '@/components/ui/sonner';
+import { flashToasterProps } from '@/lib/flashToast';
 import type { BreadcrumbItem } from '@/types';
 
 type Props = {
@@ -20,6 +21,6 @@ withDefaults(defineProps<Props>(), {
         <AppContent variant="header">
             <slot />
         </AppContent>
-        <Toaster />
+        <Toaster v-bind="flashToasterProps" />
     </AppShell>
 </template>

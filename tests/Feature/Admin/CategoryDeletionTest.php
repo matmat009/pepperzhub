@@ -78,7 +78,7 @@ class CategoryDeletionTest extends TestCase
         // Asserts the contract the frontend actually reads: Inertia's flash
         // bag, not the ordinary session bag.
         $this->assertSame(
-            ['type' => 'success', 'message' => 'Category deleted.'],
+            ['type' => 'error', 'message' => 'Category deleted.'],
             session(SessionKey::FLASH_DATA)['toast'] ?? null,
         );
         $this->assertDatabaseMissing('categories', ['id' => $category->id]);

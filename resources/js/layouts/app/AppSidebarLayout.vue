@@ -4,6 +4,7 @@ import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
 import SiteHeader from '@/components/SiteHeader.vue';
 import { Toaster } from '@/components/ui/sonner';
+import { flashToasterProps } from '@/lib/flashToast';
 import type { BreadcrumbItem } from '@/types';
 
 type Props = {
@@ -33,6 +34,6 @@ withDefaults(defineProps<Props>(), {
                 <slot />
             </div>
         </AppContent>
-        <Toaster />
+        <Toaster v-bind="flashToasterProps" />
     </AppShell>
 </template>

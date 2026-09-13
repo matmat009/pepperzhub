@@ -173,7 +173,7 @@ class ProductController extends Controller
             $product->delete();
         });
 
-        $this->toast('Product deleted.');
+        $this->toast('Product deleted.', 'error');
 
         return to_route('admin.products.index');
     }
@@ -237,7 +237,7 @@ class ProductController extends Controller
         }
 
         $count = count($ids);
-        $this->toast("{$count} ".str('product')->plural($count).' deleted.');
+        $this->toast("{$count} ".str('product')->plural($count).' deleted.', 'error');
 
         return back();
     }

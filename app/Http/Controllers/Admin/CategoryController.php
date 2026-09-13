@@ -70,7 +70,7 @@ class CategoryController extends Controller
 
         $category->delete();
 
-        $this->toast('Category deleted.');
+        $this->toast('Category deleted.', 'error');
 
         return back();
     }

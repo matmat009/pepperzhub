@@ -262,6 +262,7 @@ class OrderController extends Controller
                 $this->restoreStock($locked);
             },
             'Payment rejected, order cancelled and stock restored.',
+            'error',
         );
     }
 
@@ -385,6 +386,7 @@ class OrderController extends Controller
                 $this->restoreStock($locked);
             },
             'Order cancelled and stock restored.',
+            'error',
         );
     }
 
@@ -465,11 +467,20 @@ class OrderController extends Controller
      * specific message when the transition is not allowed — never a generic
      * failure, so the admin is told what actually blocked it.
      *
+     * `$type` tones the success toast. It defaults to success because most
+     * transitions are forward progress; the two that end an order badly pass
+     * 'error' so a rejection does not read like a shipment.
+     *
      * @param  callable(Order): ?string  $guard
      * @param  callable(Order): void  $apply
      */
-    private function transition(Order $order, callable $guard, callable $apply, string $success): RedirectResponse
-    {
+    private function transition(
+        Order $order,
+        callable $guard,
+        callable $apply,
+        string $success,
+        string $type = 'success',
+    ): RedirectResponse {
         $blocked = DB::transaction(function () use ($order, $guard, $apply): ?string {
             /** @var Order $locked */
             $locked = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
@@ -489,7 +500,7 @@ class OrderController extends Controller
             return back();
         }
 
-        $this->toast($success);
+        $this->toast($success, $type);
 
         return back();
     }

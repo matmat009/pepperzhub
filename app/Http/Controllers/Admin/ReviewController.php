@@ -99,7 +99,7 @@ class ReviewController extends Controller
 
         $review->delete();
 
-        $this->toast('Review deleted.');
+        $this->toast('Review deleted.', 'error');
 
         return back();
     }

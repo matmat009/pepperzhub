@@ -101,7 +101,7 @@ class ShippingCourierController extends Controller
     {
         $shippingCourier->delete();
 
-        $this->toast('Courier deleted. Existing orders keep their own copy of the courier and region.');
+        $this->toast('Courier deleted. Existing orders keep their own copy of the courier and region.', 'error');
 
         return back();
     }
@@ -116,7 +116,7 @@ class ShippingCourierController extends Controller
     {
         $shippingCourier->regions()->whereKey($region)->firstOrFail()->delete();
 
-        $this->toast('Region removed. Existing orders keep their own copy of the region.');
+        $this->toast('Region removed. Existing orders keep their own copy of the region.', 'error');
 
         return back();
     }
