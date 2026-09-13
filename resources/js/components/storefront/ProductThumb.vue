@@ -12,8 +12,10 @@ const props = withDefaults(
         product: Pick<Product, 'name' | 'images'>;
         /** Tailwind size class for the fallback glyph. */
         iconClass?: string;
+        /** Optional sizing treatment for real image uploads only. */
+        imageClass?: string;
     }>(),
-    { iconClass: 'size-8' },
+    { iconClass: 'size-8', imageClass: '' },
 );
 
 const image = computed(() => props.product.images[0] ?? null);
@@ -33,7 +35,8 @@ const image = computed(() => props.product.images[0] ?? null);
             :src="image.url"
             :alt="product.name"
             loading="lazy"
-            class="absolute inset-0 size-full rounded-lg object-contain"
+            :class="imageClass"
+            class="absolute inset-0 size-full origin-center rounded-lg object-contain"
         />
         <FlaskConical
             v-else

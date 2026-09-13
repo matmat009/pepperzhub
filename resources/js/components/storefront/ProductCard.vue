@@ -25,6 +25,13 @@ const props = withDefaults(
 
 const isCatalog = computed(() => props.variant === 'catalog');
 
+/** Keep uploaded placeholder artwork at its established scale. */
+const usesPlaceholderAsset = computed(() =>
+    Boolean(
+        props.product.images[0]?.url.toLowerCase().endsWith('/placeholder.svg'),
+    ),
+);
+
 /**
  * Alternating Serenity Blue / Rose Quartz well, by grid position rather than by
  * product id, so the rhythm survives filtering and re-sorting.
@@ -135,15 +142,30 @@ const prices = computed(() => {
                 portrait or panoramic source letterboxes onto the coloured well
                 rather than being cropped to fill it.
 
-                The padding is also what keeps the hover zoom honest — scaling
-                110% expands into the inset rather than past the well's edge, so
-                nothing is clipped in either state.
+                Compact cards give real uploads the full panel so their canvas
+                grows without cropping; their hover lift stays deliberately
+                slight for the same reason. Placeholder artwork keeps the
+                original inset and zoom treatment.
             -->
             <span
-                class="block size-full transition duration-500 ease-out group-hover:blur-[3px] motion-safe:group-hover:scale-110"
-                :class="isCatalog ? 'p-4 sm:p-5' : 'p-6'"
+                class="block size-full transition duration-500 ease-out group-hover:blur-[3px]"
+                :class="
+                    isCatalog
+                        ? usesPlaceholderAsset
+                            ? 'p-4 motion-safe:group-hover:scale-110 sm:p-5'
+                            : 'p-0 motion-safe:group-hover:scale-[1.02]'
+                        : 'p-6 motion-safe:group-hover:scale-110'
+                "
             >
-                <ProductThumb :product="product" icon-class="size-12" />
+                <ProductThumb
+                    :product="product"
+                    icon-class="size-12"
+                    :image-class="
+                        isCatalog && !usesPlaceholderAsset
+                            ? 'scale-[1.195]'
+                            : undefined
+                    "
+                />
             </span>
 
             <!-- Scrim, so the white pill below keeps contrast over pale vials. -->
