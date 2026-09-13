@@ -8,7 +8,7 @@ import {
     MapPin,
     Phone,
 } from '@lucide/vue';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import BrandWordmark from '@/components/storefront/BrandWordmark.vue';
 import {
     Dialog,
@@ -17,8 +17,30 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { useSiteSettings } from '@/composables/useSiteSettings';
 import { home } from '@/routes';
 import { index as catalog } from '@/routes/storefront/products';
+
+const settings = useSiteSettings();
+
+/*
+ * Each block drops out when everything inside it is unset. A heading over an
+ * empty column is as much dead furniture as an icon linking nowhere, so the
+ * per-field v-ifs below are not enough on their own.
+ */
+const hasContact = computed(
+    () =>
+        Boolean(settings.value.contact_email) ||
+        Boolean(settings.value.contact_phone) ||
+        Boolean(settings.value.contact_address),
+);
+
+const hasSocials = computed(
+    () =>
+        Boolean(settings.value.facebook_url) ||
+        Boolean(settings.value.instagram_url) ||
+        Boolean(settings.value.tiktok_url),
+);
 
 const legalOpen = ref(false);
 const legalTitle = ref('Privacy Policy');
@@ -43,9 +65,12 @@ const openLegal = (title: string) => {
                     Inline rather than from @lucide/vue: Lucide dropped its
                     brand glyphs, so these are the artboards' own paths.
                 -->
-                <div class="mt-6 flex gap-3">
+                <div v-if="hasSocials" class="mt-6 flex gap-3">
                     <a
-                        href="#"
+                        v-if="settings.facebook_url"
+                        :href="settings.facebook_url"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         aria-label="Facebook"
                         class="grid size-11 place-items-center rounded-full border border-sf-line-strong bg-white text-sf-primary transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary-hover"
                     >
@@ -61,7 +86,10 @@ const openLegal = (title: string) => {
                         </svg>
                     </a>
                     <a
-                        href="#"
+                        v-if="settings.instagram_url"
+                        :href="settings.instagram_url"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         aria-label="Instagram"
                         class="grid size-11 place-items-center rounded-full border border-sf-line-strong bg-white text-sf-primary transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary-hover"
                     >
@@ -83,7 +111,10 @@ const openLegal = (title: string) => {
                         </svg>
                     </a>
                     <a
-                        href="#"
+                        v-if="settings.tiktok_url"
+                        :href="settings.tiktok_url"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         aria-label="TikTok"
                         class="grid size-11 place-items-center rounded-full border border-sf-line-strong bg-white text-sf-primary transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary-hover"
                     >
@@ -117,32 +148,40 @@ const openLegal = (title: string) => {
                         >Products</Link
                     >
                     <a
-                        href="mailto:support@pepperzhub.ph"
+                        v-if="settings.contact_email"
+                        :href="`mailto:${settings.contact_email}`"
                         class="text-sf-muted transition-colors duration-200 ease-out hover:text-sf-primary"
                         >Contact</a
                     >
                 </div>
             </div>
 
-            <div>
+            <div v-if="hasContact">
                 <div class="font-display text-lg font-semibold text-sf-ink">
                     Contact Us
                 </div>
                 <div class="mt-5 flex flex-col gap-4 text-[15px]">
                     <a
-                        href="mailto:support@pepperzhub.ph"
+                        v-if="settings.contact_email"
+                        :href="`mailto:${settings.contact_email}`"
                         class="flex items-center gap-3 text-sf-muted transition-colors duration-200 ease-out hover:text-sf-primary"
                     >
                         <Mail class="size-[17px] shrink-0 text-sf-primary" />
-                        support@pepperzhub.ph
+                        {{ settings.contact_email }}
                     </a>
-                    <span class="flex items-center gap-3 text-sf-muted">
+                    <span
+                        v-if="settings.contact_phone"
+                        class="flex items-center gap-3 text-sf-muted"
+                    >
                         <Phone class="size-[17px] shrink-0 text-sf-rose-mid" />
-                        0917 123 4567
+                        {{ settings.contact_phone }}
                     </span>
-                    <span class="flex items-center gap-3 text-sf-muted">
+                    <span
+                        v-if="settings.contact_address"
+                        class="flex items-center gap-3 text-sf-muted"
+                    >
                         <MapPin class="size-[17px] shrink-0 text-sf-primary" />
-                        Metro Manila, Philippines
+                        {{ settings.contact_address }}
                     </span>
                 </div>
             </div>
@@ -227,12 +266,15 @@ const openLegal = (title: string) => {
                         published here soon.
                     </DialogDescription>
                 </DialogHeader>
-                <p class="text-[15px] leading-[1.7] text-sf-muted">
+                <p
+                    v-if="settings.contact_email"
+                    class="text-[15px] leading-[1.7] text-sf-muted"
+                >
                     Questions in the meantime? Reach us at
                     <a
-                        href="mailto:support@pepperzhub.ph"
+                        :href="`mailto:${settings.contact_email}`"
                         class="font-semibold text-sf-primary hover:text-sf-primary-hover"
-                        >support@pepperzhub.ph</a
+                        >{{ settings.contact_email }}</a
                     >.
                 </p>
             </DialogContent>

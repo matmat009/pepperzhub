@@ -21,17 +21,15 @@ class DeadLinkTest extends TestCase
     /**
      * Files with dead links that are known and deliberately still outstanding.
      *
-     * StorefrontFooter.vue has three — the Facebook, Instagram and TikTok icons
-     * — which were out of scope for Phase 2.2 and need real handles from the
-     * owner before they can point anywhere. Listed rather than skipped over, so
-     * a new dead link in any other component still fails this test, and so
-     * removing these from the list is all it takes to lock them down.
+     * Empty, and meant to stay that way. StorefrontFooter.vue held the last
+     * three — the Facebook, Instagram and TikTok icons, which had nowhere to
+     * point until the owner's handles were storable. They now come off the
+     * site_settings row and each icon renders only when its URL is set, so the
+     * entry came off this list rather than being loosened.
      *
      * @var list<string>
      */
-    private const KNOWN_OUTSTANDING = [
-        'components/storefront/StorefrontFooter.vue',
-    ];
+    private const KNOWN_OUTSTANDING = [];
 
     public function test_no_storefront_page_renders_a_dead_link(): void
     {
@@ -54,6 +52,14 @@ class DeadLinkTest extends TestCase
     public function test_the_known_outstanding_list_is_still_accurate(): void
     {
         $sources = $this->storefrontSources();
+
+        /*
+         * An empty list is the goal state, so this loop legitimately has
+         * nothing to do. Asserting the scan itself found files keeps that from
+         * being indistinguishable from a scanner that silently matches nothing
+         * — which would make the test above vacuous too.
+         */
+        $this->assertNotEmpty($sources, 'the storefront source scan found no components to check');
 
         foreach (self::KNOWN_OUTSTANDING as $relative) {
             $this->assertArrayHasKey($relative, $sources, "{$relative} no longer exists");

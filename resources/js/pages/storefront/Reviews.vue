@@ -87,30 +87,6 @@ const initials = (review: StorefrontReview) => {
         .toLocaleUpperCase();
 };
 
-const avatarTone = (index: number) => {
-    if (index % 3 === 1) {
-        return 'bg-sf-rose-tint text-sf-rose-deep';
-    }
-
-    if (index % 3 === 2) {
-        return 'bg-sf-tint text-sf-muted';
-    }
-
-    return 'bg-sf-primary/10 text-sf-primary';
-};
-
-const mediaTone = (index: number) => {
-    if (index % 3 === 1) {
-        return 'bg-sf-surface';
-    }
-
-    if (index % 3 === 2) {
-        return 'bg-sf-rose-tint/80';
-    }
-
-    return 'bg-sf-primary/8';
-};
-
 const markImageFailed = (reviewId: number) => {
     failedImageIds.value = new Set([...failedImageIds.value, reviewId]);
 };
@@ -214,49 +190,58 @@ const resetFilter = () => {
                 class="mt-5 grid grid-cols-1 items-stretch gap-5 md:grid-cols-2 lg:grid-cols-3"
             >
                 <article
-                    v-for="(review, index) in filteredReviews"
+                    v-for="review in filteredReviews"
                     :key="review.id"
-                    class="flex min-w-0 flex-col rounded-xl border border-sf-line-strong bg-white p-5 transition-colors duration-200 ease-out hover:border-sf-primary/30"
+                    class="relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-sf-line-strong bg-white p-5 shadow-[0_10px_28px_-22px_rgba(30,35,60,0.42)] transition duration-200 ease-out hover:border-sf-primary/30 hover:shadow-[0_14px_30px_-20px_rgba(30,35,60,0.38)]"
                 >
-                    <header class="flex min-w-0 items-start gap-3">
+                    <span
+                        aria-hidden="true"
+                        class="absolute inset-x-0 top-0 h-[3px] bg-[linear-gradient(90deg,var(--color-sf-serenity-blue)_0%,var(--color-sf-rose-quartz)_100%)]"
+                    />
+
+                    <header class="flex min-w-0 items-center gap-3">
                         <span
-                            class="grid size-9 shrink-0 place-items-center rounded-full text-[10px] font-semibold"
-                            :class="avatarTone(index)"
+                            class="grid size-10 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,var(--color-sf-well-blue)_0%,var(--color-sf-well-rose)_100%)] text-[11px] font-semibold text-sf-ink"
                             aria-hidden="true"
                         >
                             {{ initials(review) }}
                         </span>
                         <div class="min-w-0 flex-1">
                             <p
-                                class="text-[13px] leading-snug font-semibold break-words text-sf-ink"
+                                class="text-[13px] leading-snug font-medium break-words text-sf-ink"
                             >
                                 {{ displayName(review) }}
                             </p>
+                            <time
+                                v-if="review.created_at"
+                                :datetime="review.created_at"
+                                class="mt-1 block text-[11px] leading-snug text-sf-subtle"
+                            >
+                                {{ formatDate(review.created_at) }}
+                            </time>
                         </div>
-                        <time
-                            v-if="review.created_at"
-                            :datetime="review.created_at"
-                            class="shrink-0 pt-0.5 text-[10px] leading-snug text-sf-subtle"
-                        >
-                            {{ formatDate(review.created_at) }}
-                        </time>
                     </header>
 
                     <h3
-                        class="mt-4 font-display text-[17px] leading-snug font-semibold break-words text-sf-ink"
+                        class="mt-4 font-display text-[18px] leading-snug font-semibold break-words text-sf-rose-deep"
                     >
                         {{ review.title }}
                     </h3>
 
+                    <p
+                        class="mt-2 line-clamp-4 flex-1 text-[13px] leading-[1.7] break-words text-sf-text"
+                    >
+                        {{ review.description }}
+                    </p>
+
                     <div
-                        class="mt-3 grid aspect-4/3 w-full place-items-center overflow-hidden rounded-md"
-                        :class="mediaTone(index)"
+                        class="mt-4 grid aspect-[3/2] w-full place-items-center overflow-hidden rounded-lg bg-sf-well-blue p-2"
                     >
                         <img
                             v-if="hasPhoto(review)"
                             :src="review.image_url ?? ''"
                             :alt="`Photo shared with ${displayName(review)}'s review`"
-                            class="size-full object-contain"
+                            class="size-full rounded-md object-contain"
                             loading="lazy"
                             @error="markImageFailed(review.id)"
                         />
@@ -267,28 +252,22 @@ const resetFilter = () => {
                         />
                     </div>
 
-                    <p
-                        class="mt-4 line-clamp-4 flex-1 text-[13px] leading-[1.7] break-words text-sf-text"
-                    >
-                        {{ review.description }}
-                    </p>
-
                     <footer
-                        class="mt-4 flex min-h-11 flex-wrap items-center gap-x-3 gap-y-2 border-t border-sf-line pt-3"
+                        class="mt-4 flex min-h-11 flex-wrap items-center gap-3 border-t border-sf-line pt-3"
                     >
                         <Link
                             v-if="review.product_name && review.product_slug"
                             :href="show(review.product_slug)"
-                            class="min-w-0 text-[11px] break-words text-sf-muted transition-colors hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                            class="max-w-full min-w-0 rounded-full bg-sf-rose-tint px-3 py-2 text-[11px] leading-snug break-words text-sf-rose-deep transition-colors hover:bg-sf-rose-line/55 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-rose-deep"
                         >
                             Product:
-                            <span class="font-semibold text-sf-primary">
+                            <span class="font-semibold">
                                 {{ review.product_name }}
                             </span>
                         </Link>
                         <button
                             type="button"
-                            class="ml-auto inline-flex min-h-9 shrink-0 items-center gap-1.5 text-[11px] font-semibold text-sf-primary transition-colors hover:text-sf-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                            class="ml-auto inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border border-sf-primary px-4 py-2 text-[11px] font-semibold text-sf-primary transition-colors hover:bg-sf-tint hover:text-sf-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                             @click="openReview(review)"
                         >
                             Read review

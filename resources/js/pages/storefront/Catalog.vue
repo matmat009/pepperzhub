@@ -332,6 +332,7 @@ const pickCategory = (category: string) => {
                         :key="product.id"
                         :product="product"
                         :index="i"
+                        variant="catalog"
                     />
                 </div>
                 <div

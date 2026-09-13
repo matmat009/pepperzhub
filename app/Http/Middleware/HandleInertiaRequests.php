@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Order;
 use App\Models\ProductVariant;
+use App\Models\SiteSetting;
 use App\Support\SessionCart;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -59,6 +60,24 @@ class HandleInertiaRequests extends Middleware
              * place. A constant, so this costs nothing.
              */
             'lowStockThreshold' => ProductVariant::LOW_STOCK_THRESHOLD,
+            /*
+             * The footer is on every storefront page and the nav's FAQ item
+             * links to the Facebook URL, so these cannot come from any one
+             * page's props without every other page losing them. Shared for the
+             * same reason as the low-stock threshold, and read through the
+             * matching useSiteSettings composable.
+             *
+             * current() get-or-creates, so this is always an object and the
+             * client only ever checks whether an individual field is set.
+             */
+            'siteSettings' => SiteSetting::current()->only([
+                'contact_email',
+                'contact_phone',
+                'contact_address',
+                'facebook_url',
+                'instagram_url',
+                'tiktok_url',
+            ]),
             /*
              * The sidebar renders on every admin page, so the count it badges
              * cannot come from any one page's props — Orders/Index would leave

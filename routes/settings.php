@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
+use App\Http\Controllers\Settings\SiteSettingController;
 /* @chisel-password-confirmation */
 use Illuminate\Auth\Middleware\RequirePassword;
 /* @end-chisel-password-confirmation */
@@ -12,6 +13,20 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    /*
+     * Storefront contact info, saved on its own. It shares the profile page but
+     * not its submission — see SiteSettingController — so it needs a route of
+     * its own, and it sits in this group rather than the verified one below
+     * because the page it renders on is reachable unverified: bouncing the save
+     * to /email/verify from a form that is visibly on screen would be worse
+     * than the account fields' own rule.
+     *
+     * PUT because it replaces a known set of columns on a row that always
+     * exists, the same reasoning as admin.orders.update-contact.
+     */
+    Route::put('settings/storefront-contact', [SiteSettingController::class, 'update'])
+        ->name('site-settings.update');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

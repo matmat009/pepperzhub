@@ -17,9 +17,13 @@ const props = withDefaults(
         product: Product;
         /** Position in the grid — drives which well colour this card takes. */
         index?: number;
+        /** Catalog uses the approved compact treatment without changing shared cards. */
+        variant?: 'default' | 'catalog';
     }>(),
-    { index: 0 },
+    { index: 0, variant: 'default' },
 );
+
+const isCatalog = computed(() => props.variant === 'catalog');
 
 /**
  * Alternating Serenity Blue / Rose Quartz well, by grid position rather than by
@@ -96,25 +100,31 @@ const prices = computed(() => {
 
 <template>
     <div
-        class="group relative flex flex-col overflow-hidden rounded-2xl border border-sf-line bg-white transition duration-300 ease-out hover:-translate-y-1 hover:border-sf-primary/30 hover:shadow-[0_18px_40px_-12px_rgba(30,35,60,0.22)]"
+        class="group relative flex flex-col overflow-hidden border bg-white transition duration-300 ease-out hover:-translate-y-1 hover:border-sf-primary/30"
+        :class="
+            isCatalog
+                ? 'h-full rounded-xl border-sf-line-strong font-sans shadow-[0_8px_24px_-18px_rgba(30,35,60,0.3)] hover:shadow-[0_14px_30px_-16px_rgba(30,35,60,0.28)]'
+                : 'rounded-2xl border-sf-line hover:shadow-[0_18px_40px_-12px_rgba(30,35,60,0.22)]'
+        "
     >
         <Link
             :href="show(product.slug)"
-            class="relative block aspect-square overflow-hidden"
-            :class="wellClass"
+            class="relative block overflow-hidden"
+            :class="[wellClass, isCatalog ? 'aspect-[4/3]' : 'aspect-square']"
             :aria-label="`View details for ${product.name}`"
         >
             <!--
-                object-contain inside a fixed square, never cover: a portrait or
-                panoramic source letterboxes onto the coloured well rather than
-                being cropped to fill it.
+                object-contain inside the fixed media panel, never cover: a
+                portrait or panoramic source letterboxes onto the coloured well
+                rather than being cropped to fill it.
 
                 The padding is also what keeps the hover zoom honest — scaling
                 110% expands into the inset rather than past the well's edge, so
                 nothing is clipped in either state.
             -->
             <span
-                class="block size-full p-6 transition duration-500 ease-out group-hover:blur-[3px] motion-safe:group-hover:scale-110"
+                class="block size-full transition duration-500 ease-out group-hover:blur-[3px] motion-safe:group-hover:scale-110"
+                :class="isCatalog ? 'p-4 sm:p-5' : 'p-6'"
             >
                 <ProductThumb :product="product" icon-class="size-12" />
             </span>
@@ -135,7 +145,8 @@ const prices = computed(() => {
                     1.47:1.
                 -->
                 <span
-                    class="inline-flex translate-y-2 items-center gap-2 rounded-full bg-sf-rose-quartz px-5 py-2.5 font-display text-sm font-semibold text-sf-ink opacity-0 shadow-[0_8px_24px_rgba(30,35,60,0.18)] transition duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100"
+                    class="inline-flex translate-y-2 items-center gap-2 rounded-full bg-sf-rose-quartz px-5 py-2.5 text-sm font-semibold text-sf-ink opacity-0 shadow-[0_8px_24px_rgba(30,35,60,0.18)] transition duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100"
+                    :class="isCatalog ? 'font-sans' : 'font-display'"
                 >
                     <Eye class="size-4" />
                     View Details
@@ -162,10 +173,18 @@ const prices = computed(() => {
             {{ stockBadge.label }}
         </span>
 
-        <div class="flex flex-1 flex-col p-5">
+        <div
+            class="flex flex-1 flex-col"
+            :class="isCatalog ? 'p-4 sm:p-5' : 'p-5'"
+        >
             <Link
                 :href="show(product.slug)"
-                class="font-display text-xl font-semibold tracking-[-0.01em] text-sf-rose-deep transition-colors duration-200 ease-out hover:text-sf-primary"
+                class="font-semibold tracking-[-0.01em] text-sf-rose-deep transition-colors duration-200 ease-out hover:text-sf-primary"
+                :class="
+                    isCatalog
+                        ? 'font-sans text-lg leading-[1.3]'
+                        : 'font-display text-xl'
+                "
             >
                 {{ product.name }}
             </Link>
@@ -176,17 +195,29 @@ const prices = computed(() => {
 
             <p
                 v-if="product.short_description.trim()"
-                class="mt-2 line-clamp-2 text-sm leading-[1.55] text-sf-muted"
+                class="line-clamp-2 text-sm text-sf-muted"
+                :class="
+                    isCatalog ? 'mt-1.5 leading-[1.45]' : 'mt-2 leading-[1.55]'
+                "
             >
                 {{ product.short_description }}
             </p>
 
-            <div v-if="prices" class="mt-auto flex items-baseline gap-1.5 pt-4">
+            <div
+                v-if="prices"
+                class="mt-auto flex items-baseline gap-1.5"
+                :class="isCatalog ? 'flex-wrap gap-y-0.5 pt-3' : 'pt-4'"
+            >
                 <span v-if="prices.high" class="text-sm text-sf-subtle italic">
                     from
                 </span>
                 <span
-                    class="font-display text-[22px] font-semibold text-sf-rose-deep"
+                    class="font-semibold"
+                    :class="
+                        isCatalog
+                            ? 'font-sans text-xl text-sf-primary-deep'
+                            : 'font-display text-[22px] text-sf-rose-deep'
+                    "
                 >
                     {{ prices.low }}
                 </span>
@@ -204,7 +235,12 @@ const prices = computed(() => {
                 :aria-label="
                     inStock ? `Add ${product.name} to cart` : 'Out of stock'
                 "
-                class="mt-4 inline-flex w-full items-center justify-center gap-2.5 rounded-xl bg-sf-primary px-5 py-3.5 font-display text-[15px] font-semibold text-white shadow-[0_6px_16px_-6px_rgba(50,70,160,0.55)] transition duration-200 ease-out hover:bg-sf-primary-deep hover:shadow-[0_10px_22px_-8px_rgba(50,70,160,0.7)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary active:translate-y-px disabled:cursor-not-allowed disabled:bg-sf-line-strong disabled:text-sf-subtle disabled:shadow-none disabled:hover:bg-sf-line-strong"
+                class="inline-flex w-full items-center justify-center gap-2.5 bg-sf-primary px-5 font-semibold text-white transition duration-200 ease-out hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary active:translate-y-px disabled:cursor-not-allowed disabled:bg-sf-line-strong disabled:text-sf-subtle disabled:shadow-none disabled:hover:bg-sf-line-strong"
+                :class="
+                    isCatalog
+                        ? 'mt-3 min-h-11 rounded-lg py-2.5 font-sans text-sm shadow-[0_5px_14px_-6px_rgba(50,70,160,0.45)] hover:shadow-[0_8px_18px_-7px_rgba(50,70,160,0.55)]'
+                        : 'mt-4 rounded-xl py-3.5 font-display text-[15px] shadow-[0_6px_16px_-6px_rgba(50,70,160,0.55)] hover:shadow-[0_10px_22px_-8px_rgba(50,70,160,0.7)]'
+                "
                 @click="defaultVariant && add(product, defaultVariant.id)"
             >
                 <ShoppingCart class="size-[17px]" />

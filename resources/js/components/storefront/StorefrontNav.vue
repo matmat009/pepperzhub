@@ -2,7 +2,9 @@
 import { Link } from '@inertiajs/vue3';
 import { Menu, ShoppingCart, X } from '@lucide/vue';
 import { computed, ref } from 'vue';
+import type { InertiaLinkProps } from '@inertiajs/vue3';
 import BrandWordmark from '@/components/storefront/BrandWordmark.vue';
+import { useSiteSettings } from '@/composables/useSiteSettings';
 import { useStorefrontCart } from '@/composables/useStorefrontCart';
 import { home } from '@/routes';
 import { cart, protocols, reviews, track } from '@/routes/storefront';
@@ -10,18 +12,38 @@ import { index as catalog } from '@/routes/storefront/products';
 
 const { count } = useStorefrontCart();
 
+const settings = useSiteSettings();
+
 const menuOpen = ref(false);
 
+type NavLink = {
+    label: string;
+    href: NonNullable<InertiaLinkProps['href']>;
+    /** Leaves the storefront, so a plain anchor into a new tab. */
+    external?: boolean;
+};
+
 /**
- * Only destinations that actually resolve. FAQ from the artboards is still a
- * placeholder with no page behind it and stays out; Reviews now has one.
+ * Only destinations that actually resolve. FAQ has no page of its own — the
+ * questions get asked and answered on the shop's Facebook, so that is where it
+ * points, and it is absent entirely until that URL is set rather than sitting
+ * in the bar going nowhere the way it used to.
  */
-const links = computed(() => [
+const links = computed<NavLink[]>(() => [
     { label: 'Home', href: home() },
     { label: 'Products', href: catalog() },
     { label: 'Protocols', href: protocols() },
     { label: 'Reviews', href: reviews() },
     { label: 'Track Order', href: track() },
+    ...(settings.value.facebook_url
+        ? [
+              {
+                  label: 'FAQ',
+                  href: settings.value.facebook_url,
+                  external: true,
+              },
+          ]
+        : []),
 ]);
 </script>
 
@@ -45,6 +67,8 @@ const links = computed(() => [
                         v-for="link in links"
                         :key="link.label"
                         :href="link.href"
+                        :target="link.external ? '_blank' : undefined"
+                        :rel="link.external ? 'noopener noreferrer' : undefined"
                         class="rounded-full px-[18px] py-2.5 font-medium text-sf-text transition-colors duration-200 ease-out hover:text-sf-primary"
                     >
                         {{ link.label }}
@@ -94,6 +118,8 @@ const links = computed(() => [
                     v-for="link in links"
                     :key="link.label"
                     :href="link.href"
+                    :target="link.external ? '_blank' : undefined"
+                    :rel="link.external ? 'noopener noreferrer' : undefined"
                     class="rounded-lg px-4 py-3.5 text-base font-medium text-sf-text transition-colors duration-200 ease-out hover:bg-sf-tint hover:text-sf-primary"
                     @click="menuOpen = false"
                 >

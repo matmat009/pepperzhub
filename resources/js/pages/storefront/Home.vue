@@ -218,6 +218,7 @@ const subscribe = () => {
                 :key="product.id"
                 :product="product"
                 :index="i"
+                variant="catalog"
             />
         </div>
         <p v-else class="mt-11 text-[15px] text-sf-muted italic">

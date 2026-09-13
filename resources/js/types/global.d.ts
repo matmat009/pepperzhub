@@ -1,4 +1,5 @@
 import type { Auth } from '@/types/auth';
+import type { SiteSettings } from '@/types/site-settings';
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
@@ -21,6 +22,13 @@ declare module '@inertiajs/core' {
             sidebarOpen: boolean;
             /** App\Models\ProductVariant::LOW_STOCK_THRESHOLD, shared on every response. */
             lowStockThreshold: number;
+            /**
+             * The single App\Models\SiteSetting row — storefront contact and
+             * social details. Shared on every response, so the footer and nav
+             * have it wherever they render; individual fields are null until
+             * the operator sets them.
+             */
+            siteSettings: SiteSettings;
             /**
              * Orders placed but not yet looked at (unverified payment, pending
              * fulfillment) — the sidebar's attention badge. Shared on every
