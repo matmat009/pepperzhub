@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import {
-    AlertTriangle,
-    ArrowRight,
-    MessageSquareQuote,
-    Quote,
-} from '@lucide/vue';
+import { ArrowRight, MessageSquareQuote, Quote } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import {
     Dialog,
@@ -129,25 +124,6 @@ const resetFilter = () => {
                 Messages and notes shared with us by researchers working with
                 our compounds.
             </p>
-
-            <div
-                class="mt-7 flex w-full max-w-[760px] items-start gap-3 rounded-lg border border-sf-rose-line bg-sf-rose-tint/55 px-4 py-3.5 text-left sm:px-5"
-                role="note"
-            >
-                <AlertTriangle
-                    class="mt-0.5 size-4.5 shrink-0 text-sf-rose-deep"
-                    aria-hidden="true"
-                />
-                <div>
-                    <p class="text-sm font-semibold text-sf-ink">
-                        For laboratory research use only
-                    </p>
-                    <p class="mt-1 text-[13px] leading-[1.6] text-sf-text">
-                        Accounts shared here reflect individual research
-                        experiences. Products are not for human consumption.
-                    </p>
-                </div>
-            </div>
         </div>
     </section>
 

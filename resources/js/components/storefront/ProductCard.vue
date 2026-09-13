@@ -77,6 +77,20 @@ const defaultVariant = computed(
 /** "5 mg vial" — the format the quick-add would put in the cart. */
 const formatLine = computed(() => defaultVariant.value?.label ?? '');
 
+const formatCount = computed(() => props.product.variants.length);
+
+/**
+ * "3 formats" — the admin products table's phrasing verbatim, so the operator
+ * and the customer count the same thing the same way.
+ *
+ * The singular branch is kept even though the hint only renders above one: it
+ * is what makes this the admin's rule rather than a lookalike, and a plural-only
+ * string would quietly become wrong the moment anything else reads this.
+ */
+const formatCountLabel = computed(
+    () => `${formatCount.value} format${formatCount.value === 1 ? '' : 's'}`,
+);
+
 /**
  * Split rather than reusing `priceRange` so "from" and the dash can sit back in
  * muted type while the figures carry the emphasis.
@@ -189,8 +203,24 @@ const prices = computed(() => {
                 {{ product.name }}
             </Link>
 
-            <span v-if="formatLine" class="mt-1 text-[13px] text-sf-subtle">
+            <span
+                v-if="formatLine"
+                class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-sf-subtle"
+            >
                 {{ formatLine }}
+
+                <!--
+                    A hint that there is more behind the card, not a feature of
+                    it: quiet enough to lose to the price and the Add to cart
+                    button, and absent entirely when the cheapest format above
+                    is the only one there is.
+                -->
+                <span
+                    v-if="formatCount > 1"
+                    class="rounded-full border border-sf-line-strong bg-sf-tint px-2 py-0.5 text-[11px] font-medium whitespace-nowrap text-sf-subtle"
+                >
+                    {{ formatCountLabel }}
+                </span>
             </span>
 
             <p

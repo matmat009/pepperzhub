@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import {
-    AlertTriangle,
     ArrowRight,
     ChevronDown,
     ClipboardList,
@@ -186,25 +185,6 @@ const STORAGE_GUIDELINES = [
                 Handling and dosage reference for the compounds we supply. Only
                 products with published protocol details appear here.
             </p>
-
-            <div
-                class="mt-7 flex w-full max-w-[760px] items-start gap-3 rounded-lg border border-sf-rose-line bg-sf-rose-tint/55 px-4 py-3.5 text-left sm:px-5"
-                role="note"
-            >
-                <AlertTriangle
-                    class="mt-0.5 size-4.5 shrink-0 text-sf-rose-deep"
-                    aria-hidden="true"
-                />
-                <div>
-                    <p class="text-sm font-semibold text-sf-ink">
-                        Research use only
-                    </p>
-                    <p class="mt-1 text-[13px] leading-[1.6] text-sf-text">
-                        For laboratory research use only. Not for human
-                        consumption.
-                    </p>
-                </div>
-            </div>
         </div>
     </section>
 
