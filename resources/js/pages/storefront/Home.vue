@@ -70,145 +70,156 @@ const subscribe = () => {
 <template>
     <Head title="Peptides that work" />
 
-    <section
-        class="relative isolate flex w-full flex-col items-center px-5 pt-16 pb-24 text-center sm:px-10"
-    >
+    <div class="relative isolate">
         <!--
-            The wash runs behind the navbar as well as the hero, which is why
-            it is a layer offset upward rather than a background on the
-            section: the header lives in StorefrontLayout, above this in the
-            DOM. -top-24 clears the header's 14px + 64px pill + 8px padding
-            with room to spare, and the sticky pill (z-30) still paints over it.
+            One page-level wash spans the hero, feature strip, and catalog
+            introduction. Anchoring the fade to the end of that content keeps
+            the transition smooth even when the feature grid wraps on smaller
+            screens, while the upward offset still carries it behind the nav.
         -->
         <div
             aria-hidden="true"
-            class="pointer-events-none absolute inset-x-0 -top-24 -bottom-px -z-10 bg-[linear-gradient(125deg,var(--color-sf-hero-blue)_0%,#fff_48%,var(--color-sf-hero-rose)_100%)]"
+            class="home-background-wash pointer-events-none absolute inset-x-0 -top-24 -bottom-24 -z-10"
         />
 
-        <div class="mx-auto flex w-full max-w-[1680px] flex-col items-center">
-            <img
-                src="/images/branding/pepperzhub-emblem.png"
-                alt="PepperzzHub"
-                class="w-[260px] max-w-full"
-            />
+        <section
+            class="relative flex w-full flex-col items-center px-5 pt-16 pb-24 text-center sm:px-10"
+        >
+            <div
+                class="mx-auto flex w-full max-w-[1680px] flex-col items-center"
+            >
+                <img
+                    src="/images/branding/pepperzhub-emblem.png"
+                    alt="PepperzzHub"
+                    class="w-[260px] max-w-full"
+                />
 
-            <div class="mt-7 flex flex-col items-center gap-4">
-                <div
-                    class="font-display text-5xl leading-none font-medium tracking-[-0.015em]"
-                >
-                    <span class="text-sf-rose">Pepperzz</span
-                    ><span class="text-sf-primary">Hub</span>
+                <div class="mt-7 flex flex-col items-center gap-4">
+                    <div
+                        class="font-display text-5xl leading-none font-medium tracking-[-0.015em]"
+                    >
+                        <span class="text-sf-rose">Pepperzz</span
+                        ><span class="text-sf-primary">Hub</span>
+                    </div>
+
+                    <div class="flex w-[300px] max-w-full items-center gap-3.5">
+                        <span class="h-px flex-1 bg-sf-rule" />
+                        <span class="size-2.5 rotate-45 bg-sf-rose" />
+                        <span class="h-px flex-1 bg-sf-rule" />
+                    </div>
+
+                    <div
+                        class="font-body text-sm font-medium tracking-[0.42em] text-sf-muted uppercase"
+                    >
+                        Peptide Solutions
+                    </div>
                 </div>
 
-                <div class="flex w-[300px] max-w-full items-center gap-3.5">
-                    <span class="h-px flex-1 bg-sf-rule" />
-                    <span class="size-2.5 rotate-45 bg-sf-rose" />
-                    <span class="h-px flex-1 bg-sf-rule" />
-                </div>
+                <h1
+                    class="mt-11 font-display text-[clamp(2.5rem,5.5vw,5rem)] leading-[1.08] font-medium tracking-[-0.02em] text-balance text-sf-ink"
+                >
+                    Better Science.
+                    <span class="text-sf-primary italic">Better you.</span>
+                </h1>
+                <p class="mt-5 text-2xl leading-[1.6] text-sf-muted italic">
+                    Peptides that work. Results that matter.
+                </p>
+
+                <Link
+                    :href="catalog()"
+                    class="mt-10 inline-flex items-center gap-3 rounded-full bg-sf-primary px-10 py-4 text-[17px] font-medium text-white shadow-[0_8px_22px_rgba(50,70,160,0.28)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-sf-primary-deep hover:shadow-[0_12px_30px_rgba(50,70,160,0.38)]"
+                >
+                    Browse peptides
+                    <ArrowRight class="size-[17px]" />
+                </Link>
 
                 <div
-                    class="font-body text-sm font-medium tracking-[0.42em] text-sf-muted uppercase"
+                    class="mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[15px] text-sf-muted"
                 >
-                    Peptide Solutions
+                    <span class="flex items-center gap-2.5">
+                        <ShieldCheck class="size-[17px] text-sf-primary" />
+                        Premium Quality
+                    </span>
+                    <span
+                        class="hidden h-4.5 w-px bg-sf-line-strong sm:block"
+                    />
+                    <span class="flex items-center gap-2.5">
+                        <TestTube class="size-[17px] text-sf-primary" />
+                        Lab Tested
+                    </span>
                 </div>
             </div>
+        </section>
 
-            <h1
-                class="mt-11 font-display text-[clamp(2.5rem,5.5vw,5rem)] leading-[1.08] font-medium tracking-[-0.02em] text-balance text-sf-ink"
+        <section
+            class="relative z-5 mx-auto -mt-12 w-full max-w-[1680px] px-5 sm:px-10"
+        >
+            <div
+                class="grid grid-cols-1 gap-11 rounded-2xl border border-sf-line bg-white px-6 py-11 shadow-[0_18px_44px_rgba(30,35,60,0.09)] sm:grid-cols-2 xl:grid-cols-4"
             >
-                Better Science.
-                <span class="text-sf-primary italic">Better you.</span>
-            </h1>
-            <p class="mt-5 text-2xl leading-[1.6] text-sf-muted italic">
-                Peptides that work. Results that matter.
+                <div
+                    v-for="(usp, index) in usps"
+                    :key="usp.title"
+                    class="flex flex-col items-center gap-4 px-7 text-center xl:border-r xl:border-sf-line xl:last:border-r-0"
+                    :class="
+                        index % 2 === 0 ? 'sm:border-r sm:border-sf-line' : ''
+                    "
+                >
+                    <component
+                        :is="usp.icon"
+                        class="size-13 stroke-[1.5]"
+                        :class="usp.tone"
+                    />
+                    <div
+                        class="font-display text-base font-semibold tracking-[0.05em] uppercase"
+                        :class="usp.tone"
+                    >
+                        {{ usp.title }}
+                    </div>
+                    <div class="text-[15px] leading-[1.55] text-sf-text italic">
+                        {{ usp.copy }}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section
+            class="mx-auto flex w-full max-w-[1680px] flex-col items-center px-5 pt-24 sm:px-10"
+        >
+            <h2
+                class="text-center font-display text-[42px] font-medium tracking-[-0.02em] text-sf-ink"
+            >
+                Explore <span class="text-sf-primary italic">Our Peptides</span>
+            </h2>
+            <p class="mt-3.5 text-center text-[17px] text-sf-muted italic">
+                High purity. Lab verified. Trusted by professionals.
             </p>
 
-            <Link
-                :href="catalog()"
-                class="mt-10 inline-flex items-center gap-3 rounded-full bg-sf-primary px-10 py-4 text-[17px] font-medium text-white shadow-[0_8px_22px_rgba(50,70,160,0.28)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-sf-primary-deep hover:shadow-[0_12px_30px_rgba(50,70,160,0.38)]"
-            >
-                Browse peptides
-                <ArrowRight class="size-[17px]" />
-            </Link>
-
             <div
-                class="mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[15px] text-sf-muted"
+                v-if="tabs.length > 1"
+                class="mt-8 flex flex-wrap justify-center gap-2"
             >
-                <span class="flex items-center gap-2.5">
-                    <ShieldCheck class="size-[17px] text-sf-primary" />
-                    Premium Quality
-                </span>
-                <span class="hidden h-4.5 w-px bg-sf-line-strong sm:block" />
-                <span class="flex items-center gap-2.5">
-                    <TestTube class="size-[17px] text-sf-primary" />
-                    Lab Tested
-                </span>
-            </div>
-        </div>
-    </section>
-
-    <section
-        class="relative z-5 mx-auto -mt-12 w-full max-w-[1680px] px-5 sm:px-10"
-    >
-        <div
-            class="grid grid-cols-1 gap-11 rounded-2xl border border-sf-line bg-white px-6 py-11 shadow-[0_18px_44px_rgba(30,35,60,0.09)] sm:grid-cols-2 xl:grid-cols-4"
-        >
-            <div
-                v-for="(usp, index) in usps"
-                :key="usp.title"
-                class="flex flex-col items-center gap-4 px-7 text-center xl:border-r xl:border-sf-line xl:last:border-r-0"
-                :class="index % 2 === 0 ? 'sm:border-r sm:border-sf-line' : ''"
-            >
-                <component
-                    :is="usp.icon"
-                    class="size-13 stroke-[1.5]"
-                    :class="usp.tone"
-                />
-                <div
-                    class="font-display text-base font-semibold tracking-[0.05em] uppercase"
-                    :class="usp.tone"
+                <button
+                    v-for="tab in tabs"
+                    :key="tab"
+                    type="button"
+                    class="rounded-full border px-[22px] py-2.5 font-display text-[15px] transition duration-200 ease-out hover:border-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                    :class="
+                        activeTab === tab
+                            ? 'border-sf-primary bg-sf-primary font-semibold text-white'
+                            : 'border-sf-line-strong bg-white font-normal text-sf-text'
+                    "
+                    @click="activeTab = tab"
                 >
-                    {{ usp.title }}
-                </div>
-                <div class="text-[15px] leading-[1.55] text-sf-text italic">
-                    {{ usp.copy }}
-                </div>
+                    {{ tab }}
+                </button>
             </div>
-        </div>
-    </section>
+        </section>
+    </div>
 
     <section
-        class="mx-auto flex w-full max-w-[1680px] flex-col items-center px-5 pt-24 pb-8 sm:px-10"
+        class="mx-auto flex w-full max-w-[1680px] flex-col items-center px-5 pb-8 sm:px-10"
     >
-        <h2
-            class="text-center font-display text-[42px] font-medium tracking-[-0.02em] text-sf-ink"
-        >
-            Explore <span class="text-sf-primary italic">Our Peptides</span>
-        </h2>
-        <p class="mt-3.5 text-center text-[17px] text-sf-muted italic">
-            High purity. Lab verified. Trusted by professionals.
-        </p>
-
-        <div
-            v-if="tabs.length > 1"
-            class="mt-8 flex flex-wrap justify-center gap-2"
-        >
-            <button
-                v-for="tab in tabs"
-                :key="tab"
-                type="button"
-                class="rounded-full border px-[22px] py-2.5 font-display text-[15px] transition duration-200 ease-out hover:border-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
-                :class="
-                    activeTab === tab
-                        ? 'border-sf-primary bg-sf-primary font-semibold text-white'
-                        : 'border-sf-line-strong bg-white font-normal text-sf-text'
-                "
-                @click="activeTab = tab"
-            >
-                {{ tab }}
-            </button>
-        </div>
-
         <div
             v-if="shown.length"
             class="mt-11 grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
@@ -333,3 +344,23 @@ const subscribe = () => {
         </div>
     </section>
 </template>
+
+<style scoped>
+.home-background-wash {
+    background:
+        linear-gradient(
+            to bottom,
+            transparent 0,
+            transparent calc(100% - 30rem),
+            rgb(255 255 255 / 0.18) calc(100% - 23rem),
+            rgb(255 255 255 / 0.72) calc(100% - 10rem),
+            white 100%
+        ),
+        linear-gradient(
+            125deg,
+            var(--sf-hero-blue) 0%,
+            white 48%,
+            var(--sf-hero-rose) 100%
+        );
+}
+</style>

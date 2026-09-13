@@ -53,6 +53,63 @@ final result: blocked
 
 ---
 
+# Homepage seamless background design QA
+
+- Source visual truth path: `C:\Users\mathe\Downloads\ChatGPT Image Sep 14, 2026, 01_02_35 AM.png`.
+- Source pixels: 1448 x 1086.
+- Implementation screenshot path: unavailable - the in-app browser reported that no browser session was available.
+- Requested viewports: 1366 x 768, 1440 x 900, and 390 x 844; none could be captured.
+- Implementation pixels, CSS size, device scale factor, and density normalization: unavailable because the implementation could not be captured.
+- State: homepage default state with the hero, feature strip, catalog heading, filters, and upper product grid visible.
+
+## Full-view comparison evidence
+
+The approved source image was opened at its original 1448 x 1086 dimensions. The implementation was inspected in source, compiled successfully, and served successfully, but no browser-rendered implementation image could be produced. A valid combined source/implementation comparison was therefore not possible.
+
+## Focused-region comparison evidence
+
+Blocked with the full-view comparison. The top-edge coverage, hero-to-feature continuity, fade around the catalog heading, faint color at the product-grid edge, and absence of a horizontal seam still require browser-rendered focused comparisons at all three requested viewports.
+
+## Findings
+
+- [P1] Browser-rendered visual evidence is missing.
+  - Location: homepage background from the top edge through the upper product grid.
+  - Evidence: the source image opened successfully, but the in-app browser runtime returned `No browser is available`. The compiled homepage CSS contains the responsive content-anchored gradient and the homepage route returned HTTP 200.
+  - Impact: exact fade strength, seam visibility, responsive behavior, horizontal overflow, and unintended layout changes cannot be signed off visually.
+  - Fix: capture the homepage at 1366 x 768, 1440 x 900, and 390 x 844 in an approved browser, compare normalized full-page and transition-region captures against the reference, and repeat QA until no P0/P1/P2 issues remain.
+
+## Required fidelity surfaces
+
+- Fonts and typography: all existing text markup and typography classes are unchanged. Browser verification of antialiasing and wrapping is blocked, though this task does not intentionally alter type.
+- Spacing and layout rhythm: hero, feature-strip, catalog-heading, filter, grid, and downstream spacing classes are preserved. The catalog section was split only at an existing child boundary so the gradient layer can end before the grid; the original 44px grid gap and 32px section bottom padding remain. Rendered section-height and overflow verification are blocked.
+- Colors and visual tokens: the horizontal wash retains the existing `--sf-hero-blue` and `--sf-hero-rose` tokens and original 125-degree direction. A white vertical overlay now fades the wash relative to the catalog-introduction boundary, reaching white after a faint overlap into the product area. Rendered intensity and seam verification are blocked.
+- Image quality and asset fidelity: no images, cards, or graphical assets were changed or added; the reference was not embedded in the page.
+- Copy and content: all homepage copy, controls, product data, links, badges, and functional behavior remain unchanged.
+
+## Comparison history
+
+- Initial pass: blocked before visual comparison because no browser session was available. No browser-rendered implementation image exists, so there is no post-fix visual evidence.
+
+## Verification coverage
+
+- TypeScript, ESLint, Prettier, Pint, production build, and the full Laravel test suite passed.
+- The compiled homepage CSS contains both the brand wash and content-anchored vertical fade.
+- Direct homepage request: HTTP 200.
+- Browser checks for seams, horizontal overflow, layout shift, and responsive fade behavior: blocked.
+- Browser console errors checked: blocked.
+
+## Implementation checklist
+
+- Capture 1366 x 768 and 1440 x 900 desktop states and compare the top edge, feature strip, and catalog transition.
+- Capture 390 x 844 with wrapped feature content and verify the fade follows the content boundary.
+- Inspect the transition around the catalog heading and upper grid edge for bands or seams.
+- Check horizontal overflow, unchanged section geometry, pointer behavior, and browser console output.
+- Run combined source/implementation comparisons and resolve any P0/P1/P2 differences.
+
+final result: blocked
+
+---
+
 # Storefront navigation cart and active-state design QA
 
 - Source visual truth path: two user-attached navigation reference crops in the current request (conversation attachments; no local filesystem paths were exposed).
