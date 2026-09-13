@@ -53,6 +53,63 @@ final result: blocked
 
 ---
 
+# Storefront navigation cart and active-state design QA
+
+- Source visual truth path: two user-attached navigation reference crops in the current request (conversation attachments; no local filesystem paths were exposed).
+- Source pixels: 228 x 118 for the cart treatment and 104 x 108 for the active-link treatment, as exposed in the request.
+- Implementation screenshot path: unavailable - the in-app browser reported that no browser session was available.
+- Viewport: desktop and mobile were requested but could not be captured.
+- CSS size and density normalization: unavailable because the implementation could not be captured.
+- State requested: Home, Products listing, product detail, Protocols, Reviews, Track Order, Cart, filtered Products URL, zero count, populated count, larger count, keyboard focus, and mobile menu.
+
+## Full-view comparison evidence
+
+Both source crops were visible in the request and the shared navigation implementation was reviewed in source. No browser-rendered implementation image could be produced, so a valid combined source/implementation comparison was not possible.
+
+## Focused-region comparison evidence
+
+Blocked with the full-view comparison. The cart pill proportions, count-badge fit, underline length and endpoint dot, focus styling, and responsive label behavior still require browser-rendered inspection.
+
+## Findings
+
+- [P1] Browser-rendered visual evidence is missing.
+  - Location: shared storefront navigation on desktop and mobile.
+  - Evidence: the in-app browser runtime returned `No browser is available` and exposed no selectable browser session. Direct HTTP checks returned 200 for `/`, `/products?sort=name`, `/products/bpc-157`, `/protocols`, `/reviews`, `/track`, and `/cart`.
+  - Impact: exact alignment, color appearance, shadow restraint, navigation stability, breakpoint behavior, keyboard focus appearance, interaction updates, and console errors cannot be signed off visually.
+  - Fix: capture the running storefront in an approved browser at desktop and mobile sizes, test the requested route/cart states, compare focused nav crops with the two references, and repeat QA until no P0/P1/P2 issues remain.
+
+## Required fidelity surfaces
+
+- Fonts and typography: the Cart label and active links retain the storefront font system; active links use semibold weight and deeper Blue Serenity text. Rendered optical-weight and wrapping verification is blocked.
+- Spacing and layout rhythm: the cart control is 44px high with responsive horizontal padding; every desktop nav link reserves bottom space for the absolutely positioned indicator, preventing selection-driven layout shift. Rendered alignment and overflow verification is blocked.
+- Colors and visual tokens: the treatment uses the existing `sf-primary`, `sf-primary-deep`, `sf-rose`, `sf-rose-deep`, `sf-tint`, and white tokens. Rendered contrast and source matching are blocked.
+- Image quality and asset fidelity: the installed Lucide cart icon is reused; the underline and endpoint dot are code-native decorative UI marks appropriate to the reference. No raster assets were introduced or recreated.
+- Copy and content: link order and labels are unchanged; the count remains data-driven, and the accessible cart name includes the live singular/plural count.
+
+## Comparison history
+
+- Initial pass: blocked before visual comparison because no browser session was available. No browser-rendered implementation image exists, so there is no post-fix visual evidence.
+
+## Primary interaction and route coverage
+
+- Source inspection and compilation confirm exact Home matching, exact Protocols/Reviews/Track Order matching, section-level Products detail matching via `aria-current="location"`, exact Cart matching, and query-string-independent route matching through the existing reactive pathname helper.
+- Source inspection confirms the badge keeps the existing zero-count hidden behavior and expands horizontally for larger values.
+- Direct HTTP checks: all requested representative storefront routes returned 200.
+- Browser back/forward, live cart updates, mobile menu interaction, focus traversal, and console errors checked: blocked.
+
+## Implementation checklist
+
+- Capture desktop nav states on every storefront section, including Products listing/detail and a filtered Products URL.
+- Exercise browser back/forward navigation and confirm the active marker updates without layout shift.
+- Verify zero, single-item, populated, and larger cart counts; confirm the label collapses cleanly on narrow screens.
+- Open the mobile menu, verify its current-destination treatment, and test focus visibility and touch target size.
+- Check the browser console and horizontal overflow.
+- Run combined focused comparisons against both source crops and resolve any P0/P1/P2 differences.
+
+final result: blocked
+
+---
+
 # Reviews compact-card design QA
 
 - Source visual truth path: `C:\Users\mathe\Downloads\ChatGPT Image Sep 13, 2026, 03_02_26 PM.png`.
