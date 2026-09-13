@@ -110,6 +110,59 @@ final result: blocked
 
 ---
 
+# Storefront navigation active-link and Cart design QA
+
+- Source visual truth path: `C:\Users\mathe\Downloads\ChatGPT Image Sep 14, 2026, 03_18_39 AM.png`.
+- Source pixels: 2172 x 724.
+- Primary implementation screenshot: `C:\Users\mathe\AppData\Local\Temp\pepperzhub-nav-qa-20260914\home-count-1.png`.
+- Additional implementation screenshots: `home-count-12.png`, `home-mobile-count-12.png`, and `home-mobile-menu-count-12.png` in the same directory.
+- Combined comparison image: `C:\Users\mathe\AppData\Local\Temp\pepperzhub-nav-qa-20260914\reference-implementation-navbar-comparison.png`.
+- Desktop viewport and density: 2172 x 724 CSS pixels at device scale factor 1; implementation screenshot is 2172 x 724 pixels.
+- Mobile capture: requested as 390 x 844 CSS pixels at device scale factor 1; the Chrome emulation runtime reported a 396 x 857 layout viewport and produced a 390 x 844 screenshot.
+- State: Home active; live Cart counts of 0, 1, and 12; mobile menu closed and open.
+
+## Full-view comparison evidence
+
+The source and implementation were opened together at original density, then their navbar regions were placed into one combined comparison image. The source's large surrounding blank frame and enlarged navbar scale were treated as presentation context, as directed by the request. The implementation preserves the existing 64px capsule while matching the source treatment: pale Blue Serenity active pill, blue-to-rose underline, outlined Cart pill, and an overlapping rose count.
+
+## Focused-region comparison evidence
+
+The combined image isolates the complete source navbar and the complete implementation navbar at their native scales. The active label remains centered without moving adjacent links, the underline is short and rounded, the Cart icon and label retain balanced spacing, and the count overlaps the upper-right border. The live two-digit capture shows the badge widening from 20px to 25px without clipping. On mobile, the 25px-wide badge remains inside the 350px navbar bounds: badge right edge 360px, navbar right edge 370px.
+
+## Findings
+
+- No actionable P0, P1, or P2 differences remain within the requested scope.
+- The implementation navbar is intentionally narrower than the enlarged reference because the request explicitly preserves its existing dimensions and positioning.
+
+## Required fidelity surfaces
+
+- Fonts and typography: the existing storefront Lora family and link sizes are unchanged; only the active weight increases to semibold. Cart text remains dark and readable.
+- Spacing and layout rhythm: existing navbar height, placement, logo spacing, and link padding are preserved. The Cart control remains 44px high; the badge is 20px high and expands horizontally for multiple digits.
+- Colors and visual tokens: the active ground uses `sf-serenity-blue` at low opacity, the underline transitions from `sf-primary` to `sf-rose`, and the badge uses the accessible `sf-rose-deep` token with white text.
+- Image quality and asset fidelity: the existing PepperzHub emblem and Lucide cart icon are unchanged; no new or reconstructed assets were introduced.
+- Copy and content: logo, labels, order, destinations, Cart text, and live count remain unchanged and data-driven.
+
+## Comparison history
+
+- Initial final-state comparison: no P0/P1/P2 issues were found. Before capture, the badge token was deepened from the medium rose token after contrast calculation showed the medium token was insufficient for 10px white text; the final screenshots contain the corrected accessible token.
+
+## Primary interaction coverage
+
+- Browser-rendered active states passed for Home, Products with a query string, a product detail route, Protocols, Reviews, and Track Order.
+- Cart count passed with live session-backed values 0, 1, and 12. Cart navigation reached `/cart`, browser back restored Home as active, and the mobile menu opened with Home visibly active.
+- Keyboard tabbing reached the logo, every desktop navigation link, and Cart with visible focus styling. Cart's accessible label reported `Cart, 12 items`.
+- Browser console and runtime exception check: no errors reported across the tested storefront routes.
+
+## Implementation checklist
+
+- Keep the route-aware active-section mapping and query normalization intact.
+- Keep the badge absolutely positioned and outside normal Cart-button flow.
+- Retain the current 44px touch target and visible focus outlines.
+
+final result: passed
+
+---
+
 # Storefront navigation cart and active-state design QA
 
 - Source visual truth path: two user-attached navigation reference crops in the current request (conversation attachments; no local filesystem paths were exposed).
@@ -340,3 +393,9 @@ Blocked with the full-view comparison. The gradient around the floating navigati
 - Run a combined source/implementation comparison and fix any P0/P1/P2 findings.
 
 final result: blocked
+
+---
+
+Latest QA report: **Storefront navigation active-link and Cart design QA** above. Its browser-rendered comparison and interaction pass supersedes the earlier blocked navigation report.
+
+final result: passed

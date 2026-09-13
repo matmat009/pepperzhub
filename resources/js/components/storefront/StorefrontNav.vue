@@ -49,13 +49,13 @@ const links = computed<NavLink[]>(() => [
         : []),
 ]);
 
-type AriaCurrent = 'page' | 'location' | undefined;
+type AriaCurrent = 'page' | undefined;
 
 /**
  * Exact section boundaries keep `/` from matching everything and prevent a
  * future `/products-*` route from lighting up the Products link. Product
- * details belong to that section, but the listing link is a location rather
- * than the current page there.
+ * details belong to that section, so the shared Products destination stays
+ * marked as the current storefront section there as well.
  */
 const navCurrent = (link: NavLink): AriaCurrent => {
     const path = currentUrl.value;
@@ -68,9 +68,7 @@ const navCurrent = (link: NavLink): AriaCurrent => {
                 return 'page';
             }
 
-            return path.startsWith(`${catalog().url}/`)
-                ? 'location'
-                : undefined;
+            return path.startsWith(`${catalog().url}/`) ? 'page' : undefined;
         case 'protocols':
             return path === protocols().url ? 'page' : undefined;
         case 'reviews':
@@ -114,10 +112,10 @@ const cartCurrent = computed<AriaCurrent>(() =>
                         :target="link.external ? '_blank' : undefined"
                         :rel="link.external ? 'noopener noreferrer' : undefined"
                         :aria-current="navCurrent(link)"
-                        class="relative flex min-h-11 items-center rounded-full px-[18px] pt-2 pb-3 font-medium transition-colors duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="relative flex min-h-11 items-center justify-center rounded-full px-[18px] pt-2 pb-3 font-medium transition-colors duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                         :class="
                             navCurrent(link)
-                                ? 'font-semibold text-sf-primary-deep'
+                                ? 'bg-sf-serenity-blue/15 font-semibold text-sf-primary-deep'
                                 : 'text-sf-text hover:text-sf-primary'
                         "
                     >
@@ -125,12 +123,8 @@ const cartCurrent = computed<AriaCurrent>(() =>
                         <span
                             v-if="navCurrent(link)"
                             aria-hidden="true"
-                            class="absolute bottom-1.5 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-sf-primary"
-                        >
-                            <span
-                                class="absolute top-1/2 -right-1 size-1 -translate-y-1/2 rounded-full bg-sf-rose"
-                            />
-                        </span>
+                            class="absolute bottom-1.5 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-linear-to-r from-sf-primary to-sf-rose"
+                        />
                     </component>
                 </nav>
 
@@ -149,7 +143,7 @@ const cartCurrent = computed<AriaCurrent>(() =>
                         :href="cart()"
                         :aria-label="cartLabel"
                         :aria-current="cartCurrent"
-                        class="inline-flex h-11 min-w-11 items-center justify-center gap-1.5 rounded-full border border-sf-primary bg-white px-2.5 text-sf-ink shadow-[0_5px_14px_-8px_rgba(50,70,160,0.48)] transition duration-200 ease-out hover:bg-sf-tint hover:shadow-[0_8px_18px_-9px_rgba(50,70,160,0.52)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary sm:gap-2 sm:px-4"
+                        class="relative inline-flex h-11 min-w-11 items-center justify-center gap-2 overflow-visible rounded-full border border-sf-primary bg-white px-2.5 text-sf-ink shadow-[0_4px_12px_rgba(50,70,160,0.12)] transition duration-200 ease-out hover:bg-sf-tint hover:shadow-[0_6px_16px_rgba(50,70,160,0.16)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary sm:px-4"
                     >
                         <ShoppingCart
                             class="size-5 shrink-0 text-sf-primary"
@@ -160,7 +154,8 @@ const cartCurrent = computed<AriaCurrent>(() =>
                         </span>
                         <span
                             v-if="count > 0"
-                            class="inline-flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full bg-sf-rose-deep px-2 text-xs font-semibold text-white tabular-nums"
+                            aria-hidden="true"
+                            class="absolute -top-2 -right-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-sf-rose-deep px-1 text-[10px] leading-none font-semibold text-white tabular-nums shadow-[0_2px_6px_rgba(135,40,65,0.24)]"
                         >
                             {{ count }}
                         </span>
@@ -187,7 +182,7 @@ const cartCurrent = computed<AriaCurrent>(() =>
                     :target="link.external ? '_blank' : undefined"
                     :rel="link.external ? 'noopener noreferrer' : undefined"
                     :aria-current="navCurrent(link)"
-                    class="rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200 ease-out hover:bg-sf-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                    class="flex min-h-11 items-center rounded-lg px-4 py-2 text-base font-medium transition-colors duration-200 ease-out hover:bg-sf-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                     :class="
                         navCurrent(link)
                             ? 'font-semibold text-sf-primary-deep'
@@ -195,17 +190,20 @@ const cartCurrent = computed<AriaCurrent>(() =>
                     "
                     @click="menuOpen = false"
                 >
-                    <span class="relative inline-flex pb-1.5">
+                    <span
+                        class="relative inline-flex min-h-9 items-center justify-center rounded-full px-3 pt-1 pb-2"
+                        :class="
+                            navCurrent(link)
+                                ? 'bg-sf-serenity-blue/15'
+                                : undefined
+                        "
+                    >
                         {{ link.label }}
                         <span
                             v-if="navCurrent(link)"
                             aria-hidden="true"
-                            class="absolute bottom-0 left-0 h-0.5 w-8 rounded-full bg-sf-primary"
-                        >
-                            <span
-                                class="absolute top-1/2 -right-1 size-1 -translate-y-1/2 rounded-full bg-sf-rose"
-                            />
-                        </span>
+                            class="absolute bottom-1 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-linear-to-r from-sf-primary to-sf-rose"
+                        />
                     </span>
                 </component>
             </div>
