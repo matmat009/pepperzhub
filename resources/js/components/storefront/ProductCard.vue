@@ -80,15 +80,18 @@ const formatLine = computed(() => defaultVariant.value?.label ?? '');
 const formatCount = computed(() => props.product.variants.length);
 
 /**
- * "3 formats" — the admin products table's phrasing verbatim, so the operator
- * and the customer count the same thing the same way.
+ * "3 options" — deliberately not the admin table's "3 formats".
  *
- * The singular branch is kept even though the hint only renders above one: it
- * is what makes this the admin's rule rather than a lookalike, and a plural-only
- * string would quietly become wrong the moment anything else reads this.
+ * Same count off the same variants; only the word changes with the audience.
+ * The operator manages formats, so `formatCount` above keeps the name the rest
+ * of this codebase uses for them, while the customer is being told there is
+ * more than one thing here to choose from.
+ *
+ * The singular branch is kept even though the gate below never reaches one: a
+ * plural-only string would quietly become wrong for any later caller that does.
  */
-const formatCountLabel = computed(
-    () => `${formatCount.value} format${formatCount.value === 1 ? '' : 's'}`,
+const optionCountLabel = computed(
+    () => `${formatCount.value} option${formatCount.value === 1 ? '' : 's'}`,
 );
 
 /**
@@ -219,7 +222,7 @@ const prices = computed(() => {
                     v-if="formatCount > 1"
                     class="rounded-full border border-sf-line-strong bg-sf-tint px-2 py-0.5 text-[11px] font-medium whitespace-nowrap text-sf-subtle"
                 >
-                    {{ formatCountLabel }}
+                    {{ optionCountLabel }}
                 </span>
             </span>
 
