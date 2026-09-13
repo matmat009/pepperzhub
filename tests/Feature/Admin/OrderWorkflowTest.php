@@ -593,7 +593,7 @@ class OrderWorkflowTest extends TestCase
     private const CONTACT = [
         'name' => 'Maria Santos',
         'social_handle' => 'fb.com/mariasantos',
-        'phone' => '0918 765 4321',
+        'phone' => '09187654321',
         'street' => '88 Rizal Ave',
         'barangay' => 'Poblacion',
         'city' => 'Cebu City',
@@ -648,7 +648,7 @@ class OrderWorkflowTest extends TestCase
         $this->assertNull($order->fresh()->notes);
     }
 
-    public function test_the_eight_required_fields_are_validated(): void
+    public function test_the_seven_required_fields_are_validated(): void
     {
         $order = $this->order();
 
@@ -659,6 +659,59 @@ class OrderWorkflowTest extends TestCase
         ])->assertSessionHasErrors(['name', 'zip']);
 
         $this->assertSame('Juan Dela Cruz', $order->fresh()->name);
+    }
+
+    /**
+     * The handle is optional at checkout, so an order placed without one has to
+     * be editable here without the operator inventing a value for it.
+     */
+    public function test_contact_details_save_without_a_social_handle(): void
+    {
+        $order = $this->order();
+
+        $this->put(route('admin.orders.update-contact', $order), [
+            ...self::CONTACT,
+            'social_handle' => null,
+        ])->assertSessionHasNoErrors();
+
+        $order->refresh();
+
+        // Empty string, not null — the column is not nullable.
+        $this->assertSame('', $order->social_handle);
+        $this->assertSame('Maria Santos', $order->name, 'the rest of the edit did not land');
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function malformedPhones(): array
+    {
+        return [
+            'ten digits' => ['0917123456'],
+            'twelve digits' => ['091712345678'],
+            'letters' => ['0917abc4567'],
+            'spaces' => ['0917 123 4567'],
+            'leading plus' => ['+639171234567'],
+        ];
+    }
+
+    /**
+     * The same digits:11 rule checkout enforces — a number the storefront would
+     * refuse must not slip in through the edit form either.
+     */
+    #[DataProvider('malformedPhones')]
+    public function test_a_phone_that_is_not_eleven_digits_is_rejected(string $phone): void
+    {
+        $order = $this->order();
+
+        $this->put(route('admin.orders.update-contact', $order), [
+            ...self::CONTACT,
+            'phone' => $phone,
+        ])->assertSessionHasErrors([
+            'phone' => 'Enter the phone number as exactly 11 digits — no spaces, dashes, brackets or +.',
+        ]);
+
+        $this->assertSame('Juan Dela Cruz', $order->fresh()->name, 'the edit landed despite a bad phone');
     }
 
     /**

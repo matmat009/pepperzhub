@@ -404,11 +404,13 @@ class OrderController extends Controller
     public function updateContact(Request $request, Order $order): RedirectResponse
     {
         // Same rules as checkout (StoreCheckoutRequest) for the same columns,
-        // so a value the storefront accepted cannot be rejected on edit.
+        // so a value the storefront accepted cannot be rejected on edit. The
+        // handle is optional there and the phone is eleven digits flat; both
+        // have to stay in step with that file, not merely near it.
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'social_handle' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:32'],
+            'social_handle' => ['nullable', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'digits:11'],
 
             'street' => ['required', 'string', 'max:255'],
             'barangay' => ['required', 'string', 'max:255'],
@@ -416,6 +418,8 @@ class OrderController extends Controller
             'province' => ['required', 'string', 'max:255'],
             'zip' => ['required', 'string', 'max:16'],
             'notes' => ['nullable', 'string', 'max:2000'],
+        ], [
+            'phone.digits' => 'Enter the phone number as exactly 11 digits — no spaces, dashes, brackets or +.',
         ]);
 
         return $this->transition(
@@ -428,7 +432,9 @@ class OrderController extends Controller
                 ),
             fn (Order $locked) => $locked->forceFill([
                 'name' => $data['name'],
-                'social_handle' => $data['social_handle'],
+                // Optional, like checkout: the column is not nullable, so a
+                // cleared box stores an empty string rather than null.
+                'social_handle' => $data['social_handle'] ?? '',
                 'phone' => $data['phone'],
                 'street' => $data['street'],
                 'barangay' => $data['barangay'],

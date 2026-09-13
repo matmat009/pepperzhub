@@ -241,9 +241,11 @@ class CheckoutTest extends TestCase
     /**
      * @return array<string, array{string}>
      */
-    public static function nonDigitPhones(): array
+    public static function malformedPhones(): array
     {
         return [
+            'ten digits' => ['0917123456'],
+            'twelve digits' => ['091712345678'],
             'letters' => ['0917abc4567'],
             'spaces' => ['0917 123 4567'],
             'dashes' => ['0917-123-4567'],
@@ -252,8 +254,8 @@ class CheckoutTest extends TestCase
         ];
     }
 
-    #[DataProvider('nonDigitPhones')]
-    public function test_a_phone_number_with_anything_but_digits_is_rejected(string $phone): void
+    #[DataProvider('malformedPhones')]
+    public function test_a_phone_number_that_is_not_eleven_digits_is_rejected(string $phone): void
     {
         Storage::fake('local');
         $variant = $this->variant();
@@ -261,10 +263,10 @@ class CheckoutTest extends TestCase
         $this->withSession([SessionCart::SESSION_KEY => [$variant->id => 1]])
             ->post(route('storefront.checkout.store'), $this->payload(['phone' => $phone]))
             ->assertSessionHasErrors([
-                'phone' => 'Enter your phone number using digits only — no spaces, dashes, brackets or +.',
+                'phone' => 'Enter your phone number as exactly 11 digits — no spaces, dashes, brackets or +.',
             ]);
 
-        $this->assertSame(0, Order::count(), 'an order was created from a non-numeric phone');
+        $this->assertSame(0, Order::count(), 'an order was created from a malformed phone');
     }
 
     public function test_cart_is_cleared_and_checkout_redirects_to_the_token_url(): void
