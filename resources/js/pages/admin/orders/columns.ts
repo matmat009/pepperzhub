@@ -4,6 +4,7 @@ import { h } from 'vue';
 import { Badge } from '@/components/ui/badge';
 import type { Features } from '@/components/features';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
+import ViewOrderLink from './partials/ViewOrderLink.vue';
 import { formatDateTime, orderTone, paymentTone } from './types';
 import type { OrderRow } from './types';
 
@@ -137,5 +138,18 @@ export const createOrderColumns = (): ColumnDef<Features, OrderRow, any>[] =>
                     { class: 'text-muted-foreground' },
                     formatDateTime(row.original.created_at),
                 ),
+        }),
+        columnHelper.display({
+            id: 'actions',
+            // The row already opens its detail page; this explicit action is a
+            // separate target and must not fire that row navigation as well.
+            meta: {
+                noRowClick: true,
+                headerClass: 'w-24 text-right',
+                cellClass: 'text-right',
+            },
+            header: 'Action',
+            cell: ({ row }) => h(ViewOrderLink, { order: row.original }),
+            enableHiding: false,
         }),
     ]);

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Table } from '@tanstack/vue-table';
 import { Head, router } from '@inertiajs/vue3';
-import { ListFilter, Search, X } from '@lucide/vue';
+import { Clock3, ListFilter, Search, ShoppingCart, X } from '@lucide/vue';
 import { computed } from 'vue';
 import DataTable from '@/components/DataTable.vue';
 import { Button } from '@/components/ui/button';
@@ -88,15 +88,88 @@ const awaitingCount = computed(
     <Head title="Orders" />
 
     <div class="flex flex-col gap-6 p-4 md:p-6">
-        <div>
+        <div class="space-y-4">
             <h1 class="text-2xl font-semibold tracking-tight">Orders</h1>
-            <p class="mt-1 text-sm text-muted-foreground">
-                {{ orders.length }}
-                {{ orders.length === 1 ? 'order' : 'orders' }}
-                <template v-if="awaitingCount">
-                    · {{ awaitingCount }} awaiting payment verification
-                </template>
-            </p>
+
+            <div class="grid gap-4 md:grid-cols-2">
+                <section
+                    aria-labelledby="total-orders-label"
+                    class="relative isolate min-h-28 overflow-hidden rounded-xl border border-sf-serenity-blue/30 bg-sf-serenity-blue/10 px-5 py-4 shadow-xs dark:bg-sf-serenity-blue/15"
+                >
+                    <span
+                        aria-hidden="true"
+                        class="absolute -right-8 -bottom-16 -z-10 size-44 rounded-full bg-sf-serenity-blue/10 dark:bg-sf-serenity-blue/5"
+                    />
+                    <div class="flex h-full items-center gap-4">
+                        <div
+                            class="flex size-13 shrink-0 items-center justify-center rounded-full border border-white/90 bg-white/45 text-sf-primary shadow-xs dark:border-sf-serenity-blue/25 dark:bg-background/25 dark:text-sf-serenity-blue"
+                        >
+                            <ShoppingCart aria-hidden="true" class="size-6" />
+                        </div>
+                        <div class="min-w-0">
+                            <p
+                                id="total-orders-label"
+                                class="text-sm font-medium text-sf-primary-soft dark:text-sf-serenity-blue"
+                            >
+                                Total Orders
+                            </p>
+                            <p class="mt-1 flex flex-wrap items-baseline gap-2">
+                                <span
+                                    class="text-4xl leading-none font-semibold tracking-tight text-sf-primary tabular-nums dark:text-sf-serenity-blue"
+                                >
+                                    {{ orders.length }}
+                                </span>
+                                <span
+                                    class="text-sm text-sf-primary-soft/80 dark:text-sf-serenity-blue/80"
+                                >
+                                    {{
+                                        orders.length === 1 ? 'order' : 'orders'
+                                    }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <section
+                    aria-labelledby="awaiting-orders-label"
+                    class="relative isolate min-h-28 overflow-hidden rounded-xl border border-sf-rose-line bg-sf-rose-tint/55 px-5 py-4 shadow-xs dark:bg-sf-rose-deep/10"
+                >
+                    <span
+                        aria-hidden="true"
+                        class="absolute -right-8 -bottom-16 -z-10 size-44 rounded-full bg-sf-rose-quartz/20 dark:bg-sf-rose-deep/5"
+                    />
+                    <div class="flex h-full items-center gap-4">
+                        <div
+                            class="flex size-13 shrink-0 items-center justify-center rounded-full border border-white/90 bg-white/45 text-sf-rose-deep shadow-xs dark:border-sf-rose-line/40 dark:bg-background/25 dark:text-sf-rose-mid"
+                        >
+                            <Clock3 aria-hidden="true" class="size-6" />
+                        </div>
+                        <div class="min-w-0">
+                            <p
+                                id="awaiting-orders-label"
+                                class="text-sm font-medium text-sf-rose-deep dark:text-sf-rose-mid"
+                            >
+                                Awaiting Payment Verification
+                            </p>
+                            <p class="mt-1 flex flex-wrap items-baseline gap-2">
+                                <span
+                                    class="text-4xl leading-none font-semibold tracking-tight text-sf-rose-deep tabular-nums dark:text-sf-rose-mid"
+                                >
+                                    {{ awaitingCount }}
+                                </span>
+                                <span
+                                    class="text-sm text-sf-rose-deep/75 dark:text-sf-rose-mid/80"
+                                >
+                                    {{
+                                        awaitingCount === 1 ? 'order' : 'orders'
+                                    }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </div>
 
         <DataTable

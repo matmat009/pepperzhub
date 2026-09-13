@@ -163,6 +163,62 @@ final result: passed
 
 ---
 
+# Admin Orders list design QA
+
+- Source visual truth path: `C:\Users\mathe\Downloads\ChatGPT Image Sep 14, 2026, 05_03_54 AM.png`.
+- Source pixels: 1672 x 941.
+- Implementation screenshot path: unavailable - the configured in-app browser reported `No browser is available` and exposed no browser session.
+- Viewport: desktop and mobile were requested but could not be captured.
+- CSS size and density normalization: unavailable because the implementation could not be browser-rendered.
+- State requested: Orders list with live totals, awaiting-payment count, search and filters, row navigation, and explicit View actions.
+
+## Full-view comparison evidence
+
+The source reference was opened at original resolution and the implementation was reviewed in source. A browser-rendered implementation image could not be produced, so a valid combined source/implementation comparison was not possible.
+
+## Focused-region comparison evidence
+
+Blocked with the full-view comparison. The two summary cards, their responsive stacking, the table's Action column, and the View-button proportions still require browser-rendered inspection.
+
+## Findings
+
+- [P1] Browser-rendered visual evidence is missing.
+  - Location: `/admin/orders`, desktop and mobile.
+  - Evidence: the Laravel route is live and redirects unauthenticated requests to `/login`, but the browser runtime has no available session. Type checking, linting, formatting, production build, PHP formatting, and the feature test suite pass.
+  - Impact: exact spacing, wrapping, responsive table overflow, focus appearance, and interaction behavior cannot be signed off visually.
+  - Fix: open the authenticated Orders list in an approved browser, capture desktop and mobile views, test the View action separately from row click, and compare the captures with the source reference.
+
+## Required fidelity surfaces
+
+- Fonts and typography: the page keeps the admin font system and existing heading/table hierarchy; the summary labels, counts, and unit text follow the target hierarchy. Rendered optical-weight and wrapping verification is blocked.
+- Spacing and layout rhythm: the summary uses equal desktop columns, stacked mobile cards, 16px gaps, compact 112px minimum card height, fine borders, restrained rounding, and existing table dimensions. Rendered verification is blocked.
+- Colors and visual tokens: the cards and View action reuse the existing Serenity Blue and Rose Quartz theme tokens with deeper accessible foregrounds. Rendered color matching is blocked.
+- Image quality and asset fidelity: the design contains no raster imagery. Existing Lucide cart, clock, and eye icons are reused; no new assets or dependencies were introduced.
+- Copy and content: order numbers, customer information, dates, totals, statuses, and counts remain data-driven. The target-only New badge and customer dot were intentionally omitted because the order schema and payload have no unread/new lifecycle.
+
+## Comparison history
+
+- Initial pass: blocked before visual comparison because no browser session was available. No P0/P1/P2 visual fixes could be judged from a rendered implementation.
+
+## Primary interaction and data coverage
+
+- The total count and awaiting-payment count are derived from the same complete `orders` collection the existing page uses; singular/plural labels cover zero, one, and multiple orders.
+- The View action uses the existing typed `admin.orders.show` route and an order-specific accessible label. Its table column opts out of row-click handling, and the link also stops click propagation.
+- Search, payment and fulfillment filters, sorting, pagination, row click, status badges, and the order-detail route were not changed.
+- Browser interaction testing and console-error inspection: blocked.
+
+## Implementation checklist
+
+- Capture authenticated desktop and mobile Orders views.
+- Verify card stacking, long summary-label wrapping, and table-contained horizontal overflow.
+- Exercise search and both filters, then confirm the counts remain the page-level totals.
+- Activate View and the row control independently with mouse and keyboard.
+- Check focus indicators and the browser console.
+
+final result: blocked
+
+---
+
 # Storefront navigation cart and active-state design QA
 
 - Source visual truth path: two user-attached navigation reference crops in the current request (conversation attachments; no local filesystem paths were exposed).
@@ -396,6 +452,6 @@ final result: blocked
 
 ---
 
-Latest QA report: **Storefront navigation active-link and Cart design QA** above. Its browser-rendered comparison and interaction pass supersedes the earlier blocked navigation report.
+Latest QA report: **Admin Orders list design QA** above. Its unavailable browser-rendered comparison supersedes the earlier storefront navigation report for this task.
 
-final result: passed
+final result: blocked
