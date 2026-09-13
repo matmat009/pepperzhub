@@ -132,7 +132,6 @@ const requiredFilled = computed(() =>
     (
         [
             'name',
-            'social_handle',
             'phone',
             'street',
             'barangay',
@@ -277,6 +276,19 @@ const placeOrder = () => {
     form.post(submitCheckout().url, { forceFormData: true });
 };
 
+/**
+ * Deliberately not v-model: the field is masked as it is typed, so the DOM value
+ * has to be rewritten in the same handler that updates the form. Catching this
+ * on submit instead would bounce the whole order back over a stray space.
+ */
+const onPhoneInput = (event: Event) => {
+    const input = event.target as HTMLInputElement;
+    const digits = input.value.replace(/\D/g, '');
+
+    input.value = digits;
+    form.phone = digits;
+};
+
 const fieldClass =
     'w-full rounded-xl border border-sf-rule bg-white px-4 py-3 text-[15px] text-sf-ink outline-none transition-colors duration-200 ease-out placeholder:text-sf-subtle focus:border-sf-primary';
 </script>
@@ -329,8 +341,7 @@ const fieldClass =
                         </label>
                         <label class="flex flex-col gap-2">
                             <span class="text-sm font-medium text-sf-text"
-                                >Facebook or WhatsApp Name
-                                <span class="text-sf-rose-deep">*</span></span
+                                >Facebook or WhatsApp Name (optional)</span
                             >
                             <input
                                 v-model="form.social_handle"
@@ -344,9 +355,12 @@ const fieldClass =
                                 <span class="text-sf-rose-deep">*</span></span
                             >
                             <input
-                                v-model="form.phone"
+                                :value="form.phone"
                                 :class="fieldClass"
-                                placeholder="0917 123 4567"
+                                type="tel"
+                                inputmode="numeric"
+                                placeholder="09171234567"
+                                @input="onPhoneInput"
                             />
                         </label>
                     </div>
@@ -803,7 +817,7 @@ const fieldClass =
                         <span :class="headingBadge" aria-hidden="true">
                             <NotebookPen class="size-4" />
                         </span>
-                        Notes
+                        Notes (optional)
                     </h2>
                     <textarea
                         v-model="form.notes"

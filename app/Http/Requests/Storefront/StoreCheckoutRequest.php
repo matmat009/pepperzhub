@@ -23,8 +23,10 @@ class StoreCheckoutRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'social_handle' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:32'],
+            'social_handle' => ['nullable', 'string', 'max:255'],
+            // Digits only: the number is matched against Order::normalizePhone()
+            // on Track Order, so storing it pre-normalised keeps the two in step.
+            'phone' => ['required', 'string', 'max:32', 'regex:/^\d+$/'],
 
             'street' => ['required', 'string', 'max:255'],
             'barangay' => ['required', 'string', 'max:255'],
@@ -67,6 +69,7 @@ class StoreCheckoutRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'phone.regex' => 'Enter your phone number using digits only — no spaces, dashes, brackets or +.',
             'shipping_region_id.required' => 'Choose a shipping region.',
             'shipping_region_id.exists' => 'That shipping region is no longer available.',
             'payment_method_id.required' => 'Choose a payment method.',

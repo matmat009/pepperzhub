@@ -83,7 +83,7 @@ class OrderKitSnapshotTest extends TestCase
         return [
             'name' => 'Juan Dela Cruz',
             'social_handle' => 'fb.com/juandc',
-            'phone' => '0917 123 4567',
+            'phone' => '09171234567',
             'street' => '12 Mabini St',
             'barangay' => 'San Antonio',
             'city' => 'Makati',

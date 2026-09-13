@@ -455,3 +455,58 @@ final result: blocked
 Latest QA report: **Admin Orders list design QA** above. Its unavailable browser-rendered comparison supersedes the earlier storefront navigation report for this task.
 
 final result: blocked
+
+---
+
+# Admin order details design QA
+
+- Source visual truth path: `C:\Users\mathe\Downloads\ChatGPT Image Sep 14, 2026, 05_37_40 AM.png`.
+- Source pixels: 1672 x 941.
+- Implementation screenshot path: unavailable - neither the in-app browser nor Chrome exposed an available browser session.
+- Viewport: desktop, laptop, and mobile were requested but could not be captured.
+- CSS size and density normalization: unavailable because the implementation could not be browser-rendered.
+- State requested: pending order with unverified payment, payment proof image, customer edit affordance, all conditional transition actions, multiple items and kit inclusions, long contact/payment values, PDF and missing-proof states.
+
+## Full-view comparison evidence
+
+The target reference was opened at original resolution and the implementation was reviewed in source. No browser-rendered implementation image could be produced, so a valid combined source/implementation comparison was not possible.
+
+## Focused-region comparison evidence
+
+Blocked with the full-view comparison. The header actions, amber notice, independent 68/32 columns, proof preview, field dividers, and mobile card ordering still require browser-rendered inspection.
+
+## Findings
+
+- [P1] Browser-rendered visual evidence is missing.
+  - Location: `/admin/orders/{order}`, desktop and mobile.
+  - Evidence: both available browser selectors reported no session. Type checking, linting, formatting, production build, PHP formatting, and the feature test suite pass.
+  - Impact: exact proportions, wrapping, proof-image bounds, responsive ordering, focus appearance, action dialogs, and page-level overflow cannot be signed off visually.
+  - Fix: open an authenticated order detail in an approved browser, capture the requested breakpoints and content states, exercise actions and proof viewing, and compare the captures with the target.
+
+## Required fidelity surfaces
+
+- Fonts and typography: the existing admin font and order-status hierarchy are preserved; section headings, labels, values, and totals follow the target's weights and wrapping behavior. Rendered optical verification is blocked.
+- Spacing and layout rhythm: desktop uses independent 68/32 columns with 20px gaps; mobile reorders the cards as Items, Payment proof, Customer, Payment & shipping, Timeline. Cards use 16px radii, 20px padding, fine borders, and restrained shadows. Rendered verification is blocked.
+- Colors and visual tokens: Blue Serenity and Rose Quartz tokens drive the card icons, primary actions, total highlight, proof border, and page wash; semantic amber and destructive tones remain tied to existing states. Rendered color matching is blocked.
+- Image quality and asset fidelity: the uploaded protected payment proof remains uncropped with `object-contain`, opens through the existing protected URL, and keeps PDF/missing-file handling. Existing product thumbnails and installed Lucide icons are reused; no assets were generated or altered.
+- Copy and content: all existing order labels, values, item/kit data, customer fields, payment details, courier fields, timestamps, notice copy, and action labels remain data-driven.
+
+## Comparison history
+
+- Initial pass: blocked before visual comparison because no browser session was available. No rendered P0/P1/P2 comparison could be completed.
+
+## Primary interaction and data coverage
+
+- Source and type checks confirm the existing transition predicates, POST targets, confirmation dialogs, contact-edit form, validation errors, loading states, proof URL, image/PDF branch, and timeline computation remain connected.
+- Existing feature tests cover authenticated detail rendering, protected payment-proof access, kit snapshots, every transition guard, contact updates, cancellation, and missing proofs.
+- Browser interaction testing and console-error inspection: blocked.
+
+## Implementation checklist
+
+- Capture pending, processing, shipped, completed, and cancelled states at desktop and mobile widths.
+- Verify multiple items, long names/addresses/payment details, and kit-inclusion wrapping.
+- Exercise customer edit/save/cancel and every eligible action dialog.
+- Open image and PDF proofs and verify the missing-proof state.
+- Check focus indicators, natural scrolling, horizontal overflow, and the browser console.
+
+final result: blocked

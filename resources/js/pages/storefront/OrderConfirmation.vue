@@ -33,6 +33,10 @@ const props = defineProps<{
 // Only the first three stages are shown here; the full five live on Track Order.
 const steps = computed(() => trackerSteps(props.tracker).slice(0, 3));
 
+// The handle is optional at checkout, so the contact sentence has to drop both
+// it and the "or" rather than read "reach out via  or 0917…".
+const hasHandle = computed(() => props.order.social_handle.trim().length > 0);
+
 const cancelled = computed(() => isCancelled(props.tracker));
 const cancelledMessage = computed(() => cancellationMessage(props.tracker));
 </script>
@@ -68,10 +72,10 @@ const cancelledMessage = computed(() => cancellationMessage(props.tracker));
             >
                 We've received your order and payment proof. We'll verify your
                 payment and reach out via
-                <span class="font-semibold text-sf-ink">{{
+                <span v-if="hasHandle" class="font-semibold text-sf-ink">{{
                     order.social_handle
                 }}</span>
-                or
+                {{ hasHandle ? 'or' : '' }}
                 <span class="font-semibold text-sf-ink">{{ order.phone }}</span>
                 shortly.
             </p>

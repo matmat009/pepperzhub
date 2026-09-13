@@ -13,6 +13,7 @@ use App\Support\SessionCart;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class CheckoutTest extends TestCase
@@ -73,7 +74,7 @@ class CheckoutTest extends TestCase
         return array_merge([
             'name' => 'Juan Dela Cruz',
             'social_handle' => 'fb.com/juandc',
-            'phone' => '0917 123 4567',
+            'phone' => '09171234567',
             'street' => '12 Mabini St',
             'barangay' => 'San Antonio',
             'city' => 'Makati',
@@ -203,6 +204,67 @@ class CheckoutTest extends TestCase
             ->assertSessionHasErrors('shipping_region_id');
 
         $this->assertSame(0, Order::count());
+    }
+
+    public function test_an_order_can_be_placed_without_a_social_handle(): void
+    {
+        Storage::fake('local');
+        $variant = $this->variant();
+
+        // Laravel's ConvertEmptyStringsToNull turns a blank field into null, so
+        // that is what an untouched input actually posts.
+        $this->withSession([SessionCart::SESSION_KEY => [$variant->id => 1]])
+            ->post(route('storefront.checkout.store'), $this->payload(['social_handle' => null]))
+            ->assertSessionHasNoErrors();
+
+        $order = Order::firstOrFail();
+
+        // The column is not nullable, so an omitted handle lands as an empty string.
+        $this->assertSame('', $order->social_handle);
+    }
+
+    public function test_notes_may_be_omitted_entirely(): void
+    {
+        Storage::fake('local');
+        $variant = $this->variant();
+
+        $payload = $this->payload();
+        unset($payload['notes']);
+
+        $this->withSession([SessionCart::SESSION_KEY => [$variant->id => 1]])
+            ->post(route('storefront.checkout.store'), $payload)
+            ->assertSessionHasNoErrors();
+
+        $this->assertNull(Order::firstOrFail()->notes);
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function nonDigitPhones(): array
+    {
+        return [
+            'letters' => ['0917abc4567'],
+            'spaces' => ['0917 123 4567'],
+            'dashes' => ['0917-123-4567'],
+            'brackets' => ['(0917) 1234567'],
+            'leading plus' => ['+639171234567'],
+        ];
+    }
+
+    #[DataProvider('nonDigitPhones')]
+    public function test_a_phone_number_with_anything_but_digits_is_rejected(string $phone): void
+    {
+        Storage::fake('local');
+        $variant = $this->variant();
+
+        $this->withSession([SessionCart::SESSION_KEY => [$variant->id => 1]])
+            ->post(route('storefront.checkout.store'), $this->payload(['phone' => $phone]))
+            ->assertSessionHasErrors([
+                'phone' => 'Enter your phone number using digits only — no spaces, dashes, brackets or +.',
+            ]);
+
+        $this->assertSame(0, Order::count(), 'an order was created from a non-numeric phone');
     }
 
     public function test_cart_is_cleared_and_checkout_redirects_to_the_token_url(): void

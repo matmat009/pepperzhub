@@ -215,7 +215,9 @@ class CheckoutController extends Controller
                 $order = Order::create([
                     'confirmation_token' => Str::random(40),
                     'name' => $validated['name'],
-                    'social_handle' => $validated['social_handle'],
+                    // Optional at checkout; the column is not nullable, so an
+                    // omitted handle is stored as an empty string, not null.
+                    'social_handle' => $validated['social_handle'] ?? '',
                     'phone' => $validated['phone'],
                     'street' => $validated['street'],
                     'barangay' => $validated['barangay'],
