@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { ChevronDown, Search, SlidersHorizontal, X } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import ProductCard from '@/components/storefront/ProductCard.vue';
 import type { Product } from '@/pages/admin/products/all-products/types';
-import { home } from '@/routes';
 
 const props = defineProps<{
     products: Product[];
@@ -114,25 +113,45 @@ const pickCategory = (category: string) => {
 <template>
     <Head title="Products" />
 
-    <div class="mx-auto w-full max-w-[1680px] px-5 pt-8 pb-24 sm:px-10">
-        <div class="flex items-center gap-2 text-sm text-sf-subtle">
-            <Link
-                :href="home()"
-                class="transition-colors duration-200 ease-out hover:text-sf-primary"
-                >Home</Link
-            >
-            <span>/</span>
-            <span class="text-sf-ink">Products</span>
-        </div>
-
+    <section
+        class="relative isolate flex w-full flex-col items-center px-5 pt-11 pb-13 text-center sm:px-10 sm:pt-14 sm:pb-15"
+    >
         <div
-            class="mt-5 flex flex-wrap items-center justify-between gap-4 border-b border-sf-line pb-6"
-        >
+            aria-hidden="true"
+            class="pointer-events-none absolute inset-x-0 -top-24 -bottom-px -z-10 bg-[linear-gradient(125deg,var(--color-sf-hero-blue)_0%,#fff_48%,var(--color-sf-hero-rose)_100%)]"
+        />
+
+        <div class="mx-auto flex w-full max-w-[860px] flex-col items-center">
+            <p
+                class="text-[11px] font-semibold tracking-[0.3em] text-sf-primary uppercase"
+            >
+                Full catalog
+            </p>
             <h1
-                class="font-display text-[34px] font-medium tracking-[-0.02em] text-sf-ink"
+                class="mt-3 font-display text-[clamp(2.55rem,5vw,4rem)] leading-[1.08] font-medium tracking-[-0.025em] text-balance text-sf-ink"
+            >
+                Research-grade peptides
+            </h1>
+            <p
+                class="mt-4 max-w-[680px] text-[15px] leading-[1.75] text-pretty text-sf-muted italic sm:text-base"
+            >
+                Explore our catalog of research compounds, with prices in
+                Philippine pesos.
+            </p>
+        </div>
+    </section>
+
+    <div
+        class="mx-auto w-full max-w-[1680px] bg-white px-5 pt-12 pb-24 sm:px-10 sm:pt-14"
+    >
+        <div
+            class="flex flex-wrap items-center justify-between gap-4 border-b border-sf-line pb-6"
+        >
+            <h2
+                class="font-display text-2xl font-semibold tracking-[-0.02em] text-sf-ink"
             >
                 Products ({{ filtered.length }})
-            </h1>
+            </h2>
 
             <div class="flex flex-wrap items-center gap-3">
                 <label class="relative">

@@ -45,6 +45,7 @@ class ReviewController extends Controller
             'customer_name' => $review->customer_name,
             'title' => $review->title,
             'description' => $review->description,
+            'created_at' => $review->created_at?->toDateString(),
             'image_url' => $review->image_path
                 ? Storage::disk('public')->url($review->image_path)
                 : null,

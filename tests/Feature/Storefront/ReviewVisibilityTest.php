@@ -123,7 +123,7 @@ class ReviewVisibilityTest extends TestCase
     {
         $product = $this->product();
 
-        $this->review(['product_id' => $product->id, 'title' => 'Tagged', 'sort_order' => 0]);
+        $tagged = $this->review(['product_id' => $product->id, 'title' => 'Tagged', 'sort_order' => 0]);
         $this->review(['title' => 'Untagged', 'sort_order' => 1]);
 
         $this->get(route('storefront.reviews'))
@@ -133,6 +133,7 @@ class ReviewVisibilityTest extends TestCase
                     ->component('storefront/Reviews')
                     ->has('reviews', 2)
                     ->where('reviews.0.title', 'Tagged')
+                    ->where('reviews.0.created_at', $tagged->created_at->toDateString())
                     ->where('reviews.0.product_name', 'BPC-157')
                     ->where('reviews.1.title', 'Untagged')
                     ->where('reviews.1.product_name', null)
