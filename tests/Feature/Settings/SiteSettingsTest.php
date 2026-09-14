@@ -47,7 +47,31 @@ class SiteSettingsTest extends TestCase
 
         $this->assertSame(1, SiteSetting::count(), 'current() created a second row');
         $this->assertSame($first->id, $second->id);
-        $this->assertNull($first->contact_email);
+
+        // The one field that is seeded rather than left blank — the Gmail
+        // button on Order Confirmation has to work before anyone has opened
+        // the settings form.
+        $this->assertSame(SiteSetting::DEFAULT_CONTACT_EMAIL, $first->contact_email);
+        $this->assertNull($first->contact_phone);
+    }
+
+    /**
+     * The seed applies to the row's creation, not to every read of it.
+     *
+     * An operator who clears the field means it, and current() running on the
+     * next request must not put the default back — that would make the one
+     * field nobody can remove out of six that all can be.
+     */
+    public function test_the_seeded_email_is_not_reasserted_over_a_cleared_one(): void
+    {
+        SiteSetting::current()->update(['contact_email' => null]);
+
+        $this->assertNull(SiteSetting::current()->contact_email);
+        $this->assertSame(1, SiteSetting::count());
+
+        SiteSetting::current()->update(['contact_email' => 'orders@pepperzhub.ph']);
+
+        $this->assertSame('orders@pepperzhub.ph', SiteSetting::current()->contact_email);
     }
 
     public function test_saving_persists_every_field_and_reaches_the_next_response(): void
@@ -109,7 +133,10 @@ class SiteSettingsTest extends TestCase
         $props = $this->get(route('home'))->assertOk()->inertiaProps();
 
         $this->assertSame(
-            array_fill_keys(array_keys(self::ALL_FIELDS), null),
+            [
+                ...array_fill_keys(array_keys(self::ALL_FIELDS), null),
+                'contact_email' => SiteSetting::DEFAULT_CONTACT_EMAIL,
+            ],
             $props['siteSettings'],
             'a field nobody has filled in yet did not arrive as null',
         );
