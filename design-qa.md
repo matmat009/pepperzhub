@@ -53,6 +53,61 @@ final result: blocked
 
 ---
 
+# Storefront Cart thumbnail containment design QA
+
+- Source visual truth path: user-attached storefront Cart clipping screenshot in the current request (conversation attachment; no local filesystem path was exposed).
+- Source pixels: 1822 x 909.
+- Implementation screenshot path: unavailable - the configured browser runtime reported that no browser session was available.
+- Requested viewports: desktop and mobile; neither could be captured.
+- Implementation pixels, CSS size, device scale factor, and density normalization: unavailable because the implementation could not be browser-rendered.
+- State: `/cart` with shoes test, BPC-157, and Semaglutide line items after reload.
+
+## Full-view comparison evidence
+
+The source screenshot was visible in the request and clearly shows product imagery touching or crossing the lower thumbnail boundary. The implementation could not be captured, so a valid combined source/implementation comparison was not possible.
+
+## Focused-region comparison evidence
+
+Blocked with the full-view comparison. The three thumbnail regions require a browser-rendered focused comparison to confirm that every cap and base is visible with balanced vertical space.
+
+## Findings
+
+- [P1] Browser-rendered post-fix evidence is missing.
+  - Location: `/cart` line-item thumbnails, desktop and mobile.
+  - Evidence: the browser runtime exposed no available browser session.
+  - Impact: computed dimensions after CSS layout, reload persistence, and the final visible cap/base spacing cannot be signed off visually.
+  - Fix: capture the populated Cart at desktop and mobile widths, reload each state, and compare focused thumbnail crops with the source screenshot.
+
+## Required fidelity surfaces
+
+- Fonts and typography: unchanged by this fix; rendered verification is blocked.
+- Spacing and layout rhythm: the fixed 80px/96px thumbnail boxes are unchanged. A definite 8px inset viewport now constrains the image before rounded clipping; rendered verification is blocked.
+- Colors and visual tokens: existing alternating thumbnail backgrounds are unchanged.
+- Image quality and asset fidelity: original product uploads remain unchanged and render with centered `object-contain`. Source inspection confirms the representative single- and multi-bottle files contain complete caps and bases, with some built-in vertical whitespace.
+- Copy and content: all Cart copy, prices, quantities, controls, links, summary content, and checkout behavior are unchanged.
+
+## Comparison history
+
+- Initial failure evidence: the supplied screenshot shows the image content sitting against or beyond the lower thumbnail edge.
+- Fix made: replaced padded full-size image sizing with a definite inset viewport and a zero-minimum, full-viewport contained image.
+- Post-fix visual evidence: blocked because no browser session was available.
+
+## Primary interaction coverage
+
+- Source inspection confirms the Cart route still resolves through `Storefront\\CartController::show` to `storefront/Cart` and all line-item/checkout controls remain untouched.
+- Browser reload, desktop/mobile rendering, computed-style inspection, and console checks: blocked.
+
+## Implementation checklist
+
+- Capture the populated desktop Cart and verify shoes test, BPC-157, and Semaglutide thumbnails.
+- Reload and confirm the same geometry persists.
+- Capture mobile and verify the fixed thumbnail boxes and complete product silhouettes.
+- Inspect computed wrapper, inset viewport, and image rectangles and check the browser console.
+
+final result: blocked
+
+---
+
 # Homepage seamless background design QA
 
 - Source visual truth path: `C:\Users\mathe\Downloads\ChatGPT Image Sep 14, 2026, 01_02_35 AM.png`.

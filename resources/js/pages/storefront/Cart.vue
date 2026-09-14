@@ -108,18 +108,27 @@ const wellClass = (index: number) =>
                     <div class="flex gap-4 sm:gap-5">
                         <Link
                             :href="show(line.product_slug)"
-                            class="grid size-20 shrink-0 place-items-center overflow-hidden rounded-xl sm:size-24"
+                            class="relative size-[84px] shrink-0 overflow-hidden rounded-xl sm:size-[106px]"
                             :class="wellClass(i)"
                         >
-                            <img
+                            <!--
+                                Give object-fit a definite inset box. Padding on
+                                a full-size replaced element can otherwise make
+                                a tall source overflow before containment runs.
+                            -->
+                            <span
                                 v-if="line.image_url"
-                                :src="line.image_url"
-                                :alt="line.product_name"
-                                class="size-full object-contain p-2"
-                            />
+                                class="absolute inset-0 grid place-items-center overflow-hidden"
+                            >
+                                <img
+                                    :src="line.image_url"
+                                    :alt="line.product_name"
+                                    class="block size-full min-h-0 min-w-0 object-contain object-center"
+                                />
+                            </span>
                             <FlaskConical
                                 v-else
-                                class="size-7 text-sf-primary/35"
+                                class="absolute inset-0 m-auto size-7 text-sf-primary/35"
                             />
                         </Link>
 
