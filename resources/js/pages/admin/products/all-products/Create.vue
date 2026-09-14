@@ -86,6 +86,7 @@ const submit = () => {
             :categories="categories"
             :errors="form.errors as Record<string, string>"
             create-style
+            emphasized-section-borders
         />
     </div>
 </template>

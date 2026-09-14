@@ -60,13 +60,19 @@ const props = withDefaults(
         errors?: Record<string, string>;
         readonly?: boolean;
         createStyle?: boolean;
+        /** Stronger section outlines used only by the Add Product page. */
+        emphasizedSectionBorders?: boolean;
     }>(),
     {
         errors: () => ({}),
         readonly: false,
         createStyle: false,
+        emphasizedSectionBorders: false,
     },
 );
+
+const addPageSectionOutline =
+    'rounded-2xl border-sf-serenity-blue/50 shadow-md shadow-sf-serenity-blue/15 dark:border-sf-serenity-blue/55 dark:shadow-md dark:shadow-black/20';
 
 /**
  * Disabled controls ship at 50% opacity, which makes a readonly product read
@@ -144,11 +150,12 @@ const removeNote = (index: number) => {
         <!-- LEFT COLUMN -->
         <div :class="createStyle ? 'space-y-4' : 'space-y-6'">
             <Card
-                :class="
+                :class="[
                     createStyle
                         ? 'gap-0 rounded-xl border-primary/10 py-0 shadow-sm shadow-sf-serenity-blue/10 dark:border-primary/20 dark:shadow-none'
-                        : 'border-transparent shadow-sm shadow-black/5'
-                "
+                        : 'border-transparent shadow-sm shadow-black/5',
+                    emphasizedSectionBorders && addPageSectionOutline,
+                ]"
             >
                 <CardHeader :class="createStyle ? 'px-5 pt-5 pb-4' : ''">
                     <div class="flex items-start gap-3">
@@ -327,11 +334,12 @@ const removeNote = (index: number) => {
             </Card>
 
             <Card
-                :class="
+                :class="[
                     createStyle
                         ? 'gap-0 rounded-xl border-primary/10 py-0 shadow-sm shadow-sf-serenity-blue/10 dark:border-primary/20 dark:shadow-none'
-                        : 'border-transparent shadow-sm shadow-black/5'
-                "
+                        : 'border-transparent shadow-sm shadow-black/5',
+                    emphasizedSectionBorders && addPageSectionOutline,
+                ]"
             >
                 <CardHeader :class="createStyle ? 'px-5 pt-5 pb-4' : ''">
                     <div
@@ -399,11 +407,12 @@ const removeNote = (index: number) => {
             </Card>
 
             <Card
-                :class="
+                :class="[
                     createStyle
                         ? 'gap-0 rounded-xl border-primary/10 py-0 shadow-sm shadow-sf-serenity-blue/10 dark:border-primary/20 dark:shadow-none'
-                        : 'border-transparent shadow-sm shadow-black/5'
-                "
+                        : 'border-transparent shadow-sm shadow-black/5',
+                    emphasizedSectionBorders && addPageSectionOutline,
+                ]"
             >
                 <CardHeader :class="createStyle ? 'px-5 pt-5 pb-4' : ''">
                     <div class="flex items-start gap-3">
@@ -458,11 +467,12 @@ const removeNote = (index: number) => {
             </Card>
 
             <Card
-                :class="
+                :class="[
                     createStyle
                         ? 'gap-0 rounded-xl border-primary/10 py-0 shadow-sm shadow-sf-serenity-blue/10 dark:border-primary/20 dark:shadow-none'
-                        : 'border-transparent shadow-sm shadow-black/5'
-                "
+                        : 'border-transparent shadow-sm shadow-black/5',
+                    emphasizedSectionBorders && addPageSectionOutline,
+                ]"
             >
                 <CardHeader :class="createStyle ? 'px-5 pt-5 pb-4' : ''">
                     <div class="flex items-start gap-3">
@@ -619,11 +629,12 @@ const removeNote = (index: number) => {
         <!-- RIGHT COLUMN -->
         <div :class="createStyle ? 'space-y-4' : 'space-y-6'">
             <Card
-                :class="
+                :class="[
                     createStyle
                         ? 'admin-product-image-wash gap-0 rounded-xl border-primary/15 py-0 shadow-sm shadow-sf-serenity-blue/10 dark:border-primary/25 dark:shadow-none'
-                        : 'border-transparent shadow-sm shadow-black/5'
-                "
+                        : 'border-transparent shadow-sm shadow-black/5',
+                    emphasizedSectionBorders && addPageSectionOutline,
+                ]"
             >
                 <CardHeader :class="createStyle ? 'px-5 pt-5 pb-4' : ''">
                     <div class="flex items-center">

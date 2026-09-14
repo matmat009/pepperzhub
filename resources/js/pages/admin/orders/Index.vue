@@ -76,11 +76,22 @@ const hasFilters = (table: OrderTable): boolean =>
     selected(table, 'payment_status').length > 0 ||
     selected(table, 'order_status').length > 0;
 
-/** Awaiting verification is the queue the admin actually works from. */
+/**
+ * Awaiting verification is the queue the admin actually works from.
+ *
+ * Both halves matter. Cancelling an order leaves payment_status at
+ * 'unverified', so payment status alone keeps counting orders that are already
+ * dead — the row's own "Awaiting Verification" label stays right, but there is
+ * nothing left to verify. Same rule as the sidebar badge in
+ * App\Http\Middleware\HandleInertiaRequests; change them together.
+ */
 const awaitingCount = computed(
     () =>
-        props.orders.filter((order) => order.payment_status === 'unverified')
-            .length,
+        props.orders.filter(
+            (order) =>
+                order.payment_status === 'unverified' &&
+                order.order_status === 'pending',
+        ).length,
 );
 </script>
 
