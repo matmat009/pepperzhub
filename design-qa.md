@@ -628,3 +628,72 @@ Blocked for the same reason. The banner, summary-card row, payment rows, and Vie
 No P3-only assessment is valid until the blocked rendered comparison is completed.
 
 final result: blocked
+
+---
+
+# Sales page design QA
+
+## Comparison target
+
+- Source visual truth: `C:\Users\mathe\Downloads\ChatGPT Image Sep 16, 2026, 04_28_31 AM.png`
+- Source dimensions: 1774 × 887 pixels
+- Implementation route: `/admin/sales`
+- Implementation screenshot: unavailable
+- Intended comparison viewport: 1774 × 887 CSS pixels at device scale factor 1
+- State: authenticated admin Sales page, light theme, populated current-month data
+- Density normalization: not applicable because an implementation capture could not be produced
+
+## Full-view comparison evidence
+
+The source image was opened at original resolution. A browser-rendered implementation image could not be captured because neither the in-app browser nor Chrome was connected to this session. The implemented page cannot be validly compared for overall hierarchy, density, chart proportions, or responsive behavior without that rendered evidence.
+
+## Focused-region comparison evidence
+
+Blocked with the full-view comparison. The date-filter card, summary-card strip, chart/Top products split, chart tooltip, segmented control, and mobile wrapping require focused browser-rendered inspection.
+
+## Findings
+
+- [P2] Rendered desktop fidelity is unverified.
+  - Location: Sales main content.
+  - Evidence: the target image is available, but no implementation screenshot could be captured at the matching viewport.
+  - Impact: spacing, control sizing, typography, card elevation, color balance, and the chart-to-ranking ratio may still differ visibly.
+  - Fix: capture `/admin/sales` at 1774 × 887 in the light theme and compare it with the source.
+- [P2] Responsive behavior and interactions are unverified.
+  - Location: date controls, summary cards, chart, Orders link, and product-ranking tabs.
+  - Evidence: no connected browser was available for narrow-viewport capture or interaction testing.
+  - Impact: wrapping, overflow, date navigation, export download, tooltip behavior, and ranking-mode changes cannot be signed off.
+  - Fix: capture a narrow viewport and exercise both presets, a custom range, Apply, Export CSV, the Orders link, chart tooltips, and both ranking modes.
+
+## Required fidelity surfaces
+
+- Fonts and typography: source inspected; rendered comparison blocked.
+- Spacing and layout rhythm: source inspected; rendered comparison blocked.
+- Colors and visual tokens: source inspected; rendered comparison blocked.
+- Image quality and asset fidelity: no image assets were introduced. The mockup thumbnail was intentionally omitted because the existing Sales payload provides no product image.
+- Copy and content: source and implementation copy were reviewed; all displayed values, dates, products, and counts remain dynamic.
+
+## Comparison history
+
+- Initial pass: blocked before the first rendered comparison because no browser connection was available.
+- Fixes made from source inspection: added the Sales content wash, refined section cards and date controls, rebuilt metric-card composition, restyled the Orders link, changed the chart to Rose Quartz, and refined Top products.
+- Post-fix visual evidence: unavailable; no valid comparison iteration can be recorded.
+
+## Primary interaction coverage
+
+- Source inspection confirms the existing preset/custom-range emit flow, CSV anchor URL, parameterized Orders destination, chart tooltip primitives, and ranking-mode state remain in place.
+- Browser interaction testing: blocked.
+- Browser console errors checked: blocked.
+
+## Implementation checklist
+
+- Capture the populated light-theme Sales page at 1774 × 887.
+- Compare the full view and focused filter/cards/chart/ranking regions with the source.
+- Capture tablet and mobile layouts and inspect horizontal overflow.
+- Exercise date presets, custom Apply, CSV export, Orders navigation, tooltips, and ranking tabs.
+- Resolve any P0/P1/P2 differences and update this report.
+
+## Follow-up polish
+
+No P3-only assessment is valid until the blocked rendered comparison is completed.
+
+final result: blocked

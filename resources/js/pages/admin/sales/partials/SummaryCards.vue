@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { BadgeDollarSign, ShoppingCart, WalletCards } from '@lucide/vue';
 import { computed } from 'vue';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
 
@@ -35,41 +36,65 @@ const averageOrderValue = computed(() =>
 );
 
 const cards = computed(() => [
-    { label: 'Revenue', value: formatPrice(props.revenue) },
-    { label: 'Verified Orders', value: String(props.orderCount) },
+    {
+        label: 'Revenue',
+        value: formatPrice(props.revenue),
+        icon: WalletCards,
+        tileClass:
+            'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/15 dark:text-emerald-400',
+    },
+    {
+        label: 'Verified Orders',
+        value: String(props.orderCount),
+        icon: ShoppingCart,
+        tileClass:
+            'bg-sf-serenity-blue/20 text-sf-primary-deep dark:bg-sf-serenity-blue/15 dark:text-sf-serenity-blue',
+    },
     {
         label: 'Average Order Value',
         value:
             averageOrderValue.value === null
                 ? '—'
                 : formatPrice(averageOrderValue.value),
+        icon: BadgeDollarSign,
+        tileClass:
+            'bg-sf-rose-tint text-sf-rose-deep dark:bg-sf-rose-deep/15 dark:text-sf-rose-mid',
     },
 ]);
 </script>
 
 <template>
-    <!--
-        Equal thirds, and deliberately lighter than the chart card below:
-        smaller type, no chrome beyond the border. This is a summary of what
-        the chart shows, not a second dashboard above it.
-    -->
-    <div class="grid gap-4 sm:grid-cols-3">
+    <!-- The cards reach equal thirds only when each value and icon still has
+         room; the intermediate two-column step keeps long currency readable. -->
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <div
             v-for="card in cards"
             :key="card.label"
-            class="rounded-xl border bg-card p-4 shadow-xs"
+            class="flex min-h-32 items-center rounded-2xl border border-sf-serenity-blue/20 bg-white p-5 shadow-[0_12px_30px_-22px_rgba(49,82,133,0.5)] dark:border-border dark:bg-card"
         >
-            <p class="text-sm font-medium text-muted-foreground">
-                {{ card.label }}
-            </p>
-            <p
-                class="mt-1.5 text-2xl leading-none font-semibold tracking-tight tabular-nums"
-            >
-                {{ card.value }}
-            </p>
-            <p class="mt-1.5 text-xs text-muted-foreground">
-                {{ periodLabel }}
-            </p>
+            <div class="flex min-w-0 items-center gap-4">
+                <span
+                    class="grid size-14 shrink-0 place-items-center rounded-2xl"
+                    :class="card.tileClass"
+                >
+                    <component :is="card.icon" class="size-6" />
+                </span>
+                <div class="min-w-0">
+                    <p
+                        class="text-sm font-medium text-sf-primary-soft dark:text-muted-foreground"
+                    >
+                        {{ card.label }}
+                    </p>
+                    <p
+                        class="mt-2 text-3xl leading-none font-semibold tracking-tight tabular-nums"
+                    >
+                        {{ card.value }}
+                    </p>
+                    <p class="mt-2 text-sm leading-snug text-muted-foreground">
+                        {{ periodLabel }}
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 </template>

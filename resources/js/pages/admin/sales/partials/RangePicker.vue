@@ -50,41 +50,45 @@ const applyCustom = () => {
 </script>
 
 <template>
-    <div class="flex flex-wrap items-end gap-x-3 gap-y-4">
-        <div class="flex gap-2">
+    <div class="flex flex-wrap items-end gap-x-4 gap-y-5">
+        <div class="flex w-full flex-wrap gap-2 sm:w-auto">
             <Button
                 v-for="shortcut in shortcuts"
                 :key="shortcut.key"
-                :variant="range.key === shortcut.key ? 'default' : 'outline'"
-                size="sm"
+                variant="outline"
+                class="h-12 flex-1 rounded-xl px-5 text-sm shadow-none sm:flex-none"
+                :class="
+                    range.key === shortcut.key
+                        ? 'border-sf-primary bg-sf-primary text-white hover:border-sf-primary-hover hover:bg-sf-primary-hover'
+                        : 'border-transparent bg-muted/55 text-foreground hover:border-sf-serenity-blue/30 hover:bg-sf-serenity-blue/10'
+                "
                 @click="emit('select', { key: shortcut.key })"
             >
                 {{ shortcut.label }}
             </Button>
         </div>
 
-        <div class="flex flex-wrap items-end gap-2">
-            <div class="grid gap-1.5">
-                <Label for="sales-start" class="text-xs">From</Label>
+        <div class="flex w-full flex-wrap items-end gap-3 lg:w-auto">
+            <div class="grid min-w-0 flex-1 gap-1.5 sm:flex-none">
+                <Label for="sales-start" class="text-sm">From</Label>
                 <Input
                     id="sales-start"
                     v-model="start"
                     type="date"
-                    class="h-8 w-40"
+                    class="h-12 w-full rounded-xl border-sf-serenity-blue/30 bg-background px-4 shadow-none sm:w-56"
                 />
             </div>
-            <div class="grid gap-1.5">
-                <Label for="sales-end" class="text-xs">To</Label>
+            <div class="grid min-w-0 flex-1 gap-1.5 sm:flex-none">
+                <Label for="sales-end" class="text-sm">To</Label>
                 <Input
                     id="sales-end"
                     v-model="end"
                     type="date"
-                    class="h-8 w-40"
+                    class="h-12 w-full rounded-xl border-sf-serenity-blue/30 bg-background px-4 shadow-none sm:w-56"
                 />
             </div>
             <Button
-                :variant="range.key === 'custom' ? 'default' : 'outline'"
-                size="sm"
+                class="h-12 w-full rounded-xl border-sf-primary bg-sf-primary px-6 text-white shadow-sm hover:border-sf-primary-hover hover:bg-sf-primary-hover sm:w-auto"
                 :disabled="!start || !end"
                 @click="applyCustom"
             >
@@ -92,7 +96,9 @@ const applyCustom = () => {
             </Button>
         </div>
 
-        <p class="w-full text-xs text-muted-foreground">
+        <p
+            class="w-full text-sm text-sf-primary-soft dark:text-muted-foreground"
+        >
             Showing {{ range.label }} · {{ range.days }}
             {{ range.days === 1 ? 'day' : 'days' }}. Custom ranges cover up to
             {{ maxRangeDays }} days.

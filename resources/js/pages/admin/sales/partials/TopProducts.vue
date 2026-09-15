@@ -43,26 +43,34 @@ const share = (value: number) =>
 </script>
 
 <template>
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-5">
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <h2 class="text-base font-semibold">Top products</h2>
+            <h2 class="text-xl font-semibold tracking-tight">Top products</h2>
             <Tabs v-model="mode">
-                <TabsList class="h-8">
-                    <TabsTrigger value="revenue" class="text-xs">
+                <TabsList
+                    class="h-10 rounded-lg border border-sf-serenity-blue/20 bg-muted/40 p-0.5 shadow-none"
+                >
+                    <TabsTrigger
+                        value="revenue"
+                        class="h-9 rounded-md px-3 text-xs data-[state=active]:border-sf-serenity-blue/30 data-[state=active]:bg-sf-serenity-blue/15 data-[state=active]:text-sf-primary-deep data-[state=active]:shadow-none dark:data-[state=active]:text-sf-serenity-blue"
+                    >
                         By revenue
                     </TabsTrigger>
-                    <TabsTrigger value="units" class="text-xs">
+                    <TabsTrigger
+                        value="units"
+                        class="h-9 rounded-md px-3 text-xs data-[state=active]:border-sf-serenity-blue/30 data-[state=active]:bg-sf-serenity-blue/15 data-[state=active]:text-sf-primary-deep data-[state=active]:shadow-none dark:data-[state=active]:text-sf-serenity-blue"
+                    >
                         By units
                     </TabsTrigger>
                 </TabsList>
             </Tabs>
         </div>
 
-        <ol v-if="rows.length" class="flex flex-col gap-3">
+        <ol v-if="rows.length" class="flex flex-col gap-5">
             <li
                 v-for="(row, position) in rows"
                 :key="row.product_name"
-                class="flex flex-col gap-1.5"
+                class="flex flex-col gap-2"
             >
                 <div class="flex items-baseline justify-between gap-3 text-sm">
                     <span class="flex min-w-0 items-baseline gap-2">
@@ -85,9 +93,11 @@ const share = (value: number) =>
                         </template>
                     </span>
                 </div>
-                <div class="h-1.5 overflow-hidden rounded-full bg-muted">
+                <div
+                    class="h-2 overflow-hidden rounded-full bg-sf-line-strong dark:bg-muted"
+                >
                     <div
-                        class="h-full rounded-full bg-sf-primary"
+                        class="h-full rounded-full bg-sf-rose"
                         :style="{
                             width: share(
                                 mode === 'revenue' ? row.revenue : row.units,

@@ -27,7 +27,7 @@ const props = defineProps<{
 }>();
 
 const config = {
-    revenue: { label: 'Revenue', color: 'var(--color-sf-primary)' },
+    revenue: { label: 'Revenue', color: 'var(--color-sf-rose)' },
 } satisfies ChartConfig;
 
 // Unovis addresses points by index; the date is looked back up for the labels.
@@ -87,8 +87,8 @@ const gradientId = `sales-revenue-fill-${useId().replace(/:/g, '')}`;
  */
 const svgDefs = `
     <linearGradient id="${gradientId}" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="5%" stop-color="var(--color-sf-primary)" stop-opacity="0.45" />
-        <stop offset="95%" stop-color="var(--color-sf-primary)" stop-opacity="0.03" />
+        <stop offset="5%" stop-color="var(--color-sf-rose)" stop-opacity="0.4" />
+        <stop offset="95%" stop-color="var(--color-sf-rose-quartz)" stop-opacity="0.025" />
     </linearGradient>
 `;
 </script>
@@ -115,7 +115,7 @@ const svgDefs = `
                 <VisLine
                     :x="x"
                     :y="y"
-                    color="var(--color-sf-primary)"
+                    color="var(--color-sf-rose)"
                     :line-width="2"
                     curve-type="monotoneX"
                 />
@@ -129,11 +129,12 @@ const svgDefs = `
                 <VisAxis
                     type="y"
                     :tick-format="yFormat"
+                    :grid-line="true"
                     :tick-line="false"
                     :domain-line="false"
                 />
                 <ChartCrosshair
-                    color="var(--color-sf-primary)"
+                    color="var(--color-sf-rose)"
                     :template="tooltip"
                 />
                 <ChartTooltip />
