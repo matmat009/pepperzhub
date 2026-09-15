@@ -8,13 +8,16 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import {
     Archive,
     Check,
+    ChevronRight,
     Columns3,
     Download,
     ListFilter,
     MoreHorizontal,
+    Package,
     Plus,
     Search,
     Trash2,
+    TriangleAlert,
     X,
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
@@ -30,17 +33,11 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Features } from '@/components/features';
+import { useLowStockThreshold } from '@/composables/useLowStockThreshold';
 import { bulkArchive, create, index, show } from '@/routes/admin/products';
+import { index as inventory } from '@/routes/admin/products/inventory';
 import { createProductColumns } from './columns';
 import BulkDeleteDialog from './partials/BulkDeleteDialog.vue';
 import DeleteDialog from './partials/DeleteDialog.vue';
@@ -63,6 +60,8 @@ defineOptions({
 const props = defineProps<{
     products: Product[];
 }>();
+
+const lowStockThreshold = useLowStockThreshold();
 
 type ProductTable = Table<Features, Product>;
 
@@ -147,13 +146,29 @@ const statusCounts = computed(() => {
     return counts;
 });
 
-const activeStatus = (table: ProductTable): string =>
-    (table.getColumn('status')?.getFilterValue() as ProductStatus) ?? 'all';
+const lowStockCount = computed(
+    () =>
+        props.products.filter((product) =>
+            product.variants.some(
+                (variant) => variant.stock <= lowStockThreshold.value,
+            ),
+        ).length,
+);
 
-const setStatus = (table: ProductTable, value: string) => {
-    table
-        .getColumn('status')
-        ?.setFilterValue(value === 'all' ? undefined : value);
+const selectedStatuses = (table: ProductTable): ProductStatus[] =>
+    (table.getColumn('status')?.getFilterValue() as ProductStatus[]) ?? [];
+
+const toggleStatus = (table: ProductTable, status: ProductStatus) => {
+    const current = selectedStatuses(table);
+    const next = current.includes(status)
+        ? current.filter((item) => item !== status)
+        : [...current, status];
+
+    table.getColumn('status')?.setFilterValue(next.length ? next : undefined);
+};
+
+const clearStatuses = (table: ProductTable) => {
+    table.getColumn('status')?.setFilterValue(undefined);
 };
 
 const searchValue = (table: ProductTable): string =>
@@ -204,7 +219,26 @@ const readStoredFilters = (): ColumnFiltersState => {
         const stored = sessionStorage.getItem(FILTERS_STORAGE_KEY);
         const parsed = stored ? JSON.parse(stored) : null;
 
-        return Array.isArray(parsed) ? (parsed as ColumnFiltersState) : [];
+        if (!Array.isArray(parsed)) {
+            return [];
+        }
+
+        return (parsed as ColumnFiltersState).flatMap((filter) => {
+            if (filter.id !== 'status') {
+                return [filter];
+            }
+
+            // Migrate the previous single-select value without discarding the
+            // rest of the filters saved in this tab.
+            const values = Array.isArray(filter.value)
+                ? filter.value
+                : [filter.value];
+            const statuses = values.filter((value): value is ProductStatus =>
+                PRODUCT_STATUSES.includes(value as ProductStatus),
+            );
+
+            return statuses.length ? [{ id: filter.id, value: statuses }] : [];
+        });
     } catch {
         // Unreadable or corrupt — start unfiltered rather than failing setup.
         return [];
@@ -255,6 +289,98 @@ watch(
             </Button>
         </header>
 
+        <div class="grid gap-4 md:grid-cols-2">
+            <section
+                aria-labelledby="total-products-label"
+                class="relative isolate min-h-28 overflow-hidden rounded-xl border border-sf-serenity-blue/30 bg-sf-serenity-blue/10 px-5 py-4 shadow-xs dark:bg-sf-serenity-blue/15"
+            >
+                <span
+                    aria-hidden="true"
+                    class="absolute -right-8 -bottom-16 -z-10 size-44 rounded-full bg-sf-serenity-blue/10 dark:bg-sf-serenity-blue/5"
+                />
+                <div class="flex h-full items-center gap-4">
+                    <div
+                        class="flex size-13 shrink-0 items-center justify-center rounded-full border border-white/90 bg-white/45 text-sf-primary shadow-xs dark:border-sf-serenity-blue/25 dark:bg-background/25 dark:text-sf-serenity-blue"
+                    >
+                        <Package aria-hidden="true" class="size-6" />
+                    </div>
+                    <div class="min-w-0">
+                        <p
+                            id="total-products-label"
+                            class="text-sm font-medium text-sf-primary-soft dark:text-sf-serenity-blue"
+                        >
+                            Total Products
+                        </p>
+                        <p class="mt-1 flex flex-wrap items-baseline gap-2">
+                            <span
+                                class="text-4xl leading-none font-semibold tracking-tight text-sf-primary tabular-nums dark:text-sf-serenity-blue"
+                            >
+                                {{ products.length }}
+                            </span>
+                            <span
+                                class="text-sm text-sf-primary-soft/80 dark:text-sf-serenity-blue/80"
+                            >
+                                {{
+                                    products.length === 1
+                                        ? 'product'
+                                        : 'products'
+                                }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <Link
+                :href="inventory({ query: { low_stock: 1 } })"
+                aria-labelledby="low-stock-products-label"
+                class="group relative isolate min-h-28 overflow-hidden rounded-xl border border-sf-rose-line bg-sf-rose-tint/55 px-5 py-4 shadow-xs transition-colors hover:bg-sf-rose-tint/75 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none dark:bg-sf-rose-deep/10 dark:hover:bg-sf-rose-deep/15"
+            >
+                <span
+                    aria-hidden="true"
+                    class="absolute -right-8 -bottom-16 -z-10 size-44 rounded-full bg-sf-rose-quartz/20 dark:bg-sf-rose-deep/5"
+                />
+                <div class="flex h-full items-center gap-4">
+                    <div
+                        class="flex size-13 shrink-0 items-center justify-center rounded-full border border-white/90 bg-white/45 text-sf-rose-deep shadow-xs dark:border-sf-rose-line/40 dark:bg-background/25 dark:text-sf-rose-mid"
+                    >
+                        <TriangleAlert aria-hidden="true" class="size-6" />
+                    </div>
+                    <div class="min-w-0">
+                        <p
+                            id="low-stock-products-label"
+                            class="text-sm font-medium text-sf-rose-deep dark:text-sf-rose-mid"
+                        >
+                            Low Stock
+                        </p>
+                        <p class="mt-1 flex flex-wrap items-baseline gap-2">
+                            <span
+                                class="text-4xl leading-none font-semibold tracking-tight text-sf-rose-deep tabular-nums dark:text-sf-rose-mid"
+                            >
+                                {{ lowStockCount }}
+                            </span>
+                            <span
+                                class="text-sm text-sf-rose-deep/75 dark:text-sf-rose-mid/80"
+                            >
+                                {{
+                                    lowStockCount === 1 ? 'product' : 'products'
+                                }}
+                            </span>
+                        </p>
+                    </div>
+                    <span
+                        class="ml-auto hidden items-center gap-1 rounded-lg border border-sf-rose-line bg-background/75 px-3 py-2 text-sm font-medium text-sf-rose-deep shadow-xs sm:flex dark:bg-background/40 dark:text-sf-rose-mid"
+                    >
+                        View inventory
+                        <ChevronRight
+                            aria-hidden="true"
+                            class="size-4 transition-transform group-hover:translate-x-0.5"
+                        />
+                    </span>
+                </div>
+            </Link>
+        </div>
+
         <DataTable
             v-model:row-selection="rowSelection"
             v-model:column-filters="columnFilters"
@@ -270,81 +396,85 @@ watch(
                 <div
                     class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between"
                 >
-                    <!--
-                    Four tabs do not fit a 375px viewport without wrapping to a
-                    second row, so below `md` the same filter collapses to a
-                    Select. One source of truth either way: both read and write
-                    the status column's filter value.
-                -->
-                    <div class="md:hidden">
-                        <Select
-                            :model-value="activeStatus(table as ProductTable)"
-                            @update:model-value="
-                                (value) =>
-                                    setStatus(
-                                        table as ProductTable,
-                                        String(value),
-                                    )
-                            "
-                        >
-                            <SelectTrigger
-                                class="h-10 w-full"
-                                aria-label="Status"
+                    <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                            <Button
+                                variant="outline"
+                                class="w-full shrink-0 md:w-auto"
                             >
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">
-                                    All ({{ statusCounts.all }})
-                                </SelectItem>
-                                <SelectItem
-                                    v-for="status in PRODUCT_STATUSES"
-                                    :key="status"
-                                    :value="status"
-                                >
-                                    {{ status }} ({{ statusCounts[status] }})
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    <Tabs
-                        class="hidden shrink-0 md:flex"
-                        :model-value="activeStatus(table as ProductTable)"
-                        @update:model-value="
-                            (value) =>
-                                setStatus(table as ProductTable, String(value))
-                        "
-                    >
-                        <TabsList
-                            class="h-10 rounded-lg border bg-muted/40 p-1 shadow-none"
-                        >
-                            <TabsTrigger
-                                value="all"
-                                class="gap-1.5 rounded-md px-3 text-sm data-[state=active]:border-primary/25 data-[state=active]:text-primary data-[state=active]:shadow-none"
-                            >
-                                All
+                                <ListFilter />
+                                Status
                                 <span
-                                    class="rounded bg-muted px-1.5 py-0.5 text-[11px] leading-none text-muted-foreground"
+                                    v-if="
+                                        selectedStatuses(table as ProductTable)
+                                            .length
+                                    "
+                                    class="ml-1 rounded bg-primary/10 px-1.5 text-xs text-primary"
                                 >
-                                    {{ statusCounts.all }}
+                                    {{
+                                        selectedStatuses(table as ProductTable)
+                                            .length
+                                    }}
                                 </span>
-                            </TabsTrigger>
-                            <TabsTrigger
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" class="w-52">
+                            <DropdownMenuLabel>
+                                Filter by status
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuCheckboxItem
+                                :model-value="
+                                    !selectedStatuses(table as ProductTable)
+                                        .length
+                                "
+                                @select="
+                                    (event: Event) => event.preventDefault()
+                                "
+                                @update:model-value="
+                                    () => clearStatuses(table as ProductTable)
+                                "
+                            >
+                                <span
+                                    class="flex flex-1 items-center justify-between gap-3"
+                                >
+                                    All
+                                    <span class="text-xs text-muted-foreground">
+                                        {{ statusCounts.all }}
+                                    </span>
+                                </span>
+                            </DropdownMenuCheckboxItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuCheckboxItem
                                 v-for="status in PRODUCT_STATUSES"
                                 :key="status"
-                                :value="status"
-                                class="gap-1.5 rounded-md px-3 text-sm data-[state=active]:border-primary/25 data-[state=active]:text-primary data-[state=active]:shadow-none"
+                                :model-value="
+                                    selectedStatuses(
+                                        table as ProductTable,
+                                    ).includes(status)
+                                "
+                                @select="
+                                    (event: Event) => event.preventDefault()
+                                "
+                                @update:model-value="
+                                    () =>
+                                        toggleStatus(
+                                            table as ProductTable,
+                                            status,
+                                        )
+                                "
                             >
-                                {{ status }}
                                 <span
-                                    class="rounded bg-muted px-1.5 py-0.5 text-[11px] leading-none text-muted-foreground"
+                                    class="flex flex-1 items-center justify-between gap-3"
                                 >
-                                    {{ statusCounts[status] }}
+                                    {{ status }}
+                                    <span class="text-xs text-muted-foreground">
+                                        {{ statusCounts[status] }}
+                                    </span>
                                 </span>
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
+                            </DropdownMenuCheckboxItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
 
                     <div
                         class="flex min-w-0 flex-wrap items-center gap-2 xl:flex-1 xl:justify-end"

@@ -205,8 +205,14 @@ export const createProductColumns = (
         }),
         columnHelper.accessor('status', {
             header: 'Status',
-            filterFn: (row, columnId, filterValue) =>
-                !filterValue || row.getValue(columnId) === filterValue,
+            filterFn: (row, columnId, filterValue) => {
+                const selected = filterValue as string[] | undefined;
+
+                return (
+                    !selected?.length ||
+                    selected.includes(row.getValue(columnId) as string)
+                );
+            },
             cell: ({ row }) =>
                 h(StatusBadge, {
                     status: row.original.status,

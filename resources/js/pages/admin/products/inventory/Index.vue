@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { Table } from '@tanstack/vue-table';
-import { Head } from '@inertiajs/vue3';
+import type { ColumnFiltersState, Table } from '@tanstack/vue-table';
+import { Head, usePage } from '@inertiajs/vue3';
 import { ListFilter, Search } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import DataTable from '@/components/DataTable.vue';
@@ -40,6 +40,14 @@ const props = defineProps<{
 }>();
 
 type InventoryTable = Table<Features, InventoryItem>;
+
+const page = usePage();
+const startsLowOnly = new URLSearchParams(page.url.split('?')[1] ?? '').has(
+    'low_stock',
+);
+const columnFilters = ref<ColumnFiltersState>(
+    startsLowOnly ? [{ id: 'stock', value: true }] : [],
+);
 
 /*
  * The dialogs track a variant id, not a row object.
@@ -132,6 +140,7 @@ const lowStockCount = computed(
         </header>
 
         <DataTable
+            v-model:column-filters="columnFilters"
             :data="items"
             :columns="columns"
             empty-message="No stock records match these filters."
