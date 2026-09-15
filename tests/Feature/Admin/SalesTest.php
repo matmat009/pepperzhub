@@ -643,6 +643,47 @@ class SalesTest extends TestCase
         $this->assertStringContainsString('ChartContainer', $chart);
     }
 
+    /**
+     * The summary cards are a second view of numbers the page already has.
+     *
+     * Asserted against source for the same reason the others here are: there
+     * is no SSR bundle, so a request returns the Inertia shell. Two things
+     * worth pinning — that no third revenue figure was invented server-side,
+     * and that the average guards its divisor. A NaN reaching the operator
+     * would look like a broken page rather than an empty month.
+     */
+    public function test_the_summary_cards_derive_from_the_existing_figures(): void
+    {
+        $props = $this->sales();
+
+        // No new prop, and so no new query behind one: the cards are handed
+        // the same revenue and orderCount everything else on the page reads.
+        $this->assertArrayNotHasKey('averageOrderValue', $props);
+        $this->assertArrayHasKey('revenue', $props);
+        $this->assertArrayHasKey('orderCount', $props);
+
+        $cards = file_get_contents(
+            resource_path('js/pages/admin/sales/partials/SummaryCards.vue'),
+        );
+
+        $this->assertStringContainsString('props.orderCount > 0', $cards);
+        $this->assertStringContainsString('props.revenue / props.orderCount', $cards);
+
+        // Plain current-period numbers — the comparison lives beside the chart.
+        foreach (['TrendingUp', 'TrendingDown', 'percentChange'] as $trend) {
+            $this->assertStringNotContainsString(
+                $trend,
+                $cards,
+                "the summary cards carry [{$trend}]; the comparison belongs beside the chart",
+            );
+        }
+
+        $page = file_get_contents(resource_path('js/pages/admin/sales/Index.vue'));
+
+        $this->assertStringContainsString(':revenue="revenue"', $page);
+        $this->assertStringContainsString(':order-count="orderCount"', $page);
+    }
+
     /** No shrunken copy of the Orders table on this page. */
     public function test_the_page_does_not_list_individual_orders(): void
     {

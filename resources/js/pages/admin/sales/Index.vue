@@ -18,6 +18,7 @@ import {
 } from '@/routes/admin/sales';
 import RangePicker from './partials/RangePicker.vue';
 import RevenueChart from './partials/RevenueChart.vue';
+import SummaryCards from './partials/SummaryCards.vue';
 import TopProducts from './partials/TopProducts.vue';
 import { formatPercent, percentChange } from './types';
 import type {
@@ -157,20 +158,18 @@ const trendTone = computed(() =>
             />
         </div>
 
+        <SummaryCards
+            :revenue="revenue"
+            :order-count="orderCount"
+            :period-label="range.label"
+        />
+
         <div class="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
             <section
                 class="flex flex-col gap-5 rounded-xl border bg-card p-5 shadow-xs"
             >
                 <div class="flex flex-wrap items-end justify-between gap-4">
                     <div class="space-y-1">
-                        <p class="text-sm text-muted-foreground">
-                            Revenue · {{ range.label }}
-                        </p>
-                        <p
-                            class="text-4xl leading-none font-semibold tracking-tight tabular-nums"
-                        >
-                            {{ formatPrice(revenue) }}
-                        </p>
                         <p class="flex flex-wrap items-center gap-2 text-sm">
                             <span
                                 :class="[
