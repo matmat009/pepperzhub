@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Copy, Eye, MoreHorizontal, Pencil, Trash2 } from '@lucide/vue';
-import { Button } from '@/components/ui/button';
+import TableActionMenuButton from '@/components/TableActionMenuButton.vue';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -10,15 +10,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { Product } from '../types';
 
-withDefaults(
-    defineProps<{
-        product: Product;
-        tableStyle?: boolean;
-    }>(),
-    {
-        tableStyle: false,
-    },
-);
+defineProps<{
+    product: Product;
+}>();
 
 const emit = defineEmits<{
     view: [product: Product];
@@ -31,18 +25,9 @@ const emit = defineEmits<{
 <template>
     <DropdownMenu>
         <DropdownMenuTrigger as-child>
-            <Button
-                variant="ghost"
-                size="icon-sm"
-                :class="[
-                    'data-[state=open]:bg-accent data-[state=open]:text-foreground',
-                    tableStyle &&
-                        'size-10 rounded-lg border border-sf-serenity-blue/80 bg-sf-serenity-blue/[0.06] text-sf-primary-soft shadow-none hover:border-sf-primary/60 hover:bg-sf-serenity-blue/20 hover:text-sf-primary-deep focus-visible:ring-sf-primary/25 data-[state=open]:border-sf-primary/60 data-[state=open]:bg-sf-serenity-blue/20 data-[state=open]:text-sf-primary-deep dark:border-sf-serenity-blue/40 dark:bg-primary/10 dark:text-sf-serenity-blue dark:hover:bg-primary/20',
-                ]"
-            >
+            <TableActionMenuButton :label="`Open menu for ${product.name}`">
                 <MoreHorizontal class="size-4" />
-                <span class="sr-only">Open menu for {{ product.name }}</span>
-            </Button>
+            </TableActionMenuButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" class="w-40">
             <DropdownMenuItem @select="emit('view', product)">

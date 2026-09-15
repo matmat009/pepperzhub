@@ -284,7 +284,6 @@ export const createProductColumns = (
                     { class: 'flex justify-end' },
                     h(RowActions, {
                         product: row.original,
-                        tableStyle: true,
                         onView: () => actions.onView(row.original),
                         onEdit: () => actions.onEdit(row.original),
                         onDuplicate: () => actions.onDuplicate(row.original),

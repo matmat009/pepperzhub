@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { History, MoreHorizontal, PackagePlus } from '@lucide/vue';
-import { Button } from '@/components/ui/button';
+import TableActionMenuButton from '@/components/TableActionMenuButton.vue';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -22,17 +22,11 @@ const emit = defineEmits<{
 <template>
     <DropdownMenu>
         <DropdownMenuTrigger as-child>
-            <Button
-                variant="ghost"
-                size="icon-sm"
-                class="data-[state=open]:bg-accent data-[state=open]:text-foreground"
+            <TableActionMenuButton
+                :label="`Open menu for ${item.product_name} ${item.variant_label}`"
             >
                 <MoreHorizontal class="size-4" />
-                <span class="sr-only">
-                    Open menu for {{ item.product_name }}
-                    {{ item.variant_label }}
-                </span>
-            </Button>
+            </TableActionMenuButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" class="w-44">
             <DropdownMenuItem @select="emit('adjust', item)">
