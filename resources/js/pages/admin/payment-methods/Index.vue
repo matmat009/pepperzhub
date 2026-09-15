@@ -76,7 +76,7 @@ const setSearch = (table: PaymentMethodTable, value: string | number) => {
     <Head title="Payments" />
 
     <div class="flex flex-1 flex-col gap-6 px-4 py-6 lg:px-6">
-        <header class="flex flex-wrap items-start justify-between gap-4">
+        <header>
             <div class="space-y-1">
                 <h1 class="text-2xl font-semibold tracking-tight">Payments</h1>
                 <p class="text-sm text-muted-foreground">
@@ -84,10 +84,6 @@ const setSearch = (table: PaymentMethodTable, value: string | number) => {
                     stop offering it without losing it.
                 </p>
             </div>
-            <Button @click="openCreate">
-                <Plus />
-                Add Method
-            </Button>
         </header>
 
         <DataTable
@@ -98,26 +94,40 @@ const setSearch = (table: PaymentMethodTable, value: string | number) => {
             @row-click="openView"
         >
             <template #toolbar="{ table }">
-                <div class="flex flex-wrap items-center gap-2">
-                    <div class="relative flex-1 sm:max-w-xs">
-                        <Search
-                            class="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-                        />
-                        <Input
-                            :model-value="
-                                searchValue(table as PaymentMethodTable)
-                            "
-                            placeholder="Search methods..."
-                            class="h-9 pl-8"
-                            @update:model-value="
-                                (value) =>
-                                    setSearch(
-                                        table as PaymentMethodTable,
-                                        value,
-                                    )
-                            "
-                        />
+                <div
+                    class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between"
+                >
+                    <div
+                        class="flex min-w-0 flex-wrap items-center gap-2 xl:flex-1"
+                    >
+                        <div class="relative w-full sm:w-72 xl:w-80 2xl:w-96">
+                            <Search
+                                class="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+                            />
+                            <Input
+                                :model-value="
+                                    searchValue(table as PaymentMethodTable)
+                                "
+                                placeholder="Search methods..."
+                                class="h-10 rounded-lg pl-9 shadow-none"
+                                @update:model-value="
+                                    (value) =>
+                                        setSearch(
+                                            table as PaymentMethodTable,
+                                            value,
+                                        )
+                                "
+                            />
+                        </div>
                     </div>
+
+                    <Button
+                        class="w-full shrink-0 sm:w-auto sm:self-end xl:self-auto"
+                        @click="openCreate"
+                    >
+                        <Plus />
+                        Add Method
+                    </Button>
                 </div>
             </template>
         </DataTable>
