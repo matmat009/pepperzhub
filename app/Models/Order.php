@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -56,6 +58,34 @@ class Order extends Model
             'completed_at' => 'datetime',
             'cancelled_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Orders whose money counts as revenue, within a window.
+     *
+     * The single definition of "revenue" in this application. The Dashboard
+     * tile and the Sales screen both read it from here so the two cannot
+     * report different numbers for the same month — which is exactly what a
+     * second, near-identical query somewhere else would eventually produce.
+     *
+     * Two conditions, and the second is the one that is easy to miss: a
+     * verified payment is not enough. cancel()'s guard only looks at
+     * order_status, so an order can be verified, moved to processing, and then
+     * cancelled — at which point the money was almost certainly refunded
+     * outside this system. Counting it would overstate revenue with no record
+     * anywhere of the correction.
+     *
+     * Scoped on payment_verified_at rather than created_at: revenue belongs to
+     * the period the money was confirmed, not the period the order was placed.
+     *
+     * @return Builder<static>
+     */
+    public static function revenueQuery(CarbonInterface $from, CarbonInterface $to): Builder
+    {
+        return static::query()
+            ->where('payment_status', 'verified')
+            ->where('order_status', '!=', 'cancelled')
+            ->whereBetween('payment_verified_at', [$from, $to]);
     }
 
     /**

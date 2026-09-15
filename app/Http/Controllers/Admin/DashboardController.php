@@ -68,26 +68,18 @@ class DashboardController extends Controller
     /**
      * Money actually taken this calendar month.
      *
-     * Two conditions, and the second is the one that is easy to miss: a
-     * verified payment is not enough. cancel()'s guard only looks at
-     * order_status, so an order can be verified, moved to processing, and then
-     * cancelled — at which point the money was almost certainly refunded
-     * outside this system. Counting it would overstate revenue with no record
-     * anywhere of the correction.
-     *
-     * Scoped on payment_verified_at rather than created_at: revenue belongs to
-     * the month the money was confirmed, not the month the order was placed.
+     * The rule itself lives on Order::revenueQuery() — what counts as revenue
+     * is a fact about orders, and the Sales screen reports the same figure for
+     * arbitrary ranges. This tile is that query pinned to the current month;
+     * the two can no longer disagree, which they would the first time someone
+     * adjusted one copy of a hand-written pair.
      */
     private function revenueThisMonth(): float
     {
-        return (float) Order::query()
-            ->where('payment_status', 'verified')
-            ->where('order_status', '!=', 'cancelled')
-            ->whereBetween('payment_verified_at', [
-                Carbon::now()->startOfMonth(),
-                Carbon::now()->endOfMonth(),
-            ])
-            ->sum('total');
+        return (float) Order::revenueQuery(
+            Carbon::now()->startOfMonth(),
+            Carbon::now()->endOfMonth(),
+        )->sum('total');
     }
 
     /**

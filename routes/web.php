@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ReviewController;
+use App\Http\Controllers\Admin\SalesController;
 use App\Http\Controllers\Admin\ShippingCourierController;
 use Illuminate\Support\Facades\Route;
 
@@ -103,6 +104,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('orders/{order}/contact', [OrderController::class, 'updateContact'])
             ->whereNumber('order')
             ->name('orders.update-contact');
+
+        /*
+         * Sales. Top-level rather than under products: it reports on orders
+         * and revenue, not on the catalogue. `export` is declared first out of
+         * habit — there is no dynamic segment here for it to collide with, but
+         * the ordering is the one the rest of this file follows.
+         */
+        Route::get('sales/export', [SalesController::class, 'export'])
+            ->name('sales.export');
+        Route::get('sales', [SalesController::class, 'index'])
+            ->name('sales.index');
 
         /*
          * Checkout's reference data. Both resources delete for real — their

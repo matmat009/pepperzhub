@@ -9,8 +9,10 @@ use App\Models\StockMovement;
 use App\Support\OrderStatuses;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -127,13 +129,45 @@ class OrderController extends Controller
         ];
     }
 
-    public function index(): Response
+    /**
+     * The list, optionally narrowed before it ever reaches the client.
+     *
+     * The search box and the two status dropdowns still filter client-side off
+     * the whole set, as they always have. These query parameters are a
+     * different thing: they exist so Sales can hand the admin the exact orders
+     * it just counted. Narrowing by date on the client would need a date
+     * column this table does not have, and narrowing to "what Sales counted"
+     * needs the not-cancelled half of the revenue rule too — neither belongs in
+     * a dropdown nobody asked for.
+     *
+     * Applied server-side and announced on the page, so a filtered list never
+     * looks like an empty one.
+     */
+    public function index(Request $request): Response
     {
+        $filters = $this->indexFilters($request);
+
         // Loaded whole and filtered client-side, matching the Products table.
         // See the deviation note in the handover about when that stops being
         // the right call.
         $orders = Order::query()
             ->withCount('items')
+            ->when(
+                $filters['payment_status'],
+                fn ($query, string $status) => $query->where('payment_status', $status),
+            )
+            ->when(
+                $filters['exclude_cancelled'],
+                fn ($query) => $query->where('order_status', '!=', 'cancelled'),
+            )
+            ->when(
+                $filters['verified_from'],
+                fn ($query, string $date) => $query->where('payment_verified_at', '>=', Carbon::parse($date)->startOfDay()),
+            )
+            ->when(
+                $filters['verified_to'],
+                fn ($query, string $date) => $query->where('payment_verified_at', '<=', Carbon::parse($date)->endOfDay()),
+            )
             ->latest('id')
             ->get()
             ->map(fn (Order $order) => $this->toRow($order))
@@ -143,7 +177,30 @@ class OrderController extends Controller
             'orders' => $orders,
             'paymentStatuses' => OrderStatuses::payment(),
             'orderStatuses' => OrderStatuses::order(),
+            // Null throughout on an unfiltered visit, which is what the page
+            // checks before rendering its banner.
+            'appliedFilters' => $filters,
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function indexFilters(Request $request): array
+    {
+        $data = $request->validate([
+            'payment_status' => ['nullable', 'string', Rule::in(array_keys(OrderStatuses::payment()))],
+            'exclude_cancelled' => ['nullable', 'boolean'],
+            'verified_from' => ['nullable', 'date'],
+            'verified_to' => ['nullable', 'date'],
+        ]);
+
+        return [
+            'payment_status' => $data['payment_status'] ?? null,
+            'exclude_cancelled' => $request->boolean('exclude_cancelled') ?: null,
+            'verified_from' => $data['verified_from'] ?? null,
+            'verified_to' => $data['verified_to'] ?? null,
+        ];
     }
 
     public function show(Order $order): Response

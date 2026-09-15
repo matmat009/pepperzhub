@@ -2,6 +2,7 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import {
     Boxes,
+    ChartNoAxesCombined,
     CreditCard,
     LayoutDashboard,
     MessageSquareQuote,
@@ -33,6 +34,7 @@ import {
 import { index as ordersIndex } from '@/routes/admin/orders';
 import { index as paymentMethodsIndex } from '@/routes/admin/payment-methods';
 import { index as reviewsIndex } from '@/routes/admin/reviews';
+import { index as salesIndex } from '@/routes/admin/sales';
 import { index as shippingCouriersIndex } from '@/routes/admin/shipping-couriers';
 import { index as categoriesIndex } from '@/routes/admin/products/categories';
 import { index as inventoryIndex } from '@/routes/admin/products/inventory';
@@ -90,6 +92,15 @@ const navEcommerce = computed<NavMainItem[]>(() => [
         icon: ShoppingCart,
         url: ordersIndex(),
         badge: pendingOrdersCount.value,
+    },
+    /*
+     * Top-level, beside Orders rather than under Products: it reports on
+     * orders and revenue, and nothing on it is about the catalogue.
+     */
+    {
+        title: 'Sales',
+        icon: ChartNoAxesCombined,
+        url: salesIndex(),
     },
     // Checkout's reference data, editable since Phase 3. Both were previously
     // seeder-only, so changing a rate or adding a method meant a redeploy.

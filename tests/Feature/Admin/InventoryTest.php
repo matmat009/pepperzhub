@@ -477,12 +477,20 @@ class InventoryTest extends TestCase
             'Inventory is still commented out of the sidebar',
         );
 
-        // Nested under Products, alongside the other three — not a top-level item.
-        $productsGroup = str($sidebar)->after("title: 'Products',")->before('},
-    {')->value();
+        /*
+         * Nested under Products, alongside the other three — not a top-level
+         * item. Bounded to that group's own children array: `before` on a
+         * brace guess silently returned the whole file, which made this pass
+         * wherever Inventory happened to sit.
+         */
+        $children = str($sidebar)
+            ->after("title: 'Products',")
+            ->after('items: [')
+            ->before('],')
+            ->value();
 
         foreach (['All Products', 'Add Product', 'Categories', 'Inventory'] as $child) {
-            $this->assertStringContainsString($child, $productsGroup);
+            $this->assertStringContainsString($child, $children);
         }
     }
 }

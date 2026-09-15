@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import type { Table } from '@tanstack/vue-table';
-import { Head, router } from '@inertiajs/vue3';
-import { Clock3, ListFilter, Search, ShoppingCart, X } from '@lucide/vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import {
+    Clock3,
+    Filter,
+    ListFilter,
+    Search,
+    ShoppingCart,
+    X,
+} from '@lucide/vue';
 import { computed } from 'vue';
 import DataTable from '@/components/DataTable.vue';
 import { Button } from '@/components/ui/button';
@@ -30,11 +37,25 @@ defineOptions({
     },
 });
 
+/**
+ * Narrowing applied by the server before the list was sent, as opposed to the
+ * search box and dropdowns below, which work client-side on whatever arrived.
+ * Every field is null on a normal visit; Sales populates them when it links
+ * here so the admin lands on exactly the orders it counted.
+ */
+type AppliedFilters = {
+    payment_status: string | null;
+    exclude_cancelled: boolean | null;
+    verified_from: string | null;
+    verified_to: string | null;
+};
+
 const props = defineProps<{
     orders: OrderRow[];
     /** Enum value => label, from App\Support\OrderStatuses. */
     paymentStatuses: Record<string, string>;
     orderStatuses: Record<string, string>;
+    appliedFilters: AppliedFilters;
 }>();
 
 type OrderTable = Table<Features, OrderRow>;
@@ -93,6 +114,35 @@ const awaitingCount = computed(
                 order.order_status === 'pending',
         ).length,
 );
+
+/*
+ * A server-narrowed list has to say so. Without this the admin arriving from
+ * Sales sees a short list and no reason for it, and "where did my orders go"
+ * is a far worse question than one extra line of chrome.
+ */
+const appliedSummary = computed(() => {
+    const { payment_status, exclude_cancelled, verified_from, verified_to } =
+        props.appliedFilters;
+    const parts: string[] = [];
+
+    if (payment_status) {
+        parts.push(props.paymentStatuses[payment_status] ?? payment_status);
+    }
+
+    if (exclude_cancelled) {
+        parts.push('excluding cancelled');
+    }
+
+    if (verified_from && verified_to) {
+        parts.push(`verified ${verified_from} to ${verified_to}`);
+    } else if (verified_from) {
+        parts.push(`verified from ${verified_from}`);
+    } else if (verified_to) {
+        parts.push(`verified up to ${verified_to}`);
+    }
+
+    return parts;
+});
 </script>
 
 <template>
@@ -101,6 +151,25 @@ const awaitingCount = computed(
     <div class="flex flex-col gap-6 p-4 md:p-6">
         <div class="space-y-4">
             <h1 class="text-2xl font-semibold tracking-tight">Orders</h1>
+
+            <div
+                v-if="appliedSummary.length"
+                class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-sf-serenity-blue/40 bg-sf-serenity-blue/10 px-4 py-2.5 text-sm dark:bg-sf-serenity-blue/15"
+            >
+                <Filter aria-hidden="true" class="size-4 shrink-0" />
+                <span>
+                    Showing
+                    <span class="font-medium">{{ orders.length }}</span>
+                    {{ orders.length === 1 ? 'order' : 'orders' }} —
+                    {{ appliedSummary.join(' · ') }}.
+                </span>
+                <Link
+                    :href="index()"
+                    class="ml-auto font-medium underline underline-offset-4 hover:text-sf-primary"
+                >
+                    Show all orders
+                </Link>
+            </div>
 
             <div class="grid gap-4 md:grid-cols-2">
                 <section
