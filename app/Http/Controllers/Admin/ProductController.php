@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\ProductRequest;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductTechnicalDetail;
+use App\Models\StockMovement;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -312,8 +313,27 @@ class ProductController extends Controller
             $variant = $existing->get((int) ($row['id'] ?? 0));
 
             if ($variant) {
+                $stockBefore = (int) $variant->stock;
+
                 $variant->update($attributes);
                 $keptIds[] = $variant->id;
+
+                /*
+                 * The Format dialog can move stock too, and a change made
+                 * there would otherwise be the one hole in the Inventory
+                 * screen's history — the number would jump with nothing
+                 * accounting for it. Logged as a Correction because that is
+                 * what typing over a count is; the caller already has this in
+                 * a transaction.
+                 */
+                if ((int) $variant->stock !== $stockBefore) {
+                    StockMovement::record(
+                        $variant,
+                        (int) $variant->stock - $stockBefore,
+                        StockMovement::REASON_CORRECTION,
+                        'Stock edited on the product form.',
+                    );
+                }
 
                 continue;
             }

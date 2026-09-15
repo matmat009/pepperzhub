@@ -28,7 +28,10 @@ const emit = defineEmits<{
                 class="data-[state=open]:bg-accent data-[state=open]:text-foreground"
             >
                 <MoreHorizontal class="size-4" />
-                <span class="sr-only">Open menu for {{ item.name }}</span>
+                <span class="sr-only">
+                    Open menu for {{ item.product_name }}
+                    {{ item.variant_label }}
+                </span>
             </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" class="w-44">

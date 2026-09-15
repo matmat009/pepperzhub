@@ -43,8 +43,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('products/inventory', [InventoryController::class, 'index'])
             ->name('products.inventory.index');
-        Route::post('products/inventory/{product}/adjust', [InventoryController::class, 'adjust'])
-            ->whereNumber('product')
+        // Keyed by variant, not product: stock lives on product_variants and
+        // the screen has one row per format.
+        Route::post('products/inventory/{variant}/adjust', [InventoryController::class, 'adjust'])
+            ->whereNumber('variant')
             ->name('products.inventory.adjust');
 
         Route::post('products/bulk-archive', [ProductController::class, 'bulkArchive'])

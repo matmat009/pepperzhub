@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\ProductVariant;
+use App\Models\StockMovement;
 use App\Support\OrderStatuses;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -537,7 +538,22 @@ class OrderController extends Controller
                 ? $variants->get($item->product_variant_id)
                 : null;
 
-            $variant?->increment('stock', (int) $item->quantity);
+            if (! $variant) {
+                continue;
+            }
+
+            $quantity = (int) $item->quantity;
+
+            $variant->increment('stock', $quantity);
+
+            // Both callers run this inside transition()'s transaction, so the
+            // restore and its log commit together or not at all.
+            StockMovement::record(
+                $variant,
+                $quantity,
+                StockMovement::REASON_ORDER_CANCELLED,
+                'Order '.$order->order_number,
+            );
         }
     }
 }

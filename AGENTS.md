@@ -143,6 +143,7 @@ truth. Import it; do not copy it. If it ever moves, update both sides together.
 | **Product images** | `product_images` + `public` disk | `public/storage` symlink exists |
 | **Categories** | `categories`, `Admin\CategoryController` | Full CRUD. Deletion is **blocked** while products reference it — `CategoryDeletionTest` |
 | **Storefront reads** | `Storefront\ProductController` | Home / Catalog / Product Detail. Filters `status = 'active'` only; drafts and archived 404 |
+| **Stock movements** | `stock_movements`, `Admin\InventoryController` | One row per change to `product_variants.stock`, per variant. Checkout writes `Order Fulfilled`, cancel/reject writes `Order Cancelled`, the product form writes `Correction` — each inside the transaction that moved the stock. The Adjust dialog offers the manual reasons only |
 | **Auth** | Fortify + passkeys + 2FA | Operator login only |
 
 Test suite: **61 passing, 235 assertions** (`php artisan test`). Coverage is
@@ -152,8 +153,8 @@ concentrated on the admin write paths and storefront visibility rules —
 
 ### UI-only — placeholder data, nothing persisted
 
-There is **no orders, cart, customers or stock-movement schema**. These screens
-render and validate, but write nothing:
+There is **no cart or customers schema**. These screens render and validate,
+but write nothing:
 
 | Page | File | Placeholder behaviour |
 |---|---|---|
@@ -161,16 +162,11 @@ render and validate, but write nothing:
 | **Checkout** | `pages/storefront/Checkout.vue` | Full form + validation. Couriers/regions hardcoded (J&T: Luzon & Visayas ₱150, Mindanao Small ₱100, Mindanao Large ₱200). Payment hardcoded (GOtyme Bank, `0012 3456 7890`, PepperzzHub Trading). On submit it **routes to confirmation without saving** |
 | **Order Confirmation** | `pages/storefront/OrderConfirmation.vue` | Fixed dummy order `PZH-00248`. Notify-Us links are `href="#"` |
 | **Track Order** | `pages/storefront/TrackOrder.vue` | Exactly one lookup resolves: **`PZH-00231` + `09171234567`**, shown at the "Shipped" stage. Anything else hits the not-found state |
-| **Admin Inventory** | `Admin\InventoryController` | ⚠️ **Zero database access.** Product list, stock counts and movement history are hardcoded arrays. `adjust()` flashes a toast and returns — it changes nothing |
 | **Dashboard** | `pages/Dashboard.vue` | Starter-kit demo using `lib/dashboardDemoData` |
 
-**Two traps in that table:**
+**One trap in that table:**
 
-1. **Inventory shows fake stock while real stock exists.** `product_variants.stock`
-   is real and is what the storefront reads for availability. The admin Inventory
-   screen ignores it entirely. Do not treat that screen as a source of truth, and
-   do not wire new features to it before it is rebuilt.
-2. **`resources/js/pages/admin/dashboard/`** (with `PendingPayments`,
+- **`resources/js/pages/admin/dashboard/`** (with `PendingPayments`,
    `RecentOrders`, `RevenueChart`, `StatsCards` partials) is **orphaned** — no
    route renders it. `/dashboard` renders `pages/Dashboard.vue` instead. Those
    partials are scaffolding for a dashboard that does not exist yet.
@@ -180,8 +176,6 @@ render and validate, but write nothing:
 - **Customer accounts / login** — guest checkout only, by design.
 - **Payment gateway** — manual bank transfer + uploaded proof is the model.
 - **Promo codes / discounts / vouchers** — no schema, no UI.
-- **Inventory rebuild** — needs a `StockMovement` model and real reads off
-  `product_variants.stock` before the screen means anything.
 - **Orders schema** — the blocker for Cart, Checkout, Confirmation and Track
   Order becoming real. Build this first if asked to make checkout work.
 
@@ -215,7 +209,7 @@ correctly.
 | `/login` | `login` | Fortify |
 | `/admin/products` | `admin.products.*` | admin CRUD |
 | `/admin/products/categories` | `admin.products.categories.*` | |
-| `/admin/products/inventory` | `admin.products.inventory.*` | placeholder |
+| `/admin/products/inventory` | `admin.products.inventory.*` | stock per format, real |
 
 **There is no route at `/admin`** — it is only a URL prefix. `/admin` returns 404
 by design; the admin landing page is `/admin/products`.

@@ -10,6 +10,7 @@ use App\Models\PaymentMethod;
 use App\Models\ProductVariant;
 use App\Models\ShippingCourier;
 use App\Models\ShippingRegion;
+use App\Models\StockMovement;
 use App\Support\SessionCart;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Cache;
@@ -265,6 +266,20 @@ class CheckoutController extends Controller
                     ]);
 
                     $variant->decrement('stock', $line['quantity']);
+
+                    /*
+                     * Inside the same transaction as the decrement above, so
+                     * stock and the log describing it can never land
+                     * independently. The reference is derived rather than read
+                     * off the order: order_number is stamped after this loop,
+                     * from the same id.
+                     */
+                    StockMovement::record(
+                        $variant,
+                        -$line['quantity'],
+                        StockMovement::REASON_ORDER_FULFILLED,
+                        'Order '.Order::referenceFor($order->id),
+                    );
                 }
 
                 $order->forceFill(['order_number' => Order::referenceFor($order->id)])->save();

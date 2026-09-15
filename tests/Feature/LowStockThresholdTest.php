@@ -140,25 +140,58 @@ class LowStockThresholdTest extends TestCase
     }
 
     /**
-     * The hidden Inventory page keeps its own placeholder 10, deliberately.
+     * The Inventory page no longer declares a threshold of its own.
      *
-     * Asserted so a future consolidation pass does not quietly pull that fake
-     * number back into the real one, which is the direction this bug ran the
-     * first time.
+     * It used to: a placeholder 10, sitting beside the real 5, which is the
+     * copy the Dashboard picked up and the reason this test file exists. That
+     * page reads real stock now, so rather than pinning the fake number in
+     * place, this pins its absence — the classification happens server-side in
+     * ProductVariant::stockStatus() and arrives per row as `status`.
      */
-    public function test_the_real_threshold_is_not_the_hidden_inventory_placeholder(): void
+    public function test_the_inventory_page_declares_no_threshold_of_its_own(): void
     {
         $inventoryTypes = file_get_contents(
             resource_path('js/pages/admin/products/inventory/types.ts'),
         );
 
-        $this->assertStringContainsString(
-            'export const LOW_STOCK_THRESHOLD = 10;',
+        // The declaration, not the name: the file still mentions the constant
+        // in prose, explaining where the number it no longer holds now lives.
+        $this->assertStringNotContainsString(
+            'export const LOW_STOCK_THRESHOLD',
             $inventoryTypes,
-            "Inventory's placeholder threshold was changed; it is out of scope.",
+            'Inventory declared a threshold again; it must read `status` off the server.',
         );
 
-        $this->assertNotSame(10, ProductVariant::LOW_STOCK_THRESHOLD);
+        // The one number, still where every screen reads it from.
         $this->assertSame(5, ProductVariant::LOW_STOCK_THRESHOLD);
+    }
+
+    /**
+     * And the server's three-way split is the same rule the tile counts by.
+     *
+     * Low Stock and Out of Stock together have to be exactly what the
+     * Dashboard calls low_stock — a variant the operator sees badged "Low
+     * Stock" on one screen and omitted from the count on the other is the same
+     * disagreement in a new place.
+     */
+    public function test_the_inventory_status_split_matches_the_dashboard_count(): void
+    {
+        $threshold = ProductVariant::LOW_STOCK_THRESHOLD;
+
+        $product = $this->productWithStock([0, $threshold, $threshold + 1]);
+
+        [$out, $low, $healthy] = $product->variants()->orderBy('stock')->get()->all();
+
+        $this->assertSame(ProductVariant::STATUS_OUT_OF_STOCK, $out->stockStatus());
+        $this->assertSame(ProductVariant::STATUS_LOW_STOCK, $low->stockStatus());
+        $this->assertSame(ProductVariant::STATUS_IN_STOCK, $healthy->stockStatus());
+
+        $this->actingAs(User::factory()->create(['email_verified_at' => now()]));
+
+        $counted = $this->get(route('dashboard'))
+            ->assertOk()
+            ->inertiaProps()['stats']['low_stock'];
+
+        $this->assertSame(2, $counted, 'the tile and the badges disagree');
     }
 }

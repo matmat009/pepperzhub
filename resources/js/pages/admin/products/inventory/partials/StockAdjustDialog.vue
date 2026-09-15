@@ -22,8 +22,8 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { adjust } from '@/routes/admin/products/inventory';
-import { STOCK_REASONS } from '../types';
-import type { InventoryItem, StockReason } from '../types';
+import { MANUAL_STOCK_REASONS } from '../types';
+import type { InventoryItem, ManualStockReason } from '../types';
 
 const props = defineProps<{
     item: InventoryItem | null;
@@ -31,20 +31,9 @@ const props = defineProps<{
 
 const open = defineModel<boolean>('open', { default: false });
 
-const emit = defineEmits<{
-    adjusted: [
-        payload: {
-            item: InventoryItem;
-            delta: number;
-            reason: StockReason;
-            note: string;
-        },
-    ];
-}>();
-
 const direction = ref<1 | -1>(1);
 const quantity = ref<number | string>(1);
-const reason = ref<StockReason>('Restock');
+const reason = ref<ManualStockReason>('Restock');
 const note = ref('');
 const processing = ref(false);
 
@@ -78,6 +67,11 @@ const submit = () => {
 
     processing.value = true;
 
+    /*
+     * preserveState keeps this dialog's own fields and the table's filters
+     * alive across the round trip; the props still come back fresh, so the
+     * row, its status and its history are the server's, not a local guess.
+     */
     router.post(
         adjust(item.id).url,
         { delta: delta.value, reason: reason.value, note: note.value },
@@ -85,14 +79,6 @@ const submit = () => {
             preserveScroll: true,
             preserveState: true,
             onSuccess: () => {
-                // The endpoint is a stub, so the page applies the movement to
-                // its own copy of the row.
-                emit('adjusted', {
-                    item,
-                    delta: delta.value,
-                    reason: reason.value,
-                    note: note.value,
-                });
                 open.value = false;
             },
             onFinish: () => {
@@ -110,9 +96,10 @@ const submit = () => {
                 <DialogTitle>Adjust stock</DialogTitle>
                 <DialogDescription>
                     <template v-if="item">
-                        <span class="font-medium text-foreground">{{
-                            item.name
-                        }}</span>
+                        <span class="font-medium text-foreground">
+                            {{ item.product_name }} &middot;
+                            {{ item.variant_label }}
+                        </span>
                         currently holds {{ item.stock }} units.
                     </template>
                 </DialogDescription>
@@ -169,8 +156,13 @@ const submit = () => {
                             <SelectValue placeholder="Select a reason" />
                         </SelectTrigger>
                         <SelectContent>
+                            <!--
+                                Manual reasons only. Order Fulfilled and Order
+                                Cancelled are written by checkout and the
+                                cancel path; the endpoint rejects them here.
+                            -->
                             <SelectItem
-                                v-for="option in STOCK_REASONS"
+                                v-for="option in MANUAL_STOCK_REASONS"
                                 :key="option"
                                 :value="option"
                             >

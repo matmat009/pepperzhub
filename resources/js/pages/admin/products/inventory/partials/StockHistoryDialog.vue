@@ -10,7 +10,7 @@ import {
 import { formatDate, formatDelta } from '../types';
 import type { InventoryItem } from '../types';
 
-/** Read-only movement log for a single product. Newest first. */
+/** Read-only movement log for a single format. Newest first. */
 const props = defineProps<{
     item: InventoryItem | null;
 }>();
@@ -28,9 +28,10 @@ const entries = computed(() => [...(props.item?.history ?? [])].reverse());
                 <DialogDescription>
                     <template v-if="item">
                         Every recorded movement for
-                        <span class="font-medium text-foreground">{{
-                            item.name
-                        }}</span>
+                        <span class="font-medium text-foreground">
+                            {{ item.product_name }} &middot;
+                            {{ item.variant_label }}
+                        </span>
                         .
                     </template>
                 </DialogDescription>

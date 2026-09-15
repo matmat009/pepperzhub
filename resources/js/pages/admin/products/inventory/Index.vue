@@ -2,7 +2,7 @@
 import type { Table } from '@tanstack/vue-table';
 import { Head } from '@inertiajs/vue3';
 import { ListFilter, Search } from '@lucide/vue';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import DataTable from '@/components/DataTable.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,8 +21,8 @@ import { index } from '@/routes/admin/products/inventory';
 import { createInventoryColumns } from './columns';
 import StockAdjustDialog from './partials/StockAdjustDialog.vue';
 import StockHistoryDialog from './partials/StockHistoryDialog.vue';
-import { cloneItems, isLowStock, today } from './types';
-import type { InventoryItem, StockReason } from './types';
+import { isLowStock } from './types';
+import type { InventoryItem } from './types';
 
 defineOptions({
     layout: {
@@ -41,31 +41,33 @@ const props = defineProps<{
 
 type InventoryTable = Table<Features, InventoryItem>;
 
-/**
- * Local working copy: the adjust endpoint is a stub, so applied movements live
- * here. Reseeded whenever the server sends a fresh list.
+/*
+ * The dialogs track a variant id, not a row object.
+ *
+ * The adjust endpoint is real now, so a successful adjustment comes back as
+ * fresh props rather than being patched into a local copy. Holding the row
+ * itself would leave whichever dialog is open showing the stock and history
+ * from before the save; looking it up each time means both read the server's
+ * answer the moment it arrives.
  */
-const rows = ref<InventoryItem[]>(cloneItems(props.items));
-
-watch(
-    () => props.items,
-    (items) => {
-        rows.value = cloneItems(items);
-    },
-);
-
-const adjustTarget = ref<InventoryItem | null>(null);
+const adjustTargetId = ref<number | null>(null);
 const adjustOpen = ref(false);
-const historyTarget = ref<InventoryItem | null>(null);
+const historyTargetId = ref<number | null>(null);
 const historyOpen = ref(false);
 
+const findItem = (id: number | null) =>
+    props.items.find((item) => item.id === id) ?? null;
+
+const adjustTarget = computed(() => findItem(adjustTargetId.value));
+const historyTarget = computed(() => findItem(historyTargetId.value));
+
 const openAdjust = (item: InventoryItem) => {
-    adjustTarget.value = item;
+    adjustTargetId.value = item.id;
     adjustOpen.value = true;
 };
 
 const openHistory = (item: InventoryItem) => {
-    historyTarget.value = item;
+    historyTargetId.value = item.id;
     historyOpen.value = true;
 };
 
@@ -77,36 +79,6 @@ const columns = createInventoryColumns({
 const categories = computed(() =>
     [...new Set(props.items.map((item) => item.category))].sort(),
 );
-
-const applyAdjustment = (payload: {
-    item: InventoryItem;
-    delta: number;
-    reason: StockReason;
-    note: string;
-}) => {
-    const row = rows.value.find((item) => item.id === payload.item.id);
-
-    if (!row) {
-        return;
-    }
-
-    const resulting = Math.max(0, row.stock + payload.delta);
-
-    row.stock = resulting;
-    row.updated_at = today();
-    row.history.push({
-        id: (row.history.at(-1)?.id ?? 0) + 1,
-        date: today(),
-        delta: payload.delta,
-        reason: payload.reason,
-        resulting_stock: resulting,
-        note: payload.note.trim() || null,
-    });
-
-    // Keep the open dialogs pointed at the updated row.
-    adjustTarget.value = row;
-    historyTarget.value = historyTarget.value ? row : null;
-};
 
 const searchValue = (table: InventoryTable): string =>
     (table.getColumn('product')?.getFilterValue() as string) ?? '';
@@ -135,7 +107,7 @@ const toggleCategory = (table: InventoryTable, category: string) => {
 };
 
 const lowStockCount = computed(
-    () => rows.value.filter((item) => isLowStock(item.stock)).length,
+    () => props.items.filter((item) => isLowStock(item.status)).length,
 );
 </script>
 
@@ -147,7 +119,7 @@ const lowStockCount = computed(
             <div class="space-y-1">
                 <h1 class="text-2xl font-semibold tracking-tight">Inventory</h1>
                 <p class="text-sm text-muted-foreground">
-                    Track and manage stock levels.
+                    Track and manage stock levels, one row per format.
                 </p>
             </div>
             <p
@@ -160,7 +132,7 @@ const lowStockCount = computed(
         </header>
 
         <DataTable
-            :data="rows"
+            :data="items"
             :columns="columns"
             empty-message="No stock records match these filters."
         >
@@ -254,10 +226,6 @@ const lowStockCount = computed(
         </DataTable>
     </div>
 
-    <StockAdjustDialog
-        v-model:open="adjustOpen"
-        :item="adjustTarget"
-        @adjusted="applyAdjustment"
-    />
+    <StockAdjustDialog v-model:open="adjustOpen" :item="adjustTarget" />
     <StockHistoryDialog v-model:open="historyOpen" :item="historyTarget" />
 </template>

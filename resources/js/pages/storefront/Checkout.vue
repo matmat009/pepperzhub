@@ -114,7 +114,6 @@ type CheckoutField = keyof CheckoutForm;
 /** Held in the form for its error alone, and dropped before the request. */
 const clientOnlyField: CheckoutField = 'courier';
 
-const errorSummaryEl = ref<HTMLElement | null>(null);
 const proofInput = ref<HTMLInputElement | null>(null);
 const proofName = ref('');
 const proofPreviewUrl = ref<string | null>(null);
@@ -220,12 +219,12 @@ const currentGaps = (): Partial<Record<CheckoutField, string>> => {
 };
 
 /**
- * Summary order, and the id of the control each entry sends the customer to.
+ * Every field that can carry an error, in the order it appears on the page.
  *
- * Ordered by where the field sits on the page rather than by the order the
- * errors happen to arrive in, so the list reads top to bottom like the form
- * does. social_handle and notes are optional and never produce a gap, but the
- * server can still reject them on length, so they have a place here too.
+ * Read twice: to pick which field a refused submit sends the customer to, and
+ * to register the watcher that retires each field's error. social_handle and
+ * notes never produce a gap of their own, but the server can still reject them
+ * on length, so they have a place here too.
  */
 const fieldOrder = [
     'name',
@@ -245,25 +244,9 @@ const fieldOrder = [
 
 const fieldId = (field: string) => `checkout-${field}`;
 
-// Anything the server invents a key for that is not on the form sorts last
-// rather than jumping the queue at index -1.
-const summaryRank = (field: string) => {
-    const position = fieldOrder.indexOf(field as CheckoutField);
-
-    return position === -1 ? fieldOrder.length : position;
-};
-
-const errorSummary = computed(() =>
-    Object.entries(form.errors)
-        .filter(([, message]) => Boolean(message))
-        .sort(([a], [b]) => summaryRank(a) - summaryRank(b))
-        .map(([field, message]) => ({ field, message })),
-);
-
 /**
- * Sends the customer to the control itself, not just to its neighbourhood —
- * a summary entry that only scrolled would leave a keyboard user still parked
- * at the top of the page.
+ * Puts the customer on the control itself, not just near it — scrolling alone
+ * would leave a keyboard user still parked wherever they were.
  */
 const focusField = (field: string) => {
     const element = document.getElementById(fieldId(field));
@@ -438,10 +421,23 @@ const placeOrder = async () => {
             form.setError(field, gaps[field] as string);
         }
 
-        // Focus lands on the summary rather than nowhere, which is all a
-        // keyboard or screen-reader user would otherwise get from the click.
+        /*
+         * Straight to the first thing that is wrong, in page order. Its
+         * message is on screen by the time it takes focus, so a summary
+         * listing every field would only be one more hop to the same place —
+         * and doing nothing at all is what a keyboard or screen-reader user
+         * would otherwise get from the click.
+         *
+         * Awaited so the scroll is measured against a layout that already has
+         * the messages in it.
+         */
+        const firstInvalid = fieldOrder.find((field) => gaps[field]);
+
         await nextTick();
-        errorSummaryEl.value?.focus();
+
+        if (firstInvalid) {
+            focusField(firstInvalid);
+        }
 
         return;
     }
@@ -492,42 +488,6 @@ const fieldClass =
         >
             Checkout
         </h1>
-
-        <!--
-            Focused, not announced: moving focus here is what tells a screen
-            reader the submit was refused, and a live region on top of that
-            would read the same list twice. It is only ever populated by an
-            actual attempt, so it cannot greet someone on arrival.
-        -->
-        <div
-            v-if="errorSummary.length"
-            ref="errorSummaryEl"
-            tabindex="-1"
-            aria-labelledby="checkout-error-summary-heading"
-            class="mt-8 rounded-2xl border border-sf-rose-line bg-sf-rose-tint p-6 outline-none"
-        >
-            <h2
-                id="checkout-error-summary-heading"
-                class="font-display text-lg font-semibold text-sf-rose-deep"
-            >
-                {{
-                    errorSummary.length === 1
-                        ? 'One thing needs your attention'
-                        : `${errorSummary.length} things need your attention`
-                }}
-            </h2>
-            <ul class="mt-3 flex flex-col gap-2 text-[15px]">
-                <li v-for="entry in errorSummary" :key="entry.field">
-                    <a
-                        :href="`#${fieldId(entry.field)}`"
-                        class="rounded-sm text-sf-rose-deep underline underline-offset-4 transition-colors duration-200 ease-out outline-none hover:text-sf-primary focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
-                        @click.prevent="focusField(entry.field)"
-                    >
-                        {{ entry.message }}
-                    </a>
-                </li>
-            </ul>
-        </div>
 
         <form
             class="mt-8 grid grid-cols-1 gap-16 lg:grid-cols-[1fr_420px]"

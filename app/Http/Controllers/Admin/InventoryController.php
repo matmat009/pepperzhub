@@ -3,112 +3,146 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ProductVariant;
+use App\Models\StockMovement;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * Stock, per format.
+ *
+ * One row per product_variant, never per product. Stock is a property of the
+ * format, and summing a product's formats into a single row would hide the one
+ * thing this screen exists to catch: a 5mg vial down to its last unit while a
+ * well-stocked 10mg sibling keeps the product's total looking comfortable.
+ *
+ * Everything here reads from and writes to real columns. The screen previously
+ * rendered a hardcoded list and its adjust action returned a toast without
+ * touching anything, which is why it was kept out of the sidebar.
+ */
 class InventoryController extends Controller
 {
-    /**
-     * Placeholder stock records.
-     *
-     * Same five products as ProductController, with the movement log that a
-     * StockMovement model will eventually own. `stock` is the running total and
-     * matches the `resulting_stock` of the most recent history entry.
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    private function inventory(): array
-    {
-        return [
-            [
-                'id' => 1,
-                'name' => 'BPC-157',
-                'type' => 'Vial',
-                'category' => 'Healing',
-                'thumbnail' => null,
-                'stock' => 142,
-                'updated_at' => '2026-04-02',
-                'history' => [
-                    ['id' => 1, 'date' => '2026-01-14', 'delta' => 120, 'reason' => 'Restock', 'resulting_stock' => 120, 'note' => 'Initial intake, lot A-1140.'],
-                    ['id' => 2, 'date' => '2026-02-21', 'delta' => -18, 'reason' => 'Order Fulfilled', 'resulting_stock' => 102, 'note' => null],
-                    ['id' => 3, 'date' => '2026-04-02', 'delta' => 40, 'reason' => 'Restock', 'resulting_stock' => 142, 'note' => 'Lot A-1188.'],
-                ],
-            ],
-            [
-                'id' => 2,
-                'name' => 'TB-500',
-                'type' => 'Kit',
-                'category' => 'Recovery',
-                'thumbnail' => null,
-                'stock' => 64,
-                'updated_at' => '2026-03-30',
-                'history' => [
-                    ['id' => 1, 'date' => '2026-02-03', 'delta' => 80, 'reason' => 'Restock', 'resulting_stock' => 80, 'note' => null],
-                    ['id' => 2, 'date' => '2026-03-11', 'delta' => -12, 'reason' => 'Order Fulfilled', 'resulting_stock' => 68, 'note' => null],
-                    ['id' => 3, 'date' => '2026-03-30', 'delta' => -4, 'reason' => 'Damaged', 'resulting_stock' => 64, 'note' => 'Seal failure in transit.'],
-                ],
-            ],
-            [
-                'id' => 3,
-                'name' => 'GHK-Cu',
-                'type' => 'Vial',
-                'category' => 'Cosmetic',
-                'thumbnail' => null,
-                'stock' => 0,
-                'updated_at' => '2026-04-11',
-                'history' => [
-                    ['id' => 1, 'date' => '2026-03-22', 'delta' => 24, 'reason' => 'Restock', 'resulting_stock' => 24, 'note' => null],
-                    ['id' => 2, 'date' => '2026-04-05', 'delta' => -20, 'reason' => 'Order Fulfilled', 'resulting_stock' => 4, 'note' => 'Bulk order #1042.'],
-                    ['id' => 3, 'date' => '2026-04-11', 'delta' => -4, 'reason' => 'Order Fulfilled', 'resulting_stock' => 0, 'note' => null],
-                ],
-            ],
-            [
-                'id' => 4,
-                'name' => 'Ipamorelin',
-                'type' => 'Vial',
-                'category' => 'Growth',
-                'thumbnail' => null,
-                'stock' => 8,
-                'updated_at' => '2026-02-16',
-                'history' => [
-                    ['id' => 1, 'date' => '2025-11-09', 'delta' => 30, 'reason' => 'Restock', 'resulting_stock' => 30, 'note' => null],
-                    ['id' => 2, 'date' => '2026-01-08', 'delta' => -19, 'reason' => 'Order Fulfilled', 'resulting_stock' => 11, 'note' => null],
-                    ['id' => 3, 'date' => '2026-02-16', 'delta' => -3, 'reason' => 'Correction', 'resulting_stock' => 8, 'note' => 'Recount after audit.'],
-                ],
-            ],
-            [
-                'id' => 5,
-                'name' => 'Semaglutide',
-                'type' => 'Kit',
-                'category' => 'Metabolic',
-                'thumbnail' => null,
-                'stock' => 27,
-                'updated_at' => '2026-04-18',
-                'history' => [
-                    ['id' => 1, 'date' => '2026-04-18', 'delta' => 30, 'reason' => 'Restock', 'resulting_stock' => 30, 'note' => 'First batch.'],
-                    ['id' => 2, 'date' => '2026-04-18', 'delta' => -3, 'reason' => 'Damaged', 'resulting_stock' => 27, 'note' => 'Cold chain break.'],
-                ],
-            ],
-        ];
-    }
-
     public function index(): Response
     {
+        $variants = ProductVariant::query()
+            ->with(['product.category', 'product.images', 'movements'])
+            // Joined rather than sorted after the fact so the ordering is the
+            // database's: by product, then by the format order the product
+            // form already established.
+            ->join('products', 'products.id', '=', 'product_variants.product_id')
+            ->orderBy('products.name')
+            ->orderBy('product_variants.sort_order')
+            ->select('product_variants.*')
+            ->get();
+
         return Inertia::render('admin/products/inventory/Index', [
-            'items' => $this->inventory(),
+            'items' => $variants
+                ->map(fn (ProductVariant $variant) => $this->toPayload($variant))
+                ->all(),
         ]);
     }
 
     /**
-     * Stub: no persistence yet. The page applies the adjustment to its own
-     * client-side copy so the table and history reflect it immediately.
+     * Apply an adjustment and record it.
+     *
+     * Locked for the same reason checkout and the cancel path lock: an order
+     * landing mid-adjustment would otherwise read a total that is about to be
+     * overwritten, and one of the two changes would vanish. Reading the stock
+     * inside the transaction — not from the row the page was rendered with —
+     * is what makes the delta apply to what is actually on the shelf.
      */
-    public function adjust(Request $request, int $product): RedirectResponse
+    public function adjust(Request $request, ProductVariant $variant): RedirectResponse
     {
+        $data = $request->validate([
+            // not_in:0 rather than min:1 — the delta is signed, and a zero
+            // movement is an entry in the log that says nothing happened.
+            'delta' => ['required', 'integer', 'not_in:0'],
+            'reason' => ['required', 'string', Rule::in(StockMovement::MANUAL_REASONS)],
+            'note' => ['nullable', 'string', 'max:500'],
+        ], [
+            'reason.in' => 'Choose one of the manual adjustment reasons.',
+        ]);
+
+        DB::transaction(function () use ($variant, $data): void {
+            /** @var ProductVariant $locked */
+            $locked = ProductVariant::query()
+                ->whereKey($variant->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $before = (int) $locked->stock;
+            /*
+             * Clamped at zero, matching the preview the dialog showed before
+             * the click — and the column is unsigned, so a negative total is
+             * not storable anyway. The movement records the delta that was
+             * actually applied rather than the one that was asked for, so
+             * resulting_stock still reconciles with the entry above it.
+             */
+            $after = max(0, $before + (int) $data['delta']);
+
+            $locked->forceFill(['stock' => $after])->save();
+
+            StockMovement::record(
+                $locked,
+                $after - $before,
+                $data['reason'],
+                filled($data['note'] ?? null) ? $data['note'] : null,
+            );
+        });
+
         $this->toast('Stock adjusted.');
 
         return back();
+    }
+
+    /**
+     * Serialised shape consumed by
+     * resources/js/pages/admin/products/inventory/types.ts.
+     *
+     * @return array<string, mixed>
+     */
+    private function toPayload(ProductVariant $variant): array
+    {
+        $movements = $variant->movements;
+
+        return [
+            'id' => $variant->id,
+            'product_name' => $variant->product->name,
+            'variant_label' => $variant->label,
+            'type' => $variant->is_kit ? 'Kit' : 'Vial',
+            'category' => $variant->product->category?->name ?? '',
+            'thumbnail' => $variant->product->images
+                ->sortBy('sort_order')
+                ->first()
+                ?->url(),
+            'stock' => (int) $variant->stock,
+            // Computed here from ProductVariant::LOW_STOCK_THRESHOLD, so the
+            // client never carries a threshold of its own — the reason the
+            // placeholder screen's 10 and the real 5 drifted apart before.
+            'status' => $variant->stockStatus(),
+            /*
+             * When the stock last moved, which is not the same as when the row
+             * was last written: a price edit touches updated_at without
+             * changing a unit. The variant's own timestamp is the fallback for
+             * a format nothing has happened to yet.
+             */
+            'updated_at' => ($movements->last()?->created_at ?? $variant->updated_at)
+                ?->toDateString(),
+            'history' => $movements
+                ->map(fn (StockMovement $movement) => [
+                    'id' => $movement->id,
+                    'date' => $movement->created_at?->toDateString(),
+                    'delta' => $movement->delta,
+                    'reason' => $movement->reason,
+                    'resulting_stock' => $movement->resulting_stock,
+                    'note' => $movement->note,
+                ])
+                ->values()
+                ->all(),
+        ];
     }
 }

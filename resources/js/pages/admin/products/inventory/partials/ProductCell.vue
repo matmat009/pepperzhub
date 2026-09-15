@@ -15,15 +15,22 @@ defineProps<{
             <img
                 v-if="item.thumbnail"
                 :src="item.thumbnail"
-                :alt="item.name"
+                :alt="item.product_name"
                 class="size-full object-cover"
             />
             <FlaskConical v-else class="size-4 text-muted-foreground" />
         </div>
+        <!--
+            The format sits under the name rather than the category: a product
+            has one row per format now, and the name alone would give two rows
+            that read identically. The category still has its own column.
+        -->
         <div class="min-w-0">
-            <div class="truncate text-sm font-medium">{{ item.name }}</div>
+            <div class="truncate text-sm font-medium">
+                {{ item.product_name }}
+            </div>
             <div class="truncate text-xs text-muted-foreground">
-                {{ item.category }}
+                {{ item.variant_label }}
             </div>
         </div>
     </div>

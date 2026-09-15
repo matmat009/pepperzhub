@@ -1,54 +1,72 @@
 /**
  * Inventory shapes for the stock screen.
  *
- * Mirrors App\Http\Controllers\Admin\InventoryController. `history` becomes a
- * StockMovement relation once the models exist.
+ * Mirrors App\Http\Controllers\Admin\InventoryController, which serialises one
+ * row per product_variant — never per product. A product with two formats is
+ * two rows here, because stock is a property of the format and a summed total
+ * is exactly what hides a format about to run out.
  */
-export type StockReason =
-    'Restock' | 'Damaged' | 'Correction' | 'Order Fulfilled';
+
+/** Chosen by the admin in the Adjust dialog. */
+export type ManualStockReason = 'Restock' | 'Damaged' | 'Correction';
+
+/**
+ * Written by the system, never offered in the dialog.
+ *
+ * Checkout writes Order Fulfilled when it takes stock; a cancellation or a
+ * rejected payment writes Order Cancelled when it hands it back. Picking one
+ * of these by hand would assert an order event that never happened.
+ */
+export type AutomaticStockReason = 'Order Fulfilled' | 'Order Cancelled';
+
+export type StockReason = ManualStockReason | AutomaticStockReason;
 
 export type StockMovement = {
     id: number;
     date: string;
+    /** Signed: negative took stock out, positive put it back. */
     delta: number;
     reason: StockReason;
+    /** What the variant held immediately after this movement. */
     resulting_stock: number;
     note: string | null;
 };
 
+export type StockStatus = 'In Stock' | 'Low Stock' | 'Out of Stock';
+
 export type InventoryItem = {
+    /** The variant's id — what the adjust endpoint is keyed by. */
     id: number;
-    name: string;
+    product_name: string;
+    variant_label: string;
     type: 'Kit' | 'Vial';
     category: string;
     thumbnail: string | null;
     stock: number;
+    /**
+     * Classified server-side from ProductVariant::LOW_STOCK_THRESHOLD.
+     *
+     * Deliberately not recomputed here. This file used to declare a threshold
+     * of its own, which drifted from the real one the moment that changed —
+     * the screen showed placeholder data, so nobody noticed. There is now one
+     * number, and it never leaves the server.
+     */
+    status: StockStatus;
+    /** When the stock last moved, not when the row was last written. */
     updated_at: string;
+    /** Oldest first; the history dialog reverses it for display. */
     history: StockMovement[];
 };
 
-export type StockStatus = 'In Stock' | 'Low Stock' | 'Out of Stock';
-
-export const STOCK_REASONS: StockReason[] = [
+export const MANUAL_STOCK_REASONS: ManualStockReason[] = [
     'Restock',
     'Damaged',
     'Correction',
-    'Order Fulfilled',
 ];
 
-/** Anything at or below this (but above zero) reads as Low Stock. */
-export const LOW_STOCK_THRESHOLD = 10;
-
-export const stockStatus = (stock: number): StockStatus => {
-    if (stock <= 0) {
-        return 'Out of Stock';
-    }
-
-    return stock <= LOW_STOCK_THRESHOLD ? 'Low Stock' : 'In Stock';
-};
-
-export const isLowStock = (stock: number): boolean =>
-    stockStatus(stock) !== 'In Stock';
+/** Low Stock and Out of Stock together are what the dashboard tile counts. */
+export const isLowStock = (status: StockStatus): boolean =>
+    status !== 'In Stock';
 
 export const formatDate = (value: string): string =>
     new Intl.DateTimeFormat('en-US', {
@@ -59,15 +77,3 @@ export const formatDate = (value: string): string =>
 
 export const formatDelta = (delta: number): string =>
     `${delta > 0 ? '+' : ''}${delta}`;
-
-/**
- * Deep copy of the server payload.
- *
- * `structuredClone` throws on Inertia's reactive proxies, and the payload is
- * plain JSON, so a JSON round-trip is both safe and sufficient.
- */
-export const cloneItems = (items: InventoryItem[]): InventoryItem[] =>
-    JSON.parse(JSON.stringify(items)) as InventoryItem[];
-
-/** Today in the ISO form the dummy history entries use. */
-export const today = (): string => new Date().toISOString().slice(0, 10);

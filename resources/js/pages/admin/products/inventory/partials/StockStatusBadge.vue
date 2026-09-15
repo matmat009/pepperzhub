@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { Badge } from '@/components/ui/badge';
-import { stockStatus } from '../types';
 import type { StockStatus } from '../types';
 
-const props = defineProps<{
-    stock: number;
+/**
+ * Classified server-side, from ProductVariant::LOW_STOCK_THRESHOLD. This used
+ * to take a raw count and apply a threshold of its own, which is how the page
+ * came to disagree with the dashboard about what "low" meant.
+ */
+defineProps<{
+    status: StockStatus;
 }>();
-
-const status = computed<StockStatus>(() => stockStatus(props.stock));
 
 const tone: Record<StockStatus, string> = {
     'In Stock':

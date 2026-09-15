@@ -6,7 +6,7 @@ import type { Features } from '@/components/features';
 import ProductCell from './partials/ProductCell.vue';
 import RowActions from './partials/RowActions.vue';
 import StockStatusBadge from './partials/StockStatusBadge.vue';
-import { formatDate, isLowStock, stockStatus } from './types';
+import { formatDate, isLowStock } from './types';
 import type { InventoryItem } from './types';
 
 const columnHelper = createColumnHelper<Features, InventoryItem>();
@@ -24,7 +24,7 @@ export const createInventoryColumns = (
     actions: InventoryColumnActions,
 ): ColumnDef<Features, InventoryItem, any>[] =>
     columnHelper.columns([
-        columnHelper.accessor('name', {
+        columnHelper.accessor('product_name', {
             id: 'product',
             header: 'Product',
             // v9 has no built-in filter fallback: a column only participates in
@@ -74,34 +74,36 @@ export const createInventoryColumns = (
         columnHelper.accessor('stock', {
             header: 'Current Stock',
             meta: { headerClass: 'text-right' },
-            // Drives the "Low stock only" switch: the filter value is a boolean.
-            filterFn: (row, columnId, filterValue) =>
-                !filterValue || isLowStock(row.getValue(columnId) as number),
-            cell: ({ row }) => {
-                const stock = row.original.stock;
-
-                return h(
+            /*
+             * Drives the "Low stock only" switch: the filter value is a
+             * boolean. Kept on this column's id so the toolbar keeps reading
+             * getColumn('stock'), but the verdict is the server's status
+             * rather than a threshold recomputed here.
+             */
+            filterFn: (row, _columnId, filterValue) =>
+                !filterValue || isLowStock(row.original.status),
+            cell: ({ row }) =>
+                h(
                     'div',
                     {
                         class: [
                             'text-right font-medium tabular-nums',
-                            stockStatus(stock) === 'Out of Stock'
+                            row.original.status === 'Out of Stock'
                                 ? 'text-red-600 dark:text-red-400'
-                                : stockStatus(stock) === 'Low Stock'
+                                : row.original.status === 'Low Stock'
                                   ? 'text-amber-600 dark:text-amber-400'
                                   : '',
                         ],
                     },
-                    String(stock),
-                );
-            },
+                    String(row.original.stock),
+                ),
         }),
-        columnHelper.accessor('stock', {
+        columnHelper.accessor('status', {
             id: 'status',
             header: 'Status',
             enableColumnFilter: false,
             cell: ({ row }) =>
-                h(StockStatusBadge, { stock: row.original.stock }),
+                h(StockStatusBadge, { status: row.original.status }),
         }),
         columnHelper.accessor('updated_at', {
             id: 'updated',
