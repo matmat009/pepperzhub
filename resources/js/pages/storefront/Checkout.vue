@@ -15,7 +15,8 @@ import {
     Wallet,
     X,
 } from '@lucide/vue';
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import InputError from '@/components/InputError.vue';
 import {
     Dialog,
     DialogClose,
@@ -66,7 +67,17 @@ const props = defineProps<{
     paymentMethods: PaymentMethod[];
 }>();
 
-const form = useForm<{
+/**
+ * The courier lives in the form rather than beside it so it can carry an error
+ * of its own.
+ *
+ * It is not part of the payload — it only narrows which regions are offered,
+ * and the server is told the region — but useForm keys its error bag to the
+ * form's own fields, and a courier error has to sit somewhere the summary can
+ * find it and the customer can be sent back to. It is stripped again on submit
+ * (see placeOrder), so the request on the wire is unchanged.
+ */
+type CheckoutForm = {
     name: string;
     social_handle: string;
     phone: string;
@@ -76,10 +87,13 @@ const form = useForm<{
     province: string;
     zip: string;
     notes: string;
+    courier: number | null;
     shipping_region_id: number | null;
     payment_method_id: number | null;
     payment_proof: File | null;
-}>({
+};
+
+const form = useForm<CheckoutForm>({
     name: '',
     social_handle: '',
     phone: '',
@@ -89,12 +103,18 @@ const form = useForm<{
     province: '',
     zip: '',
     notes: '',
+    courier: null,
     shipping_region_id: null,
     payment_method_id: null,
     payment_proof: null,
 });
 
-const courierId = ref<number | null>(null);
+type CheckoutField = keyof CheckoutForm;
+
+/** Held in the form for its error alone, and dropped before the request. */
+const clientOnlyField: CheckoutField = 'courier';
+
+const errorSummaryEl = ref<HTMLElement | null>(null);
 const proofInput = ref<HTMLInputElement | null>(null);
 const proofName = ref('');
 const proofPreviewUrl = ref<string | null>(null);
@@ -107,7 +127,7 @@ const acceptedProofExtensions = new Set(['jpg', 'jpeg', 'png', 'pdf']);
 const maxProofSize = 5 * 1024 * 1024;
 
 const selectedCourier = computed(() =>
-    props.couriers.find((courier) => courier.id === courierId.value),
+    props.couriers.find((courier) => courier.id === form.courier),
 );
 
 const selectedRegion = computed(() =>
@@ -121,54 +141,186 @@ const selectedPayment = computed(() =>
 );
 
 // Changing the courier invalidates whichever region was picked under the old one.
-watch(courierId, () => {
-    form.shipping_region_id = null;
-});
+watch(
+    () => form.courier,
+    () => {
+        form.shipping_region_id = null;
+    },
+);
 
 const shipping = computed(() => selectedRegion.value?.rate ?? 0);
 const total = computed(() => props.subtotal + shipping.value);
 
-const requiredFilled = computed(() =>
-    (
-        [
-            'name',
-            'phone',
-            'street',
-            'barangay',
-            'city',
-            'province',
-            'zip',
-        ] as const
-    ).every((key) => form[key].trim().length > 0),
-);
+/*
+ * Same checks the Place Order button used to be disabled on, now reported per
+ * field instead of collapsed into one "required fields" bucket. This is the
+ * discoverability layer only — StoreCheckoutRequest is unchanged and still
+ * rejects anything that gets past here, including the rules this cannot see
+ * (an 11-digit phone, a courier or method retired since the page loaded).
+ */
+const requiredText = [
+    'name',
+    'phone',
+    'street',
+    'barangay',
+    'city',
+    'province',
+    'zip',
+] as const satisfies readonly CheckoutField[];
 
-const missing = computed(() => {
-    const gaps: string[] = [];
+const gapMessages: Record<(typeof requiredText)[number], string> = {
+    name: 'Enter your full name.',
+    phone: 'Enter your phone number.',
+    street: 'Enter your street address.',
+    barangay: 'Enter your barangay.',
+    city: 'Enter your city.',
+    province: 'Enter your province.',
+    zip: 'Enter your ZIP code.',
+};
 
-    if (!requiredFilled.value) {
-        gaps.push('required fields');
+/**
+ * Every field the client can tell is missing, keyed by field.
+ *
+ * Read both on submit, to raise the errors, and after every edit, to retire the
+ * ones that no longer apply — one source for both so the two can never disagree
+ * about what is still outstanding.
+ */
+const currentGaps = (): Partial<Record<CheckoutField, string>> => {
+    const gaps: Partial<Record<CheckoutField, string>> = {};
+
+    for (const field of requiredText) {
+        if (form[field].trim().length === 0) {
+            gaps[field] = gapMessages[field];
+        }
     }
 
-    if (!courierId.value) {
-        gaps.push('courier');
-    } else if (!form.shipping_region_id) {
-        gaps.push('shipping region');
+    /*
+     * Courier before region, never both: the delivery options are rendered
+     * under the chosen courier, so an error on the region while no courier is
+     * picked would be a summary entry linking to a field that is not on the
+     * page yet.
+     */
+    if (form.courier === null) {
+        gaps.courier = 'Choose a courier.';
+    } else if (form.shipping_region_id === null) {
+        gaps.shipping_region_id = 'Choose a delivery option.';
     }
 
-    if (!form.payment_method_id) {
-        gaps.push('payment method');
+    if (form.payment_method_id === null) {
+        gaps.payment_method_id = 'Choose a payment method.';
     }
 
+    // proofImageReady gates on the preview having actually decoded, so a file
+    // the browser cannot read counts as absent rather than as attached.
     if (!form.payment_proof || (!proofIsPdf.value && !proofImageReady.value)) {
-        gaps.push('proof of payment');
+        gaps.payment_proof = 'Upload your proof of payment.';
     }
 
     return gaps;
-});
+};
 
-const ready = computed(
-    () => missing.value.length === 0 && props.lines.length > 0,
+/**
+ * Summary order, and the id of the control each entry sends the customer to.
+ *
+ * Ordered by where the field sits on the page rather than by the order the
+ * errors happen to arrive in, so the list reads top to bottom like the form
+ * does. social_handle and notes are optional and never produce a gap, but the
+ * server can still reject them on length, so they have a place here too.
+ */
+const fieldOrder = [
+    'name',
+    'social_handle',
+    'phone',
+    'street',
+    'barangay',
+    'city',
+    'province',
+    'zip',
+    'courier',
+    'shipping_region_id',
+    'payment_method_id',
+    'payment_proof',
+    'notes',
+] as const satisfies readonly CheckoutField[];
+
+const fieldId = (field: string) => `checkout-${field}`;
+
+// Anything the server invents a key for that is not on the form sorts last
+// rather than jumping the queue at index -1.
+const summaryRank = (field: string) => {
+    const position = fieldOrder.indexOf(field as CheckoutField);
+
+    return position === -1 ? fieldOrder.length : position;
+};
+
+const errorSummary = computed(() =>
+    Object.entries(form.errors)
+        .filter(([, message]) => Boolean(message))
+        .sort(([a], [b]) => summaryRank(a) - summaryRank(b))
+        .map(([field, message]) => ({ field, message })),
 );
+
+/**
+ * Sends the customer to the control itself, not just to its neighbourhood —
+ * a summary entry that only scrolled would leave a keyboard user still parked
+ * at the top of the page.
+ */
+const focusField = (field: string) => {
+    const element = document.getElementById(fieldId(field));
+
+    if (!element) {
+        return;
+    }
+
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    element.focus({ preventScroll: true });
+};
+
+/*
+ * An error leaves a field as soon as that field is put right, rather than
+ * surviving until the next click.
+ *
+ * Watched one field at a time on purpose: a single watcher over the whole form
+ * would clear a server error on the phone number the moment the customer
+ * touched the city, retiring a message about a field they have not been back
+ * to. Errors are only ever raised in placeOrder, so nothing here can make one
+ * appear on a field that has not been submitted yet.
+ */
+const fieldSignals: Partial<Record<CheckoutField, () => unknown>> = {
+    name: () => form.name,
+    social_handle: () => form.social_handle,
+    phone: () => form.phone,
+    street: () => form.street,
+    barangay: () => form.barangay,
+    city: () => form.city,
+    province: () => form.province,
+    zip: () => form.zip,
+    notes: () => form.notes,
+    courier: () => form.courier,
+    shipping_region_id: () => form.shipping_region_id,
+    payment_method_id: () => form.payment_method_id,
+    // Three moving parts, and a change in any of them is the customer acting
+    // on the upload — the file itself, and whether its preview resolved.
+    payment_proof: () => [
+        form.payment_proof,
+        proofIsPdf.value,
+        proofImageReady.value,
+    ],
+};
+
+for (const field of fieldOrder) {
+    const signal = fieldSignals[field];
+
+    if (!signal) {
+        continue;
+    }
+
+    watch(signal, () => {
+        if (!currentGaps()[field]) {
+            form.clearErrors(field);
+        }
+    });
+}
 
 const releaseProofPreview = () => {
     if (proofPreviewUrl.value) {
@@ -267,13 +419,41 @@ onBeforeUnmount(() => {
 /**
  * A real submit now. Inertia switches to multipart automatically because the
  * payload carries a File, which is what carries the payment proof up.
+ *
+ * The button is always live — it used to be disabled until every field was
+ * filled, which left a customer with a dead control and no way to find out
+ * which one it was waiting on. Clicking it now runs the same checks and says
+ * so, per field.
  */
-const placeOrder = () => {
-    if (!ready.value) {
+const placeOrder = async () => {
+    const gaps = currentGaps();
+    const fields = Object.keys(gaps) as CheckoutField[];
+
+    // Clearing first drops whatever the last attempt left behind, including
+    // server errors on fields that have since been corrected.
+    form.clearErrors();
+
+    if (fields.length > 0) {
+        for (const field of fields) {
+            form.setError(field, gaps[field] as string);
+        }
+
+        // Focus lands on the summary rather than nowhere, which is all a
+        // keyboard or screen-reader user would otherwise get from the click.
+        await nextTick();
+        errorSummaryEl.value?.focus();
+
         return;
     }
 
-    form.post(submitCheckout().url, { forceFormData: true });
+    // courier is ours, not the server's — see CheckoutForm above.
+    form.transform((payload) =>
+        Object.fromEntries(
+            Object.entries(payload).filter(
+                ([field]) => field !== clientOnlyField,
+            ),
+        ),
+    ).post(submitCheckout().url, { forceFormData: true });
 };
 
 /**
@@ -313,6 +493,42 @@ const fieldClass =
             Checkout
         </h1>
 
+        <!--
+            Focused, not announced: moving focus here is what tells a screen
+            reader the submit was refused, and a live region on top of that
+            would read the same list twice. It is only ever populated by an
+            actual attempt, so it cannot greet someone on arrival.
+        -->
+        <div
+            v-if="errorSummary.length"
+            ref="errorSummaryEl"
+            tabindex="-1"
+            aria-labelledby="checkout-error-summary-heading"
+            class="mt-8 rounded-2xl border border-sf-rose-line bg-sf-rose-tint p-6 outline-none"
+        >
+            <h2
+                id="checkout-error-summary-heading"
+                class="font-display text-lg font-semibold text-sf-rose-deep"
+            >
+                {{
+                    errorSummary.length === 1
+                        ? 'One thing needs your attention'
+                        : `${errorSummary.length} things need your attention`
+                }}
+            </h2>
+            <ul class="mt-3 flex flex-col gap-2 text-[15px]">
+                <li v-for="entry in errorSummary" :key="entry.field">
+                    <a
+                        :href="`#${fieldId(entry.field)}`"
+                        class="rounded-sm text-sf-rose-deep underline underline-offset-4 transition-colors duration-200 ease-out outline-none hover:text-sf-primary focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
+                        @click.prevent="focusField(entry.field)"
+                    >
+                        {{ entry.message }}
+                    </a>
+                </li>
+            </ul>
+        </div>
+
         <form
             class="mt-8 grid grid-cols-1 gap-16 lg:grid-cols-[1fr_420px]"
             @submit.prevent="placeOrder"
@@ -334,20 +550,24 @@ const fieldClass =
                                 <span class="text-sf-rose-deep">*</span></span
                             >
                             <input
+                                id="checkout-name"
                                 v-model="form.name"
                                 :class="fieldClass"
                                 placeholder="Juan Dela Cruz"
                             />
+                            <InputError :message="form.errors.name" />
                         </label>
                         <label class="flex flex-col gap-2">
                             <span class="text-sm font-medium text-sf-text"
                                 >Facebook or WhatsApp Name (optional)</span
                             >
                             <input
+                                id="checkout-social_handle"
                                 v-model="form.social_handle"
                                 :class="fieldClass"
                                 placeholder="fb.com/juandc or +63 917…"
                             />
+                            <InputError :message="form.errors.social_handle" />
                         </label>
                         <label class="flex flex-col gap-2 sm:col-span-2">
                             <span class="text-sm font-medium text-sf-text"
@@ -355,6 +575,7 @@ const fieldClass =
                                 <span class="text-sf-rose-deep">*</span></span
                             >
                             <input
+                                id="checkout-phone"
                                 :value="form.phone"
                                 :class="fieldClass"
                                 type="tel"
@@ -362,6 +583,7 @@ const fieldClass =
                                 placeholder="09171234567"
                                 @input="onPhoneInput"
                             />
+                            <InputError :message="form.errors.phone" />
                         </label>
                     </div>
                 </section>
@@ -382,10 +604,12 @@ const fieldClass =
                                 <span class="text-sf-rose-deep">*</span></span
                             >
                             <input
+                                id="checkout-street"
                                 v-model="form.street"
                                 :class="fieldClass"
                                 placeholder="Unit / house no., street"
                             />
+                            <InputError :message="form.errors.street" />
                         </label>
                         <label class="flex flex-col gap-2">
                             <span class="text-sm font-medium text-sf-text"
@@ -393,10 +617,12 @@ const fieldClass =
                                 <span class="text-sf-rose-deep">*</span></span
                             >
                             <input
+                                id="checkout-barangay"
                                 v-model="form.barangay"
                                 :class="fieldClass"
                                 placeholder="Barangay"
                             />
+                            <InputError :message="form.errors.barangay" />
                         </label>
                         <label class="flex flex-col gap-2">
                             <span class="text-sm font-medium text-sf-text"
@@ -404,10 +630,12 @@ const fieldClass =
                                 <span class="text-sf-rose-deep">*</span></span
                             >
                             <input
+                                id="checkout-city"
                                 v-model="form.city"
                                 :class="fieldClass"
                                 placeholder="City / municipality"
                             />
+                            <InputError :message="form.errors.city" />
                         </label>
                         <label class="flex flex-col gap-2">
                             <span class="text-sm font-medium text-sf-text"
@@ -415,10 +643,12 @@ const fieldClass =
                                 <span class="text-sf-rose-deep">*</span></span
                             >
                             <input
+                                id="checkout-province"
                                 v-model="form.province"
                                 :class="fieldClass"
                                 placeholder="Province"
                             />
+                            <InputError :message="form.errors.province" />
                         </label>
                         <label class="flex flex-col gap-2">
                             <span class="text-sm font-medium text-sf-text"
@@ -426,10 +656,12 @@ const fieldClass =
                                 <span class="text-sf-rose-deep">*</span></span
                             >
                             <input
+                                id="checkout-zip"
                                 v-model="form.zip"
                                 :class="fieldClass"
                                 placeholder="e.g. 1100"
                             />
+                            <InputError :message="form.errors.zip" />
                         </label>
                     </div>
                 </section>
@@ -448,7 +680,11 @@ const fieldClass =
                             >Courier
                             <span class="text-sf-rose-deep">*</span></span
                         >
-                        <select v-model="courierId" :class="fieldClass">
+                        <select
+                            id="checkout-courier"
+                            v-model="form.courier"
+                            :class="fieldClass"
+                        >
                             <option :value="null">Choose a courier…</option>
                             <option
                                 v-for="courier in couriers"
@@ -458,6 +694,7 @@ const fieldClass =
                                 {{ courier.name }}
                             </option>
                         </select>
+                        <InputError :message="form.errors.courier" />
                     </label>
 
                     <div v-if="selectedCourier" class="mt-6">
@@ -468,7 +705,9 @@ const fieldClass =
                         </div>
                         <div class="mt-3 flex flex-col gap-3">
                             <label
-                                v-for="region in selectedCourier.regions"
+                                v-for="(
+                                    region, index
+                                ) in selectedCourier.regions"
                                 :key="region.id"
                                 class="flex cursor-pointer items-center justify-between gap-4 rounded-xl border px-5 py-4 transition-colors duration-200 ease-out"
                                 :class="
@@ -478,7 +717,18 @@ const fieldClass =
                                 "
                             >
                                 <span class="flex items-center gap-3">
+                                    <!--
+                                        Only the first radio carries the id:
+                                        it is the group's focus target, and a
+                                        radio group is entered at its first
+                                        option.
+                                    -->
                                     <input
+                                        :id="
+                                            index === 0
+                                                ? 'checkout-shipping_region_id'
+                                                : undefined
+                                        "
                                         v-model="form.shipping_region_id"
                                         type="radio"
                                         :value="region.id"
@@ -501,6 +751,10 @@ const fieldClass =
                                 >
                             </label>
                         </div>
+                        <InputError
+                            class="mt-2"
+                            :message="form.errors.shipping_region_id"
+                        />
                     </div>
                 </section>
 
@@ -519,6 +773,7 @@ const fieldClass =
                             <span class="text-sf-rose-deep">*</span></span
                         >
                         <select
+                            id="checkout-payment_method_id"
                             v-model="form.payment_method_id"
                             :class="fieldClass"
                         >
@@ -533,6 +788,7 @@ const fieldClass =
                                 {{ method.name }}
                             </option>
                         </select>
+                        <InputError :message="form.errors.payment_method_id" />
                     </label>
 
                     <div
@@ -691,7 +947,15 @@ const fieldClass =
                                 <p class="mt-3 text-sm text-sf-subtle">
                                     JPG, PNG or PDF · Max 5MB
                                 </p>
+                                <!--
+                                    The three upload states below are mutually
+                                    exclusive, so the id can sit on all of
+                                    them: whichever one is on the page is the
+                                    right place to land someone sent here from
+                                    the summary.
+                                -->
                                 <button
+                                    id="checkout-payment_proof"
                                     type="button"
                                     class="mt-6 w-full rounded-xl border border-sf-primary px-5 py-3 text-[15px] font-semibold text-sf-primary transition-colors duration-200 ease-out outline-none hover:bg-sf-tint focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
                                     @click="openProofPicker"
@@ -769,6 +1033,7 @@ const fieldClass =
                         </div>
                         <div class="flex shrink-0 items-center gap-2">
                             <button
+                                id="checkout-payment_proof"
                                 type="button"
                                 class="rounded-xl border border-sf-primary px-4 py-2.5 text-sm font-semibold text-sf-primary transition-colors duration-200 ease-out outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
                                 @click="openProofPicker"
@@ -787,6 +1052,7 @@ const fieldClass =
 
                     <button
                         v-else
+                        id="checkout-payment_proof"
                         type="button"
                         class="mt-5 flex w-full cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed border-sf-line-strong px-6 py-12 text-center text-sf-subtle transition-colors duration-200 ease-out outline-none hover:border-sf-primary hover:text-sf-primary focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
                         @click="openProofPicker"
@@ -808,6 +1074,10 @@ const fieldClass =
                     >
                         {{ proofClientError }}
                     </p>
+                    <InputError
+                        class="mt-2"
+                        :message="form.errors.payment_proof"
+                    />
                 </section>
 
                 <section>
@@ -820,12 +1090,14 @@ const fieldClass =
                         Notes (optional)
                     </h2>
                     <textarea
+                        id="checkout-notes"
                         v-model="form.notes"
                         rows="4"
                         :class="fieldClass"
                         class="mt-5 resize-y"
                         placeholder="Delivery instructions, preferred contact time…"
                     />
+                    <InputError class="mt-2" :message="form.errors.notes" />
                 </section>
             </div>
 
@@ -921,28 +1193,21 @@ const fieldClass =
                         >
                     </div>
 
+                    <!--
+                        Live except while the request is actually out. The
+                        "Still needed:" hint and the blanket error dump that
+                        used to sit under here are gone: both said what the
+                        summary above the form and the message under each field
+                        now say, in the place the customer has to go anyway.
+                    -->
                     <button
                         type="submit"
-                        :disabled="!ready || form.processing"
+                        :disabled="form.processing"
                         class="mt-6 w-full rounded-full bg-sf-primary px-8 py-4 font-display text-base font-medium text-white transition-colors duration-200 ease-out hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary disabled:cursor-not-allowed disabled:opacity-40"
                     >
                         {{ form.processing ? 'Placing order…' : 'Place order' }}
                     </button>
 
-                    <p
-                        v-if="missing.length"
-                        class="mt-3 text-sm text-sf-subtle"
-                    >
-                        Still needed: {{ missing.join(', ') }}.
-                    </p>
-                    <p
-                        v-for="(message, field) in form.errors"
-                        :key="field"
-                        role="alert"
-                        class="mt-2 text-sm text-sf-rose-deep"
-                    >
-                        {{ message }}
-                    </p>
                     <p class="mt-3 text-center text-xs text-sf-subtle italic">
                         Orders are verified manually before dispatch.
                     </p>
