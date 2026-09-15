@@ -565,3 +565,66 @@ Blocked with the full-view comparison. The header actions, amber notice, indepen
 - Check focus indicators, natural scrolling, horizontal overflow, and the browser console.
 
 final result: blocked
+
+---
+
+# Dashboard design QA
+
+## Comparison target
+
+- Source visual truth: `C:\Users\mathe\Downloads\ChatGPT Image Sep 16, 2026, 02_28_47 AM.png`
+- Source dimensions: 1774 × 887 pixels
+- Implementation route: `/dashboard`
+- Implementation screenshot: unavailable
+- Intended comparison viewport: 1774 × 887 CSS pixels at device scale factor 1
+- State: authenticated admin dashboard, light theme, populated pending-payments list
+- Density normalization: not applicable because an implementation capture could not be produced
+
+## Full-view comparison evidence
+
+The source image was opened at original resolution. A browser-rendered implementation image could not be captured because neither the in-app browser nor Chrome was connected to this session. Layout, typography, colors, image crop, and responsive behavior therefore cannot be compared from rendered evidence.
+
+## Focused-region comparison evidence
+
+Blocked for the same reason. The banner, summary-card row, payment rows, and View all orders action require browser-rendered captures before focused comparison is valid.
+
+## Findings
+
+- [P2] Rendered desktop fidelity is unverified.
+  - Location: Dashboard main content.
+  - Evidence: the source image is available, but there is no implementation screenshot at the matching viewport.
+  - Impact: visible differences in spacing, type scale, banner crop, borders, and shadows may remain.
+  - Fix: capture `/dashboard` at 1774 × 887 in the light theme and compare it with the source image.
+- [P2] Mobile layout and interaction behavior are unverified.
+  - Location: Dashboard summary cards, pending-payment rows, and linked actions.
+  - Evidence: no connected browser was available for a narrow-viewport capture or interaction checks.
+  - Impact: wrapping, overflow, and tap behavior cannot be confirmed visually.
+  - Fix: capture a narrow viewport, inspect horizontal overflow, and activate a metric/row link plus View all orders.
+
+## Required fidelity surfaces
+
+- Fonts and typography: source inspected; rendered comparison blocked.
+- Spacing and layout rhythm: source inspected; rendered comparison blocked.
+- Colors and visual tokens: source inspected; rendered comparison blocked.
+- Image quality and asset fidelity: the existing dashboard banner asset was inspected at original resolution; its rendered crop remains unverified.
+- Copy and content: source and implementation copy were reviewed; dynamic values intentionally differ from the screenshot examples.
+
+## Comparison history
+
+- Initial pass: blocked before the first rendered comparison because no browser connection was available.
+- Fixes made from source inspection: added the banner eyebrow and line, rebuilt metric-card composition and color treatments, separated pending-payment rows, added PZ markers, and restyled the View all orders action.
+- Post-fix visual evidence: unavailable; no valid iteration comparison can be recorded.
+
+## Implementation checklist
+
+- Capture the populated light-theme dashboard at 1774 × 887.
+- Compare the full view and focused banner/cards/payments regions against the source.
+- Capture a narrow mobile viewport and check wrapping and overflow.
+- Test payment-row and View all orders navigation.
+- Resolve any P0/P1/P2 differences and update this report.
+
+## Follow-up polish
+
+No P3-only assessment is valid until the blocked rendered comparison is completed.
+
+final result: blocked

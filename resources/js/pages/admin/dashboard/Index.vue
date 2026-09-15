@@ -42,7 +42,7 @@ const lowStockThreshold = useLowStockThreshold();
 
     <div class="flex flex-1 flex-col gap-5 px-4 py-5 sm:gap-6 sm:py-6 lg:px-6">
         <header
-            class="relative isolate flex min-h-44 items-center overflow-hidden rounded-xl border border-white/60 px-6 py-8 shadow-xs sm:min-h-[11.25rem] sm:px-8 lg:px-10"
+            class="relative isolate flex min-h-48 items-center overflow-hidden rounded-2xl border border-white/70 px-6 py-8 shadow-sm sm:min-h-52 sm:px-9 sm:py-10 lg:px-10"
         >
             <img
                 src="/images/admin/dashboard-banner.png"
@@ -52,13 +52,22 @@ const lowStockThreshold = useLowStockThreshold();
             />
 
             <div class="max-w-2xl text-sf-ink">
+                <div
+                    class="flex items-center gap-4 text-[0.6875rem] font-semibold tracking-[0.3em] text-sf-primary uppercase sm:text-xs"
+                >
+                    <span>PEPPERZHUB</span>
+                    <span
+                        aria-hidden="true"
+                        class="h-px w-10 bg-sf-primary/65"
+                    />
+                </div>
                 <h1
-                    class="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl"
+                    class="mt-3 text-4xl leading-none font-bold tracking-[-0.04em] sm:text-5xl lg:text-[3.5rem]"
                 >
                     Dashboard
                 </h1>
                 <p
-                    class="mt-2 text-base leading-relaxed text-sf-text sm:text-lg"
+                    class="mt-3 text-base leading-relaxed text-sf-text sm:text-xl"
                 >
                     What needs you right now, and how the month is going.
                 </p>

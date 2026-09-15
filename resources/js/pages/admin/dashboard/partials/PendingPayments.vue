@@ -16,41 +16,66 @@ import type { PendingPayment } from '../types';
 defineProps<{
     payments: PendingPayment[];
 }>();
+
+const markerTones = [
+    'bg-sf-serenity-blue/20 text-sf-primary-deep dark:bg-sf-serenity-blue/15 dark:text-sf-serenity-blue',
+    'bg-sf-rose-tint text-sf-rose-deep dark:bg-sf-rose-deep/15 dark:text-sf-rose-mid',
+    'bg-violet-500/10 text-violet-600 dark:bg-violet-400/15 dark:text-violet-300',
+];
 </script>
 
 <template>
-    <section class="rounded-xl border border-border/90 bg-card p-5 shadow-xs">
+    <section
+        class="rounded-2xl border border-sf-serenity-blue/20 bg-white p-5 shadow-[0_12px_30px_-24px_rgba(49,82,133,0.45)] sm:p-6 dark:border-border dark:bg-card"
+    >
         <div
             class="flex flex-col gap-1.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
         >
-            <h2 class="text-base font-semibold">Pending payments</h2>
-            <span class="text-sm leading-relaxed text-muted-foreground">
+            <h2 class="text-xl font-semibold tracking-tight">
+                Pending payments
+            </h2>
+            <span
+                class="text-sm leading-relaxed text-sf-primary-soft dark:text-muted-foreground"
+            >
                 Oldest first — these customers are waiting.
             </span>
         </div>
 
-        <div v-if="payments.length" class="mt-4 flex flex-col divide-y">
+        <div v-if="payments.length" class="mt-4 flex flex-col gap-2">
             <Link
-                v-for="payment in payments"
+                v-for="(payment, index) in payments"
                 :key="payment.id"
                 :href="orderShow(payment.id)"
-                class="-mx-2 flex flex-col gap-2 rounded-md px-2 py-3 transition-colors duration-200 ease-out first:pt-0 hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                class="flex min-w-0 flex-col gap-3 rounded-xl border border-sf-serenity-blue/20 bg-background/55 p-3 transition-colors duration-200 ease-out hover:border-sf-serenity-blue/45 hover:bg-sf-serenity-blue/[0.07] focus-visible:ring-2 focus-visible:ring-sf-primary/25 focus-visible:outline-none sm:flex-row sm:items-center sm:justify-between sm:gap-5"
             >
-                <div class="min-w-0">
-                    <div class="truncate font-medium tabular-nums">
-                        {{ payment.order_number }}
-                    </div>
-                    <div class="truncate text-sm text-muted-foreground">
-                        {{ payment.name }}
+                <div class="flex min-w-0 items-center gap-3">
+                    <span
+                        aria-hidden="true"
+                        class="grid size-11 shrink-0 place-items-center rounded-full text-sm font-semibold"
+                        :class="markerTones[index % markerTones.length]"
+                    >
+                        PZ
+                    </span>
+                    <div class="min-w-0">
+                        <div class="font-semibold break-words tabular-nums">
+                            {{ payment.order_number }}
+                        </div>
+                        <div
+                            class="mt-0.5 text-sm break-words text-sf-primary-soft dark:text-muted-foreground"
+                        >
+                            {{ payment.name }}
+                        </div>
                     </div>
                 </div>
                 <div
-                    class="flex w-full items-center justify-between gap-4 sm:w-auto sm:justify-end sm:text-right"
+                    class="flex min-w-0 flex-wrap items-center justify-between gap-x-8 gap-y-1 sm:ml-auto sm:shrink-0 sm:justify-end sm:text-right"
                 >
-                    <span class="text-sm text-muted-foreground">
+                    <span
+                        class="text-sm whitespace-nowrap text-sf-primary-soft dark:text-muted-foreground"
+                    >
                         {{ payment.waiting_for ?? '—' }}
                     </span>
-                    <span class="font-medium tabular-nums">
+                    <span class="font-semibold whitespace-nowrap tabular-nums">
                         {{ formatPrice(payment.total) }}
                     </span>
                 </div>
@@ -77,10 +102,13 @@ defineProps<{
             every order and filters client-side, so there is no filter state in
             the URL to target. See the handover note.
         -->
-        <Button as-child variant="ghost" size="sm" class="mt-3 -ml-3">
+        <Button
+            as-child
+            class="mt-4 h-11 rounded-lg border-sf-primary bg-sf-primary px-5 text-white shadow-sm hover:border-sf-primary-hover hover:bg-sf-primary-hover"
+        >
             <Link :href="ordersIndex()">
                 View all orders
-                <ArrowRight class="size-3.5" />
+                <ArrowRight class="size-4" />
             </Link>
         </Button>
     </section>
