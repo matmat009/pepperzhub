@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ColumnFiltersState, Table } from '@tanstack/vue-table';
 import { Head, usePage } from '@inertiajs/vue3';
-import { ListFilter, Search } from '@lucide/vue';
+import { Check, ListFilter, Search } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import DataTable from '@/components/DataTable.vue';
 import { Button } from '@/components/ui/button';
@@ -10,12 +10,12 @@ import {
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import type { Features } from '@/components/features';
 import { index } from '@/routes/admin/products/inventory';
 import { createInventoryColumns } from './columns';
@@ -212,24 +212,58 @@ const lowStockCount = computed(
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <div
-                        class="ml-auto flex h-9 items-center gap-2 rounded-md border px-3"
-                    >
-                        <Switch
-                            id="low-stock-only"
-                            :model-value="lowOnly(table as InventoryTable)"
-                            @update:model-value="
-                                (value) =>
-                                    setLowOnly(table as InventoryTable, value)
-                            "
-                        />
-                        <Label
-                            for="low-stock-only"
-                            class="text-sm font-normal whitespace-nowrap"
-                        >
-                            Low stock only
-                        </Label>
-                    </div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                :class="
+                                    lowOnly(table as InventoryTable) &&
+                                    'border-sf-serenity-blue/80 bg-sf-serenity-blue/10 text-sf-primary-soft hover:border-sf-serenity-blue hover:bg-sf-serenity-blue/20 hover:text-sf-primary-deep'
+                                "
+                            >
+                                <ListFilter />
+                                {{
+                                    lowOnly(table as InventoryTable)
+                                        ? 'Stock: Low stock'
+                                        : 'Stock'
+                                }}
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" class="w-48">
+                            <DropdownMenuLabel>
+                                Filter by stock
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuRadioGroup
+                                :model-value="
+                                    lowOnly(table as InventoryTable)
+                                        ? 'low'
+                                        : 'all'
+                                "
+                                @update:model-value="
+                                    (value) =>
+                                        setLowOnly(
+                                            table as InventoryTable,
+                                            value === 'low',
+                                        )
+                                "
+                            >
+                                <DropdownMenuRadioItem value="all">
+                                    <template #indicator-icon>
+                                        <Check class="size-4" />
+                                    </template>
+                                    All stock
+                                </DropdownMenuRadioItem>
+                                <DropdownMenuRadioItem value="low">
+                                    <template #indicator-icon>
+                                        <Check class="size-4" />
+                                    </template>
+                                    Low stock only
+                                </DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </template>
         </DataTable>
