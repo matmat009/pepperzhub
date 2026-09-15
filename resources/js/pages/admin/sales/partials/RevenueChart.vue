@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { VisAxis, VisLine, VisXYContainer } from '@unovis/vue';
+import { VisArea, VisAxis, VisLine, VisXYContainer } from '@unovis/vue';
+import { useId } from 'reka-ui';
 import { computed } from 'vue';
 import {
     ChartContainer,
@@ -67,6 +68,29 @@ const yFormat = (value: number) => formatPrice(value);
 const empty = computed(() =>
     props.points.every((point) => point.revenue === 0),
 );
+
+/**
+ * The fill under the line.
+ *
+ * A gradient has to be an SVG <defs> entry referenced by url(#id), which is
+ * what VisXYContainer's svgDefs prop is for — the same technique shadcn-vue's
+ * own area chart uses. The id is per-instance, the way ChartContainer already
+ * derives its own: gradient ids are document-global, so a literal would have
+ * two charts on one page silently sharing, and later, fighting over one fill.
+ */
+const gradientId = `sales-revenue-fill-${useId().replace(/:/g, '')}`;
+
+/*
+ * Same token as the line above it, at two opacities: solid enough at the top
+ * to read as the line's own weight, faint enough at the baseline that the
+ * x-axis labels stay legible through it.
+ */
+const svgDefs = `
+    <linearGradient id="${gradientId}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="5%" stop-color="var(--color-sf-primary)" stop-opacity="0.45" />
+        <stop offset="95%" stop-color="var(--color-sf-primary)" stop-opacity="0.03" />
+    </linearGradient>
+`;
 </script>
 
 <template>
@@ -75,7 +99,19 @@ const empty = computed(() =>
             <VisXYContainer
                 :data="points"
                 :margin="{ top: 8, right: 8, bottom: 4, left: 8 }"
+                :svg-defs="svgDefs"
             >
+                <!--
+                    Declared before the line so the line draws over it. Same
+                    accessors and the same curve, so the top edge of the fill
+                    sits exactly under the stroke rather than beside it.
+                -->
+                <VisArea
+                    :x="x"
+                    :y="y"
+                    :color="`url(#${gradientId})`"
+                    curve-type="monotoneX"
+                />
                 <VisLine
                     :x="x"
                     :y="y"
