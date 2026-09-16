@@ -166,7 +166,8 @@ class SalesTest extends TestCase
     public function test_a_custom_range_over_the_same_month_matches_the_dashboard(): void
     {
         $this->order('2026-09-02 09:00:00', [['BPC-157', 2450, 2, null]]);
-        $this->order('2026-09-30 23:50:00', [['TB-500', 1200, 1, null]]);
+        // 15:50 UTC is 23:50 on September 30 in Manila.
+        $this->order('2026-09-30 15:50:00', [['TB-500', 1200, 1, null]]);
 
         $dashboard = $this->get(route('dashboard'))
             ->assertOk()
@@ -239,7 +240,7 @@ class SalesTest extends TestCase
     public function test_the_series_has_one_point_per_day_including_empty_ones(): void
     {
         $this->order('2026-09-03 09:00:00', [['BPC-157', 1000, 1, null]]);
-        $this->order('2026-09-03 18:00:00', [['BPC-157', 500, 1, null]]);
+        $this->order('2026-09-03 15:00:00', [['BPC-157', 500, 1, null]]);
         $this->order('2026-09-05 09:00:00', [['TB-500', 2000, 1, null]]);
 
         $props = $this->sales([
@@ -264,6 +265,21 @@ class SalesTest extends TestCase
             round((float) $props['revenue'], 2),
             round($series->sum(fn ($point) => (float) $point['revenue']), 2),
         );
+    }
+
+    public function test_a_utc_timestamp_is_bucketed_on_the_following_manila_date(): void
+    {
+        $this->order('2026-09-10 15:59:59', [['Before midnight', 100, 1, null]]);
+        $this->order('2026-09-10 16:00:00', [['At midnight', 200, 1, null]]);
+
+        $series = collect($this->sales([
+            'range' => SalesPeriod::CUSTOM,
+            'start' => '2026-09-10',
+            'end' => '2026-09-11',
+        ])['series']);
+
+        $this->assertSame(250.0, (float) $series->firstWhere('date', '2026-09-10')['revenue']);
+        $this->assertSame(350.0, (float) $series->firstWhere('date', '2026-09-11')['revenue']);
     }
 
     // ----- top products ------------------------------------------------------
@@ -362,6 +378,25 @@ class SalesTest extends TestCase
         $this->assertSame(450.0, (float) $props['comparison']['revenue']);
     }
 
+    public function test_comparison_periods_use_philippine_day_boundaries(): void
+    {
+        // These timestamps are one second apart in UTC but fall on consecutive
+        // Philippine dates either side of midnight.
+        $this->order('2026-09-10 15:59:59', [['Comparison', 100, 1, null]]);
+        $this->order('2026-09-10 16:00:00', [['Current', 200, 1, null]]);
+
+        $props = $this->sales([
+            'range' => SalesPeriod::CUSTOM,
+            'start' => '2026-09-11',
+            'end' => '2026-09-11',
+        ]);
+
+        $this->assertSame('2026-09-10', $props['comparison']['start']);
+        $this->assertSame('2026-09-10', $props['comparison']['end']);
+        $this->assertSame(250.0, (float) $props['comparison']['revenue']);
+        $this->assertSame(350.0, (float) $props['revenue']);
+    }
+
     public function test_an_explicit_second_range_overrides_the_prior_period(): void
     {
         $this->order('2026-09-12 09:00:00', [['BPC-157', 1000, 1, null]]);
@@ -387,6 +422,22 @@ class SalesTest extends TestCase
         $this->assertSame('2026-09-01', $props['range']['start']);
         $this->assertSame('2026-09-30', $props['range']['end']);
         $this->assertSame('September 2026', $props['range']['label']);
+    }
+
+    public function test_month_presets_follow_the_philippine_calendar(): void
+    {
+        // Still August in UTC, already September in Manila.
+        Carbon::setTestNow(Carbon::parse('2026-08-31 16:30:00', 'UTC'));
+
+        $this->order('2026-08-31 15:59:59', [['August', 9000, 1, null]]);
+        $this->order('2026-08-31 16:00:00', [['September', 1000, 1, null]]);
+
+        $props = $this->sales(['range' => SalesPeriod::THIS_MONTH]);
+
+        $this->assertSame('2026-09-01', $props['range']['start']);
+        $this->assertSame('2026-09-30', $props['range']['end']);
+        $this->assertSame('September 2026', $props['range']['label']);
+        $this->assertSame(1150.0, (float) $props['revenue']);
     }
 
     public function test_last_month_resolves_to_the_previous_calendar_month(): void
@@ -474,8 +525,8 @@ class SalesTest extends TestCase
     {
         $inside = $this->order('2026-09-10 14:30:00', [['BPC-157', 2450, 1, null]], name: 'Ana Reyes');
         $alsoInside = $this->order('2026-09-12 08:00:00', [['TB-500', 1000, 2, null]], name: 'Ben Cruz');
-        $before = $this->order('2026-08-31 23:59:00', [['BPC-157', 100, 1, null]], name: 'Too Early');
-        $after = $this->order('2026-10-01 00:01:00', [['BPC-157', 100, 1, null]], name: 'Too Late');
+        $before = $this->order('2026-08-31 15:59:00', [['BPC-157', 100, 1, null]], name: 'Too Early');
+        $after = $this->order('2026-09-30 16:00:00', [['BPC-157', 100, 1, null]], name: 'Too Late');
 
         $rows = $this->csvRows(['range' => SalesPeriod::THIS_MONTH]);
 
@@ -488,11 +539,11 @@ class SalesTest extends TestCase
 
         // Oldest first, so the file reads chronologically.
         $this->assertSame(
-            [$inside->order_number, '2026-09-10 14:30:00', 'Ana Reyes', '2600.00'],
+            [$inside->order_number, '2026-09-10 22:30:00', 'Ana Reyes', '2600.00'],
             $rows[1],
         );
         $this->assertSame(
-            [$alsoInside->order_number, '2026-09-12 08:00:00', 'Ben Cruz', '2150.00'],
+            [$alsoInside->order_number, '2026-09-12 16:00:00', 'Ben Cruz', '2150.00'],
             $rows[2],
         );
 
@@ -515,6 +566,46 @@ class SalesTest extends TestCase
         $this->assertCount(2, $rows);
         $this->assertSame($inside->order_number, $rows[1][0]);
         $this->assertSame('Inside', $rows[1][2]);
+    }
+
+    public function test_a_custom_ranges_final_philippine_day_is_consistent_everywhere(): void
+    {
+        $inside = $this->order(
+            '2026-09-25 15:59:59',
+            [['Final-day product', 1000, 1, null]],
+            name: 'Final Day',
+        );
+        $outside = $this->order(
+            '2026-09-25 16:00:00',
+            [['Next-day product', 9000, 1, null]],
+            name: 'Next Day',
+        );
+        $query = [
+            'range' => SalesPeriod::CUSTOM,
+            'start' => '2026-09-20',
+            'end' => '2026-09-25',
+        ];
+
+        $props = $this->sales($query);
+        $rows = $this->csvRows($query);
+        $orders = $this->get(route('admin.orders.index', [
+            'payment_status' => 'verified',
+            'exclude_cancelled' => 1,
+            'verified_from' => '2026-09-20',
+            'verified_to' => '2026-09-25',
+        ]))->assertOk()->inertiaProps()['orders'];
+
+        $this->assertSame(1150.0, (float) $props['revenue']);
+        $this->assertSame(1, $props['orderCount']);
+        $this->assertSame(
+            ['Final-day product'],
+            array_column($props['topProducts']['by_revenue'], 'product_name'),
+        );
+        $this->assertSame($inside->order_number, $rows[1][0]);
+        $this->assertSame('2026-09-25 23:59:59', $rows[1][1]);
+        $this->assertCount(2, $rows);
+        $this->assertSame([$inside->order_number], array_column($orders, 'order_number'));
+        $this->assertNotContains($outside->order_number, array_column($orders, 'order_number'));
     }
 
     /**

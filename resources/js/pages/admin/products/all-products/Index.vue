@@ -10,7 +10,6 @@ import {
     Check,
     ChevronRight,
     Columns3,
-    Download,
     ListFilter,
     Package,
     Plus,
@@ -121,8 +120,6 @@ const canExpandRow = (product: Product) => product.variants.length > 1;
 const columns = createProductColumns({
     onView: goToProduct,
     onEdit: (product) => router.visit(`${show(product.id).url}?edit=1`),
-    onDuplicate: (product) =>
-        router.visit(`${create().url}?from=${product.id}`),
     onDelete: requestDelete,
 });
 
@@ -571,11 +568,6 @@ watch(
                                 </DropdownMenuCheckboxItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
-
-                        <Button variant="outline" class="shrink-0">
-                            <Download />
-                            Export
-                        </Button>
                     </div>
 
                     <Button
@@ -678,10 +670,6 @@ watch(
                     @edit="
                         (product) =>
                             router.visit(`${show(product.id).url}?edit=1`)
-                    "
-                    @duplicate="
-                        (product) =>
-                            router.visit(`${create().url}?from=${product.id}`)
                     "
                     @remove="requestDelete"
                 />

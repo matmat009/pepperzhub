@@ -32,7 +32,6 @@ const DESKTOP_ONLY = {
 export type ProductColumnActions = {
     onView: (product: Product) => void;
     onEdit: (product: Product) => void;
-    onDuplicate: (product: Product) => void;
     onDelete: (product: Product) => void;
 };
 
@@ -286,7 +285,6 @@ export const createProductColumns = (
                         product: row.original,
                         onView: () => actions.onView(row.original),
                         onEdit: () => actions.onEdit(row.original),
-                        onDuplicate: () => actions.onDuplicate(row.original),
                         onRemove: () => actions.onDelete(row.original),
                     }),
                 ),

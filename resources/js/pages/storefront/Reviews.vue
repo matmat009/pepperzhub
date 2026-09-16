@@ -10,6 +10,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { useSiteSettings } from '@/composables/useSiteSettings';
 import { formatDate } from '@/pages/admin/products/all-products/types';
 import { index as catalog, show } from '@/routes/storefront/products';
 import { reviewDisplayName } from './review';
@@ -30,6 +31,12 @@ const props = defineProps<{
 
 const activeFilter = ref<ReviewFilter>('all');
 const activeReview = ref<StorefrontReview | null>(null);
+const settings = useSiteSettings();
+const shareReviewMailto = computed(() =>
+    settings.value.contact_email
+        ? `mailto:${settings.value.contact_email}?subject=Share%20my%20PepperzzHub%20experience`
+        : null,
+);
 const reviewOpen = ref(false);
 const failedImageIds = ref<Set<number>>(new Set());
 
@@ -303,7 +310,8 @@ const resetFilter = () => {
                     </p>
                 </div>
                 <a
-                    href="mailto:support@pepperzhub.ph?subject=Share%20my%20PepperzzHub%20experience"
+                    v-if="shareReviewMailto"
+                    :href="shareReviewMailto"
                     class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-sf-primary px-7 py-3 text-sm font-semibold text-white shadow-[0_8px_22px_rgba(50,70,160,0.22)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                 >
                     Share your experience

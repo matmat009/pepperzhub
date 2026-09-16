@@ -337,6 +337,38 @@ class DashboardTest extends TestCase
         $this->assertSame(2, $this->props()['stats']['orders_today']);
     }
 
+    public function test_orders_today_uses_the_philippine_midnight_boundary(): void
+    {
+        // 16:00 UTC is midnight in Manila. The second order is the first one
+        // on June 15 for the business even though both carry a June 14 UTC date.
+        Carbon::setTestNow(Carbon::parse('2026-06-14 16:30:00', 'UTC'));
+
+        $this->order(['created_at' => '2026-06-14 15:59:59']);
+        $this->order(['created_at' => '2026-06-14 16:00:00']);
+
+        $this->assertSame(1, $this->props()['stats']['orders_today']);
+    }
+
+    public function test_revenue_month_uses_the_philippine_month_boundary(): void
+    {
+        // At this instant it is already September 1 in Manila.
+        Carbon::setTestNow(Carbon::parse('2026-08-31 16:30:00', 'UTC'));
+
+        $this->order([
+            'payment_status' => 'verified',
+            'order_status' => 'completed',
+            'payment_verified_at' => '2026-08-31 15:59:59',
+        ], total: 9000);
+
+        $this->order([
+            'payment_status' => 'verified',
+            'order_status' => 'completed',
+            'payment_verified_at' => '2026-08-31 16:00:00',
+        ], total: 1500);
+
+        $this->assertSame(1500.0, $this->revenue());
+    }
+
     // ----- low stock --------------------------------------------------------
 
     public function test_low_stock_uses_the_shared_threshold_and_includes_zero(): void

@@ -77,15 +77,18 @@ class Order extends Model
      *
      * Scoped on payment_verified_at rather than created_at: revenue belongs to
      * the period the money was confirmed, not the period the order was placed.
+     * The caller supplies UTC storage boundaries: $from is inclusive and
+     * $until is the exclusive start of the next reporting period.
      *
      * @return Builder<static>
      */
-    public static function revenueQuery(CarbonInterface $from, CarbonInterface $to): Builder
+    public static function revenueQuery(CarbonInterface $from, CarbonInterface $until): Builder
     {
         return static::query()
             ->where('payment_status', 'verified')
             ->where('order_status', '!=', 'cancelled')
-            ->whereBetween('payment_verified_at', [$from, $to]);
+            ->where('payment_verified_at', '>=', $from)
+            ->where('payment_verified_at', '<', $until);
     }
 
     /**

@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\ProductVariant;
+use App\Support\ReportingTime;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,11 +26,14 @@ class DashboardController extends Controller
 
     public function index(): Response
     {
+        $today = ReportingTime::now()->startOfDay();
+
         return Inertia::render('admin/dashboard/Index', [
             'stats' => [
                 'pending_verification' => $this->pendingQuery()->count(),
                 'orders_today' => Order::query()
-                    ->whereDate('created_at', Carbon::today())
+                    ->where('created_at', '>=', ReportingTime::storage($today))
+                    ->where('created_at', '<', ReportingTime::storage($today->addDay()))
                     ->count(),
                 'revenue_this_month' => $this->revenueThisMonth(),
                 /*
@@ -76,9 +79,11 @@ class DashboardController extends Controller
      */
     private function revenueThisMonth(): float
     {
+        $month = ReportingTime::now()->startOfMonth();
+
         return (float) Order::revenueQuery(
-            Carbon::now()->startOfMonth(),
-            Carbon::now()->endOfMonth(),
+            ReportingTime::storage($month),
+            ReportingTime::storage($month->addMonth()),
         )->sum('total');
     }
 

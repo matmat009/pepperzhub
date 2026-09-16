@@ -13,8 +13,9 @@ use Carbon\CarbonImmutable;
  * at the call site is how a chart ends up covering one range while the figure
  * above it covers another.
  *
- * Bounds are inclusive and snapped to day edges. A sale at 23:50 belongs to
- * that day, and an admin picking the 1st to the 31st means the whole 31st.
+ * The displayed dates are inclusive Philippine calendar days. Database
+ * queries use the start of the first day and the exclusive start of the day
+ * after the last, converted to UTC by queryStart() and queryEndExclusive().
  */
 final class SalesPeriod
 {
@@ -49,14 +50,17 @@ final class SalesPeriod
     public static function named(string $key): self
     {
         $anchor = $key === self::LAST_MONTH
-            ? CarbonImmutable::now()->subMonthNoOverflow()
-            : CarbonImmutable::now();
+            ? ReportingTime::now()->subMonthNoOverflow()
+            : ReportingTime::now();
 
         return new self($key, $anchor->startOfMonth(), $anchor->endOfMonth());
     }
 
     public static function custom(CarbonImmutable $start, CarbonImmutable $end): self
     {
+        $start = ReportingTime::local($start);
+        $end = ReportingTime::local($end);
+
         // Swapped bounds are a slip, not an error worth a validation message:
         // the admin means the range between the two dates either way.
         if ($end->lessThan($start)) {
@@ -78,8 +82,8 @@ final class SalesPeriod
 
         if ($key === self::CUSTOM && filled($start) && filled($end)) {
             return self::custom(
-                CarbonImmutable::parse($start),
-                CarbonImmutable::parse($end),
+                ReportingTime::date($start),
+                ReportingTime::date($end),
             );
         }
 
@@ -133,6 +137,16 @@ final class SalesPeriod
         }
 
         return $days;
+    }
+
+    public function queryStart(): CarbonImmutable
+    {
+        return ReportingTime::storage($this->start->startOfDay());
+    }
+
+    public function queryEndExclusive(): CarbonImmutable
+    {
+        return ReportingTime::storage($this->end->addDay()->startOfDay());
     }
 
     /** @return array<string, mixed> */

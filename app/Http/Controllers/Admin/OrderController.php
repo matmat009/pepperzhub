@@ -7,9 +7,9 @@ use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use App\Support\OrderStatuses;
+use App\Support\ReportingTime;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -162,11 +162,19 @@ class OrderController extends Controller
             )
             ->when(
                 $filters['verified_from'],
-                fn ($query, string $date) => $query->where('payment_verified_at', '>=', Carbon::parse($date)->startOfDay()),
+                fn ($query, string $date) => $query->where(
+                    'payment_verified_at',
+                    '>=',
+                    ReportingTime::dateStartForStorage($date),
+                ),
             )
             ->when(
                 $filters['verified_to'],
-                fn ($query, string $date) => $query->where('payment_verified_at', '<=', Carbon::parse($date)->endOfDay()),
+                fn ($query, string $date) => $query->where(
+                    'payment_verified_at',
+                    '<',
+                    ReportingTime::nextDateStartForStorage($date),
+                ),
             )
             ->latest('id')
             ->get()

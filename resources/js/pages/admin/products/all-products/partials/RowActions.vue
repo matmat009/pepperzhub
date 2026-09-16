@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Copy, Eye, MoreHorizontal, Pencil, Trash2 } from '@lucide/vue';
+import { Eye, MoreHorizontal, Pencil, Trash2 } from '@lucide/vue';
 import TableActionMenuButton from '@/components/TableActionMenuButton.vue';
 import {
     DropdownMenu,
@@ -17,7 +17,6 @@ defineProps<{
 const emit = defineEmits<{
     view: [product: Product];
     edit: [product: Product];
-    duplicate: [product: Product];
     remove: [product: Product];
 }>();
 </script>
@@ -37,10 +36,6 @@ const emit = defineEmits<{
             <DropdownMenuItem @select="emit('edit', product)">
                 <Pencil />
                 Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem @select="emit('duplicate', product)">
-                <Copy />
-                Duplicate
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

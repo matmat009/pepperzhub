@@ -9,6 +9,7 @@ import {
     Truck,
 } from '@lucide/vue';
 import { computed, ref } from 'vue';
+import { useSiteSettings } from '@/composables/useSiteSettings';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
 import { index as catalog } from '@/routes/storefront/products';
 import { lookup as lookupRoute } from '@/routes/storefront/track';
@@ -49,6 +50,13 @@ const form = useForm({
     order_number: '',
     phone: '',
 });
+
+const settings = useSiteSettings();
+const supportMailto = computed(() =>
+    settings.value.contact_email
+        ? `mailto:${settings.value.contact_email}`
+        : null,
+);
 
 const found = computed(() => props.result !== null);
 
@@ -196,11 +204,13 @@ const fieldClass =
                     </div>
                     <p class="mt-1 text-[15px] leading-[1.6] text-sf-muted">
                         We couldn't match that order number and phone number.
-                        Double-check both, or reach us at
-                        <a
-                            href="mailto:support@pepperzhub.ph"
-                            class="font-semibold text-sf-primary hover:text-sf-primary-hover"
-                            >support@pepperzhub.ph</a
+                        Double-check both<template v-if="supportMailto"
+                            >, or reach us at
+                            <a
+                                :href="supportMailto"
+                                class="font-semibold text-sf-primary hover:text-sf-primary-hover"
+                                >{{ settings.contact_email }}</a
+                            ></template
                         >.
                     </p>
                 </div>
@@ -213,7 +223,8 @@ const fieldClass =
                     Can’t find your order number? Check your order confirmation.
                 </p>
                 <a
-                    href="mailto:support@pepperzhub.ph"
+                    v-if="supportMailto"
+                    :href="supportMailto"
                     class="mt-2 inline-block font-medium text-sf-primary transition-colors duration-200 ease-out hover:text-sf-primary-hover"
                 >
                     Message us for help

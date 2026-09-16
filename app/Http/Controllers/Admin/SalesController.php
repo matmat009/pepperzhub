@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Support\ReportingTime;
 use App\Support\SalesPeriod;
-use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -41,7 +42,7 @@ class SalesController extends Controller
         return Inertia::render('admin/sales/Index', [
             'range' => $period->toArray(),
             'revenue' => $this->revenue($period),
-            'orderCount' => Order::revenueQuery($period->start, $period->end)->count(),
+            'orderCount' => $this->orders($period)->count(),
             'comparison' => [
                 ...$comparison->toArray(),
                 'revenue' => $this->revenue($comparison),
@@ -86,7 +87,7 @@ class SalesController extends Controller
 
             fputcsv($handle, ['Order Number', 'Date Verified', 'Customer', 'Total']);
 
-            Order::revenueQuery($period->start, $period->end)
+            $this->orders($period)
                 ->orderBy('payment_verified_at')
                 ->orderBy('id')
                 // Chunked for the same reason it is streamed.
@@ -94,7 +95,9 @@ class SalesController extends Controller
                     foreach ($orders as $order) {
                         fputcsv($handle, [
                             $order->order_number,
-                            $order->payment_verified_at?->toDateTimeString(),
+                            $order->payment_verified_at
+                                ? ReportingTime::local($order->payment_verified_at)->toDateTimeString()
+                                : null,
                             $order->name,
                             // Unformatted: this is a number a spreadsheet has
                             // to be able to sum, not a label to read.
@@ -143,8 +146,8 @@ class SalesController extends Controller
 
         if (filled($start) && filled($end)) {
             return $this->clamp(SalesPeriod::custom(
-                CarbonImmutable::parse($start),
-                CarbonImmutable::parse($end),
+                ReportingTime::date($start),
+                ReportingTime::date($end),
             ));
         }
 
@@ -172,7 +175,16 @@ class SalesController extends Controller
 
     private function revenue(SalesPeriod $period): float
     {
-        return (float) Order::revenueQuery($period->start, $period->end)->sum('total');
+        return (float) $this->orders($period)->sum('total');
+    }
+
+    /** @return Builder<Order> */
+    private function orders(SalesPeriod $period): Builder
+    {
+        return Order::revenueQuery(
+            $period->queryStart(),
+            $period->queryEndExclusive(),
+        );
     }
 
     /**
@@ -189,10 +201,12 @@ class SalesController extends Controller
     {
         $totals = array_fill_keys($period->days(), 0.0);
 
-        Order::revenueQuery($period->start, $period->end)
+        $this->orders($period)
             ->get(['payment_verified_at', 'total'])
             ->each(function (Order $order) use (&$totals): void {
-                $day = $order->payment_verified_at?->toDateString();
+                $day = $order->payment_verified_at
+                    ? ReportingTime::local($order->payment_verified_at)->toDateString()
+                    : null;
 
                 if ($day !== null && array_key_exists($day, $totals)) {
                     $totals[$day] += (float) $order->total;
@@ -227,7 +241,7 @@ class SalesController extends Controller
         $rows = OrderItem::query()
             ->whereIn(
                 'order_id',
-                Order::revenueQuery($period->start, $period->end)->select('id'),
+                $this->orders($period)->select('id'),
             )
             ->groupBy('product_name')
             ->select('product_name')

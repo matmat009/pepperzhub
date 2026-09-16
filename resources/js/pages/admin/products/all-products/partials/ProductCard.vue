@@ -26,7 +26,6 @@ const emit = defineEmits<{
     open: [product: Product];
     view: [product: Product];
     edit: [product: Product];
-    duplicate: [product: Product];
     remove: [product: Product];
 }>();
 
@@ -100,7 +99,6 @@ const formatCount = computed(() => props.product.variants.length);
                     :product="product"
                     @view="emit('view', product)"
                     @edit="emit('edit', product)"
-                    @duplicate="emit('duplicate', product)"
                     @remove="emit('remove', product)"
                 />
             </span>

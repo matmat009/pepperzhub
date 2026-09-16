@@ -120,6 +120,47 @@ class SiteSettingsTest extends TestCase
             );
     }
 
+    public function test_track_order_and_reviews_use_the_shared_support_email(): void
+    {
+        SiteSetting::current()->update(['contact_email' => 'help@pepperzhub.ph']);
+
+        foreach (['storefront.track', 'storefront.reviews'] as $name) {
+            $this->get(route($name))
+                ->assertOk()
+                ->assertInertia(fn ($page) => $page
+                    ->where('siteSettings.contact_email', 'help@pepperzhub.ph')
+                );
+        }
+
+        $track = file_get_contents(resource_path('js/pages/storefront/TrackOrder.vue'));
+        $reviews = file_get_contents(resource_path('js/pages/storefront/Reviews.vue'));
+
+        foreach ([$track, $reviews] as $page) {
+            $this->assertStringContainsString("from '@/composables/useSiteSettings'", $page);
+            $this->assertStringContainsString('settings.value.contact_email', $page);
+            $this->assertStringNotContainsString('support@pepperzhub.ph', $page);
+        }
+
+        $this->assertStringContainsString(':href="supportMailto"', $track);
+        $this->assertStringContainsString('{{ settings.contact_email }}', $track);
+        $this->assertStringContainsString('v-if="shareReviewMailto"', $reviews);
+        $this->assertStringContainsString(':href="shareReviewMailto"', $reviews);
+        $this->assertStringContainsString(
+            'subject=Share%20my%20PepperzzHub%20experience',
+            $reviews,
+        );
+
+        SiteSetting::current()->update(['contact_email' => null]);
+
+        foreach (['storefront.track', 'storefront.reviews'] as $name) {
+            $this->get(route($name))
+                ->assertOk()
+                ->assertInertia(fn ($page) => $page
+                    ->where('siteSettings.contact_email', null)
+                );
+        }
+    }
+
     /**
      * An unset field reaches the client as null, never as an empty string.
      *
