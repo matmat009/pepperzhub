@@ -6,7 +6,6 @@ import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import SiteSettingController from '@/actions/App/Http/Controllers/Settings/SiteSettingController';
-import DeleteUser from '@/components/DeleteUser.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -222,6 +221,4 @@ const siteSettings = useSiteSettings();
             </div>
         </Form>
     </div>
-
-    <DeleteUser />
 </template>

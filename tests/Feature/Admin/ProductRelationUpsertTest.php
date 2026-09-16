@@ -7,6 +7,8 @@ use App\Models\Product;
 use App\Models\ProductTechnicalDetail;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -261,5 +263,39 @@ class ProductRelationUpsertTest extends TestCase
         $this->assertSame('Foreign vial', $foreign->refresh()->label);
         $this->assertSame($other->id, $foreign->product_id);
         $this->assertCount(4, $product->refresh()->variants);
+    }
+
+    public function test_a_product_image_is_stored_on_the_public_disk(): void
+    {
+        Storage::fake('public');
+        $product = $this->product();
+
+        $this->put(route('admin.products.update', $product), $this->payload($product, [
+            'new_images' => [UploadedFile::fake()->image('product.jpg')],
+        ]))->assertSessionHasNoErrors();
+
+        $path = $product->fresh()->images()->sole()->path;
+
+        Storage::disk('public')->assertExists($path);
+    }
+
+    public function test_a_failed_product_image_write_rejects_the_update(): void
+    {
+        $product = $this->product();
+        $this->failStorageWrites('public');
+
+        $this
+            ->from(route('admin.products.show', $product))
+            ->put(route('admin.products.update', $product), $this->payload($product, [
+                'name' => 'This must roll back',
+                'new_images' => [UploadedFile::fake()->image('product.jpg')],
+            ]))
+            ->assertRedirect(route('admin.products.show', $product))
+            ->assertSessionHasErrors([
+                'new_images' => "We couldn't save the product image. Please try again.",
+            ]);
+
+        $this->assertSame('BPC-157', $product->fresh()->name);
+        $this->assertDatabaseCount('product_images', 0);
     }
 }

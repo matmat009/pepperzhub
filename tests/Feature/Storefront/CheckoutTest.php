@@ -193,6 +193,30 @@ class CheckoutTest extends TestCase
         $this->assertCount(1, Storage::disk('local')->files('payment-proofs'));
     }
 
+    public function test_a_failed_payment_proof_write_rejects_checkout_without_side_effects(): void
+    {
+        $this->failStorageWrites('local');
+        $variant = $this->variant(stock: 10);
+        $cart = [$variant->id => 2];
+
+        $response = $this
+            ->withSession([SessionCart::SESSION_KEY => $cart])
+            ->from(route('storefront.checkout'))
+            ->post(route('storefront.checkout.store'), $this->payload());
+
+        $response
+            ->assertRedirect(route('storefront.checkout'))
+            ->assertSessionHasErrors([
+                'payment_proof' => "We couldn't save your uploaded payment proof. Please try again.",
+            ])
+            ->assertSessionHas(SessionCart::SESSION_KEY, $cart);
+
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('order_items', 0);
+        $this->assertDatabaseCount('stock_movements', 0);
+        $this->assertSame(10, (int) $variant->fresh()->stock);
+    }
+
     public function test_an_inactive_region_is_rejected(): void
     {
         Storage::fake('local');

@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
@@ -137,9 +138,9 @@ class CheckoutController extends Controller
          * updated afterwards - a window in which a failure left a real order
          * with no proof attached.
          *
-         * If this throws, nothing else has happened and there is nothing to
-         * clean up. If the transaction below throws, the catch deletes the file
-         * rather than orphaning it on disk.
+         * If this write fails, nothing else has happened and there is nothing
+         * to clean up. If the transaction below throws, the catch deletes the
+         * file rather than orphaning it on disk.
          */
         $file = $request->file('payment_proof');
         $proofPath = $file->storeAs(
@@ -147,6 +148,12 @@ class CheckoutController extends Controller
             Str::uuid()->toString().'.'.$file->extension(),
             'local',
         );
+
+        if ($proofPath === false) {
+            throw ValidationException::withMessages([
+                'payment_proof' => "We couldn't save your uploaded payment proof. Please try again.",
+            ]);
+        }
 
         try {
             $order = DB::transaction(function () use ($cart, $validated, $proofPath, &$shortfalls): ?Order {

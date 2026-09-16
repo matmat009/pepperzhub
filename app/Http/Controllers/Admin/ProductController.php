@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
@@ -403,8 +404,16 @@ class ProductController extends Controller
         $offset = count($keptIds);
 
         foreach ($request->file('new_images', []) as $index => $file) {
+            $path = $file->store('products', 'public');
+
+            if ($path === false) {
+                throw ValidationException::withMessages([
+                    'new_images' => "We couldn't save the product image. Please try again.",
+                ]);
+            }
+
             $product->images()->create([
-                'path' => $file->store('products', 'public'),
+                'path' => $path,
                 'sort_order' => $offset + $index,
             ]);
         }

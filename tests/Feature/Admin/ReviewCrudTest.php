@@ -121,6 +121,46 @@ class ReviewCrudTest extends TestCase
         Storage::disk('public')->assertExists($path);
     }
 
+    public function test_a_failed_photo_write_rejects_the_create(): void
+    {
+        $this->failStorageWrites('public');
+
+        $this
+            ->from(route('admin.reviews.index'))
+            ->post(route('admin.reviews.store'), $this->payload([
+                'image' => UploadedFile::fake()->image('review.jpg'),
+            ]))
+            ->assertRedirect(route('admin.reviews.index'))
+            ->assertSessionHasErrors([
+                'image' => "We couldn't save the review image. Please try again.",
+            ]);
+
+        $this->assertDatabaseCount('reviews', 0);
+    }
+
+    public function test_a_failed_photo_write_rolls_back_the_review_update(): void
+    {
+        $this->post(route('admin.reviews.store'), $this->payload());
+        $review = Review::sole();
+        $this->failStorageWrites('public');
+
+        $this
+            ->from(route('admin.reviews.index'))
+            ->put(route('admin.reviews.update', $review), $this->payload([
+                'title' => 'This must roll back',
+                'image' => UploadedFile::fake()->image('review.jpg'),
+            ]))
+            ->assertRedirect(route('admin.reviews.index'))
+            ->assertSessionHasErrors([
+                'image' => "We couldn't save the review image. Please try again.",
+            ]);
+
+        $review->refresh();
+
+        $this->assertSame('Great results', $review->title);
+        $this->assertNull($review->image_path);
+    }
+
     /**
      * Same guarantee as the payment method QR code: replacing the file must not
      * leave the previous one orphaned on disk.

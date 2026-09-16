@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\PaymentMethodRequest;
 use App\Models\PaymentMethod;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -64,9 +66,11 @@ class PaymentMethodController extends Controller
 
     public function store(PaymentMethodRequest $request): RedirectResponse
     {
-        $method = PaymentMethod::create($this->attributes($request));
+        DB::transaction(function () use ($request) {
+            $method = PaymentMethod::create($this->attributes($request));
 
-        $this->syncQrCode($method, $request);
+            $this->syncQrCode($method, $request);
+        });
 
         $this->toast('Payment method created.');
 
@@ -75,9 +79,11 @@ class PaymentMethodController extends Controller
 
     public function update(PaymentMethodRequest $request, PaymentMethod $paymentMethod): RedirectResponse
     {
-        $paymentMethod->update($this->attributes($request));
+        DB::transaction(function () use ($request, $paymentMethod) {
+            $paymentMethod->update($this->attributes($request));
 
-        $this->syncQrCode($paymentMethod, $request);
+            $this->syncQrCode($paymentMethod, $request);
+        });
 
         $this->toast('Payment method updated.');
 
@@ -137,12 +143,24 @@ class PaymentMethodController extends Controller
             return;
         }
 
+        $qrCodePath = null;
+
+        if ($file) {
+            $qrCodePath = $file->store('payment-methods', 'public');
+
+            if ($qrCodePath === false) {
+                throw ValidationException::withMessages([
+                    'qr_code' => "We couldn't save the payment method QR code. Please try again.",
+                ]);
+            }
+        }
+
         if ($method->qr_code_path) {
             Storage::disk('public')->delete($method->qr_code_path);
         }
 
         $method->update([
-            'qr_code_path' => $file ? $file->store('payment-methods', 'public') : null,
+            'qr_code_path' => $qrCodePath,
         ]);
     }
 }

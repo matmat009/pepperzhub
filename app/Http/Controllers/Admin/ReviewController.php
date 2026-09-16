@@ -7,7 +7,9 @@ use App\Http\Requests\Admin\ReviewRequest;
 use App\Models\Product;
 use App\Models\Review;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -68,9 +70,11 @@ class ReviewController extends Controller
 
     public function store(ReviewRequest $request): RedirectResponse
     {
-        $review = Review::create($this->attributes($request));
+        DB::transaction(function () use ($request) {
+            $review = Review::create($this->attributes($request));
 
-        $this->syncImage($review, $request);
+            $this->syncImage($review, $request);
+        });
 
         $this->toast('Review created.');
 
@@ -79,9 +83,11 @@ class ReviewController extends Controller
 
     public function update(ReviewRequest $request, Review $review): RedirectResponse
     {
-        $review->update($this->attributes($request));
+        DB::transaction(function () use ($request, $review) {
+            $review->update($this->attributes($request));
 
-        $this->syncImage($review, $request);
+            $this->syncImage($review, $request);
+        });
 
         $this->toast('Review updated.');
 
@@ -156,12 +162,24 @@ class ReviewController extends Controller
             return;
         }
 
+        $imagePath = null;
+
+        if ($file) {
+            $imagePath = $file->store('reviews', 'public');
+
+            if ($imagePath === false) {
+                throw ValidationException::withMessages([
+                    'image' => "We couldn't save the review image. Please try again.",
+                ]);
+            }
+        }
+
         if ($review->image_path) {
             Storage::disk('public')->delete($review->image_path);
         }
 
         $review->update([
-            'image_path' => $file ? $file->store('reviews', 'public') : null,
+            'image_path' => $imagePath,
         ]);
     }
 }

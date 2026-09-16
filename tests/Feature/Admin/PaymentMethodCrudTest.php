@@ -128,6 +128,45 @@ class PaymentMethodCrudTest extends TestCase
         Storage::disk('public')->assertExists($path);
     }
 
+    public function test_a_failed_qr_code_write_rejects_the_create(): void
+    {
+        $this->failStorageWrites('public');
+
+        $this
+            ->from(route('admin.payment-methods.index'))
+            ->post(route('admin.payment-methods.store'), $this->payload([
+                'qr_code' => UploadedFile::fake()->image('qr.png'),
+            ]))
+            ->assertRedirect(route('admin.payment-methods.index'))
+            ->assertSessionHasErrors([
+                'qr_code' => "We couldn't save the payment method QR code. Please try again.",
+            ]);
+
+        $this->assertDatabaseCount('payment_methods', 0);
+    }
+
+    public function test_a_failed_qr_code_write_rolls_back_the_payment_method_update(): void
+    {
+        $method = PaymentMethod::create($this->payload());
+        $this->failStorageWrites('public');
+
+        $this
+            ->from(route('admin.payment-methods.index'))
+            ->put(route('admin.payment-methods.update', $method), $this->payload([
+                'name' => 'This must roll back',
+                'qr_code' => UploadedFile::fake()->image('qr.png'),
+            ]))
+            ->assertRedirect(route('admin.payment-methods.index'))
+            ->assertSessionHasErrors([
+                'qr_code' => "We couldn't save the payment method QR code. Please try again.",
+            ]);
+
+        $method->refresh();
+
+        $this->assertSame('GOtyme Bank', $method->name);
+        $this->assertNull($method->qr_code_path);
+    }
+
     public function test_replacing_a_qr_code_deletes_the_previous_file(): void
     {
         Storage::fake('public');
