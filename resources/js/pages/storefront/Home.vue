@@ -11,7 +11,10 @@ import {
 import { computed, ref } from 'vue';
 import ProductCard from '@/components/storefront/ProductCard.vue';
 import type { Product } from '@/pages/admin/products/all-products/types';
-import { reviews as reviewsPage } from '@/routes/storefront';
+import {
+    reviews as reviewsPage,
+    track as trackOrder,
+} from '@/routes/storefront';
 import { index as catalog } from '@/routes/storefront/products';
 import { reviewDisplayName } from './review';
 import type { StorefrontReview } from './review';
@@ -79,16 +82,6 @@ const usps = [
         tone: 'text-sf-primary',
     },
 ];
-
-const email = ref('');
-const subscribed = ref(false);
-
-const subscribe = () => {
-    if (email.value.trim()) {
-        subscribed.value = true;
-        email.value = '';
-    }
-};
 </script>
 
 <template>
@@ -344,58 +337,72 @@ const subscribe = () => {
         </div>
     </section>
 
-    <section class="mx-auto w-full max-w-[1680px] px-5 pt-15 pb-24 sm:px-10">
+    <section class="relative isolate mt-15 w-full py-12 sm:py-14 lg:py-18">
         <div
-            class="grid grid-cols-1 overflow-hidden rounded-2xl border border-sf-line bg-white shadow-[0_16px_40px_rgba(30,35,60,0.08)] lg:grid-cols-2"
-        >
+            aria-hidden="true"
+            class="explore-cta-background pointer-events-none absolute inset-0 z-0"
+        />
+
+        <div class="relative z-10 mx-auto w-full max-w-[1680px] px-5 sm:px-10">
             <div
-                class="grid min-h-[280px] place-items-center bg-[linear-gradient(135deg,oklch(0.94_0.02_240),oklch(0.96_0.025_14))]"
+                class="grid items-center gap-10 px-7 sm:px-12 lg:grid-cols-[minmax(0,1fr)_clamp(17rem,27vw,23rem)] lg:px-16 xl:gap-14 xl:px-24"
             >
-                <img
-                    src="/images/branding/pepperzhub-emblem.png"
-                    alt=""
-                    aria-hidden="true"
-                    class="w-[220px] max-w-[70%] opacity-90"
-                />
-            </div>
-            <div
-                class="flex flex-col items-start justify-center gap-3 px-13 py-12"
-            >
-                <h2
-                    class="font-display text-3xl font-semibold tracking-[-0.02em] text-sf-ink"
-                >
-                    Stay Updated
-                </h2>
-                <p class="text-base leading-[1.6] text-sf-muted italic">
-                    Get the latest updates, new product drops, and exclusive
-                    offers.
-                </p>
-                <form
-                    class="mt-3 flex w-full flex-wrap gap-2.5"
-                    @submit.prevent="subscribe"
-                >
-                    <input
-                        v-model="email"
-                        type="email"
-                        required
-                        placeholder="Enter your email"
-                        class="min-w-[220px] flex-1 rounded-full border border-sf-line-strong px-[22px] py-3.5 text-[15px] text-sf-ink transition-colors duration-200 ease-out outline-none focus:border-sf-primary"
-                    />
-                    <button
-                        type="submit"
-                        class="inline-flex items-center gap-2.5 rounded-full bg-sf-primary px-[30px] py-3.5 text-[15px] font-medium text-white transition-colors duration-200 ease-out hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                <div class="flex min-w-0 flex-col items-center text-center">
+                    <div
+                        class="flex items-center justify-center gap-4 text-[11px] font-semibold tracking-[0.34em] text-sf-primary uppercase sm:text-xs"
                     >
-                        Subscribe
-                        <ArrowRight class="size-[15px]" />
-                    </button>
-                </form>
-                <span
-                    v-if="subscribed"
-                    class="text-sm text-sf-success italic"
-                    role="status"
+                        <span class="h-px w-10 bg-sf-primary/40 sm:w-14" />
+                        <span>Ready to explore</span>
+                        <span class="h-px w-10 bg-sf-primary/40 sm:w-14" />
+                    </div>
+
+                    <h2
+                        class="mt-7 font-display text-[clamp(2.45rem,5vw,4.75rem)] leading-[1.05] font-medium tracking-[-0.035em] text-balance text-sf-ink"
+                    >
+                        <span class="block">Find the right products</span>
+                        <span class="mt-1 block text-sf-primary italic">
+                            for your research.
+                        </span>
+                    </h2>
+
+                    <p
+                        class="mt-6 max-w-[720px] text-[15px] leading-[1.8] text-sf-muted sm:text-[17px]"
+                    >
+                        Browse peptide products, review product details, and
+                        place your order through our simple checkout flow. You
+                        can also track your order anytime after confirmation.
+                    </p>
+
+                    <div
+                        class="mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-4"
+                    >
+                        <Link
+                            :href="catalog()"
+                            class="inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-sf-primary px-8 py-3.5 text-[15px] font-medium text-white shadow-[0_8px_22px_rgba(50,70,160,0.22)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-sf-primary-deep hover:shadow-[0_12px_28px_rgba(50,70,160,0.3)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sf-primary sm:min-w-56"
+                        >
+                            Browse Products
+                            <ArrowRight class="size-4" aria-hidden="true" />
+                        </Link>
+
+                        <Link
+                            :href="trackOrder()"
+                            class="inline-flex min-h-12 items-center justify-center rounded-full border border-sf-primary bg-white/65 px-8 py-3.5 text-[15px] font-medium text-sf-primary transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sf-primary sm:min-w-48"
+                        >
+                            Track Order
+                        </Link>
+                    </div>
+                </div>
+
+                <div
+                    aria-hidden="true"
+                    class="relative mx-auto h-[270px] w-full max-w-[320px] sm:h-[320px] lg:h-[370px] lg:max-w-none"
                 >
-                    Thanks — you're on the list.
-                </span>
+                    <img
+                        src="/images/storefront/research-vials.png"
+                        alt=""
+                        class="absolute inset-0 size-full object-contain object-bottom"
+                    />
+                </div>
             </div>
         </div>
     </section>
@@ -418,5 +425,27 @@ const subscribe = () => {
             white 48%,
             var(--sf-hero-rose) 100%
         );
+}
+
+.explore-cta-background {
+    background:
+        linear-gradient(
+            to bottom,
+            white 0%,
+            rgb(255 255 255 / 0.98) 18%,
+            rgb(255 255 255 / 0.72) 48%,
+            transparent 80%
+        ),
+        radial-gradient(
+            ellipse 82% 92% at 0% 100%,
+            var(--sf-hero-blue) 0%,
+            transparent 72%
+        ),
+        radial-gradient(
+            ellipse 82% 92% at 100% 100%,
+            var(--sf-hero-rose) 0%,
+            transparent 72%
+        ),
+        white;
 }
 </style>

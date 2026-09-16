@@ -53,6 +53,66 @@ final result: blocked
 
 ---
 
+# Homepage product-browsing CTA design QA
+
+## Comparison target
+
+- Source visual truth: `C:\Users\mathe\Downloads\ChatGPT Image Sep 16, 2026, 04_36_56 PM.png`.
+- Source dimensions: 1672 × 941 pixels.
+- Implementation route: `/`.
+- Implementation screenshot: unavailable — the configured browser runtime reported `No browser is available` and exposed no browser session.
+- Intended comparison viewport: a desktop viewport comparable to the reference, plus a narrow mobile viewport at device scale factor 1.
+- State: homepage with the review showcase followed by the product-browsing CTA and footer.
+- Density normalization: unavailable because the implementation could not be browser-rendered.
+
+## Full-view comparison evidence
+
+The source image was opened at original resolution. The implementation was reviewed in source, compiled successfully, and served successfully at `/`, but no browser-rendered implementation screenshot could be captured. A valid combined source/implementation comparison was therefore not possible.
+
+## Focused-region comparison evidence
+
+Blocked with the full-view comparison. The panel proportions, heading wraps, two-vial overlap, image blending, button alignment, mobile stacking, and boundary with the footer still require browser-rendered focused comparisons.
+
+## Findings
+
+- [P1] Browser-rendered visual and interaction evidence is missing.
+  - Location: homepage product-browsing CTA, desktop and mobile.
+  - Evidence: Laravel and Vite respond successfully and all static/automated checks pass, but the browser runtime exposed no available browser session.
+  - Impact: exact typography, spacing, gradient balance, vial crop/tint, responsive wrapping, horizontal overflow, focus appearance, link navigation, and browser console errors cannot be signed off visually.
+  - Fix: capture the live homepage at desktop and mobile sizes, activate both links, combine each implementation capture with the source image, and repeat QA until no P0/P1/P2 issues remain.
+
+## Required fidelity surfaces
+
+- Fonts and typography: the CTA uses the storefront's existing Lora display/body system, a letter-spaced uppercase eyebrow, a responsive two-line heading, and the requested italic Blue Serenity second line. Rendered optical weight and wrapping verification is blocked.
+- Spacing and layout rhythm: the wide rounded panel preserves the section's existing position, uses generous responsive padding, a text-plus-artwork desktop grid, stacked mobile content, pill actions, and restrained border/shadow treatment. Rendered proportions and overflow verification are blocked.
+- Colors and visual tokens: the panel uses the existing Blue Serenity and Rose Quartz hero tokens fading through white; actions, borders, copy, and focus rings use existing `sf-*` tokens. Rendered color matching is blocked.
+- Image quality and asset fidelity: a clean existing standalone blue-cap vial asset was copied into the static storefront asset set, reused at two scales, and hue-shifted for the shorter Rose Quartz-cap vial. Both images are decorative with empty alternative text. Rendered crop, blend quality, and edge treatment are blocked.
+- Copy and content: the eyebrow, two-line heading, description, and button labels match the requested text exactly. The buttons use generated Wayfinder helpers for the existing Products and Track Order routes, and the old newsletter content and local state are removed.
+
+## Comparison history
+
+- Initial pass: blocked before visual comparison because no browser session was available. No browser-rendered implementation image exists, so there is no post-fix visual evidence.
+
+## Primary interaction and verification coverage
+
+- Source inspection confirms both CTA actions remain semantic Inertia links with visible hover and focus styles, the vial composition is `aria-hidden`, and the button/artwork layout stacks without fixed panel height.
+- Route inspection confirms `catalog()` resolves to `storefront.products.index` and `trackOrder()` resolves to `storefront.track`.
+- The removed `Stay Updated`, `Subscribe`, email-model, and subscription-state strings no longer occur in the homepage component.
+- TypeScript, ESLint, Prettier, Pint, production build, and the full Laravel test suite passed.
+- Browser interaction testing and console-error inspection: blocked.
+
+## Implementation checklist
+
+- Capture the CTA at a desktop viewport comparable to 1672 × 941 and compare the complete panel with the source.
+- Capture a narrow mobile viewport and inspect heading/button wrapping, artwork scale, and horizontal overflow.
+- Activate Browse Products and Track Order by pointer and keyboard and confirm focus visibility and destinations.
+- Inspect the two-vial crop, Rose Quartz tint, white-background blending, and browser console.
+- Resolve any rendered P0/P1/P2 differences and update this report.
+
+final result: blocked
+
+---
+
 # Storefront Cart thumbnail containment design QA
 
 - Source visual truth path: user-attached storefront Cart clipping screenshot in the current request (conversation attachment; no local filesystem path was exposed).
