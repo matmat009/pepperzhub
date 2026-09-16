@@ -6,14 +6,15 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Review;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
  * What reaches a public page, and what does not.
  *
- * Two surfaces show reviews — the product detail page and the standalone
- * /reviews list — so every rule here is asserted against both. An inactive
- * review passing on one page and not the other would be the bug worth catching.
+ * Three surfaces show reviews — product details, the standalone /reviews list,
+ * and the homepage showcase. An inactive review passing on one page and not
+ * the others would be the bug worth catching.
  */
 class ReviewVisibilityTest extends TestCase
 {
@@ -195,5 +196,72 @@ class ReviewVisibilityTest extends TestCase
     public function test_the_reviews_page_is_public(): void
     {
         $this->get(route('storefront.reviews'))->assertOk();
+    }
+
+    // ----- homepage showcase ------------------------------------------------
+
+    public function test_the_homepage_shows_the_three_newest_active_reviews(): void
+    {
+        $longDescription = str_repeat('A detailed customer review. ', 24);
+        $oldest = $this->review(['title' => 'Oldest']);
+        $second = $this->review(['title' => 'Second newest']);
+        $third = $this->review(['title' => 'Third newest']);
+        $newest = $this->review([
+            'title' => 'Newest',
+            'description' => $longDescription,
+        ]);
+        $hidden = $this->review([
+            'title' => 'Unpublished newest',
+            'is_active' => false,
+        ]);
+
+        foreach ([$oldest, $second, $third, $newest, $hidden] as $index => $review) {
+            $review->forceFill(['created_at' => now()->addMinutes($index)])->save();
+        }
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertInertia(
+                fn ($page) => $page
+                    ->has('reviews', 3)
+                    ->where('reviews.0.title', 'Newest')
+                    ->where('reviews.0.description', $longDescription)
+                    ->where('reviews.1.title', 'Third newest')
+                    ->where('reviews.2.title', 'Second newest')
+            );
+    }
+
+    public function test_the_homepage_review_payload_uses_public_images_and_preserves_anonymity(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('reviews/customer-note.jpg', 'image');
+
+        $this->review([
+            'customer_name' => null,
+            'title' => 'Anonymous note',
+            'image_path' => 'reviews/customer-note.jpg',
+        ]);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertInertia(
+                fn ($page) => $page
+                    ->has('reviews', 1)
+                    ->where('reviews.0.customer_name', null)
+                    ->where(
+                        'reviews.0.image_url',
+                        Storage::disk('public')->url('reviews/customer-note.jpg'),
+                    )
+                    ->missing('reviews.0.image_path')
+            );
+    }
+
+    public function test_the_homepage_sends_no_review_cards_when_none_are_published(): void
+    {
+        $this->review(['is_active' => false]);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->has('reviews', 0));
     }
 }

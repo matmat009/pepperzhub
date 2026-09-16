@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/dialog';
 import { formatDate } from '@/pages/admin/products/all-products/types';
 import { index as catalog, show } from '@/routes/storefront/products';
+import { reviewDisplayName } from './review';
+import type { StorefrontReview } from './review';
 
 /**
  * Payload from App\Http\Controllers\Storefront\ReviewController.
@@ -20,18 +22,6 @@ import { index as catalog, show } from '@/routes/storefront/products';
  * client-side. There is no rating or verified-purchase field in the model;
  * neither is inferred here.
  */
-type StorefrontReview = {
-    id: number;
-    customer_name: string | null;
-    title: string;
-    description: string;
-    created_at: string | null;
-    image_url: string | null;
-    /** Null for an untagged review, and for one whose product was deleted. */
-    product_name: string | null;
-    product_slug: string | null;
-};
-
 type ReviewFilter = 'all' | 'photos' | 'notes';
 
 const props = defineProps<{
@@ -70,11 +60,11 @@ const reviewCount = computed(() => {
     return `${count} ${count === 1 ? 'review' : 'reviews'}`;
 });
 
-const displayName = (review: StorefrontReview) =>
-    review.customer_name?.trim() || 'Anonymous reviewer';
-
 const initials = (review: StorefrontReview) => {
-    const parts = displayName(review).split(/\s+/).filter(Boolean).slice(0, 2);
+    const parts = reviewDisplayName(review)
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2);
 
     return parts
         .map((part) => part.charAt(0))
@@ -186,7 +176,7 @@ const resetFilter = () => {
                             <p
                                 class="text-[13px] leading-snug font-medium break-words text-sf-ink"
                             >
-                                {{ displayName(review) }}
+                                {{ reviewDisplayName(review) }}
                             </p>
                             <time
                                 v-if="review.created_at"
@@ -216,7 +206,7 @@ const resetFilter = () => {
                         <img
                             v-if="hasPhoto(review)"
                             :src="review.image_url ?? ''"
-                            :alt="`Photo shared with ${displayName(review)}'s review`"
+                            :alt="`Photo shared with ${reviewDisplayName(review)}'s review`"
                             class="size-full rounded-md object-contain"
                             loading="lazy"
                             @error="markImageFailed(review.id)"
@@ -338,7 +328,7 @@ const resetFilter = () => {
                     <DialogDescription
                         class="flex flex-wrap items-center gap-x-2 gap-y-1 pt-1 text-[13px] text-sf-muted"
                     >
-                        <span>{{ displayName(activeReview) }}</span>
+                        <span>{{ reviewDisplayName(activeReview) }}</span>
                         <span v-if="activeReview.created_at" aria-hidden="true">
                             ·
                         </span>
@@ -357,7 +347,7 @@ const resetFilter = () => {
                 >
                     <img
                         :src="activeReview.image_url ?? ''"
-                        :alt="`Photo shared with ${displayName(activeReview)}'s review`"
+                        :alt="`Photo shared with ${reviewDisplayName(activeReview)}'s review`"
                         class="max-h-[55vh] w-full object-contain"
                         @error="markImageFailed(activeReview.id)"
                     />

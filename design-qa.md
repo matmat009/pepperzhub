@@ -757,3 +757,63 @@ Blocked with the full-view comparison. The hero/search proportions, category pil
 - Run combined source/implementation comparisons and resolve any P0/P1/P2 differences.
 
 final result: blocked
+
+---
+
+# Homepage review showcase design QA
+
+## Comparison target
+
+- Source visual truth: user-attached homepage review-showcase reference in the current request (conversation attachment; no local filesystem path was exposed).
+- Source dimensions: 1615 × 678 pixels.
+- Implementation route: `/`.
+- Implementation screenshot: unavailable — the configured browser runtime reported `No browser is available` and exposed no browser session.
+- Intended comparison viewport: a desktop viewport comparable to the reference, plus a narrow mobile viewport at device scale factor 1.
+- State: current live data with two eligible image reviews; photo, no-photo, long-copy, three-review, fewer-than-three, and zero-review states also requested.
+- Density normalization: unavailable because the implementation could not be browser-rendered.
+
+## Full-view comparison evidence
+
+The source reference was visible in the request. The implementation was reviewed in source, compiled successfully, and served successfully at `/`, but no browser-rendered implementation image could be captured. A valid combined visual comparison was therefore not possible.
+
+## Focused-region comparison evidence
+
+Blocked with the full-view comparison. The header/divider, outlined Reviews link, three-column card proportions, real-image containment, quote fallback, long-copy truncation, and mobile stacking still require browser-rendered focused comparisons.
+
+## Findings
+
+- [P1] Browser-rendered visual and interaction evidence is missing.
+  - Location: homepage review showcase, desktop and mobile.
+  - Evidence: Laravel and Vite respond successfully, the homepage Inertia response contains the review prop, and all static/automated checks pass, but the browser runtime exposed no available browser session.
+  - Impact: exact typography, spacing, image scale, card-height consistency, responsive wrapping, horizontal overflow, focus appearance, Reviews-link navigation, and browser console errors cannot be signed off visually.
+  - Fix: capture the live homepage at desktop and mobile sizes, test current photo cards plus seeded no-photo/long-copy/three/one/zero-review states, follow the Reviews link, and compare each capture with the reference.
+
+## Required fidelity surfaces
+
+- Fonts and typography: the showcase uses the existing Lora storefront tokens, small letter-spaced uppercase eyebrow, responsive display heading, readable excerpts, and italic reviewer names. Rendered optical-weight, truncation, and wrapping verification is blocked.
+- Spacing and layout rhythm: the implementation preserves the original section position, uses a full-width divided header, equal three-column desktop tracks, stacked mobile cards, a consistent 2.08:1 media area, fine borders, restrained rounding, and minimal shadow. Rendered verification is blocked.
+- Colors and visual tokens: card media wells rotate through existing Blue Serenity, neutral, and Rose Quartz surface tokens; the CTA, quote, copy, and borders use existing `sf-*` tokens. Rendered color and contrast comparison is blocked.
+- Image quality and asset fidelity: real review images use the existing public-storage URLs and `object-contain` to preserve proportions. Missing or failed images use the existing Lucide Quote icon on a pastel media well; mockup upload placeholders were not reproduced.
+- Copy and content: only real active-review titles, descriptions, and public display names are shown. No screenshot testimonials, names, delivery claims, upload prompts, or verified-customer labels were copied.
+
+## Comparison history
+
+- Initial pass: blocked before visual comparison because no browser session was available. No browser-rendered implementation image exists, so there is no post-fix visual evidence.
+
+## Primary interaction and data coverage
+
+- Source inspection and compilation confirm the existing Reviews route is used, broken photos fall back to the quote treatment, anonymous names use the same shared `Anonymous reviewer` rule as `/reviews`, and the whole section is omitted for an empty array.
+- The homepage query is capped at three, filters `is_active = true`, orders newest first, exposes no private/order fields, and uses the public disk URL mechanism already used by `/reviews`.
+- Current local data exercises the fewer-than-three state with two eligible photo reviews. Automated tests cover the three-review cap/order, unpublished exclusion, public image URL, nullable reviewer name, and zero-review payload.
+- Direct `/` request: HTTP 200 with `storefront/Home` and the `reviews` prop.
+- Browser interaction testing and console-error inspection: blocked.
+
+## Implementation checklist
+
+- Capture the current two-card desktop and mobile states and compare them with the source.
+- Capture three-card, no-photo, long-copy, one-card, and zero-review states without persisting test fixtures.
+- Follow “Read all reviews” and verify focus, navigation, and browser console state.
+- Inspect real-image proportions, fallback alignment, card heights, mobile stacking, and horizontal overflow.
+- Run combined source/implementation comparisons and resolve any P0/P1/P2 differences.
+
+final result: blocked

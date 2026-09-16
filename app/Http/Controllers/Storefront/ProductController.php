@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductTechnicalDetail;
+use App\Models\Review;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -145,9 +146,29 @@ class ProductController extends Controller
             ->map(fn (Product $product) => $this->toPayload($product))
             ->all();
 
+        // Reviews have no featured flag. Keep this deliberately bounded and
+        // use the same public eligibility and storage URL as /reviews.
+        $reviews = Review::query()
+            ->where('is_active', true)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->limit(3)
+            ->get()
+            ->map(fn (Review $review) => [
+                'id' => $review->id,
+                'customer_name' => $review->customer_name,
+                'title' => $review->title,
+                'description' => $review->description,
+                'image_url' => $review->image_path
+                    ? Storage::disk('public')->url($review->image_path)
+                    : null,
+            ])
+            ->all();
+
         return Inertia::render('storefront/Home', [
             'featured' => $featured,
             'categories' => $this->activeCategoryNames(),
+            'reviews' => $reviews,
         ]);
     }
 

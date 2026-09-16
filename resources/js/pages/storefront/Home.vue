@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import {
     ArrowRight,
     HeartPulse,
+    Quote,
     ShieldCheck,
     TestTube,
     Trophy,
@@ -10,11 +11,20 @@ import {
 import { computed, ref } from 'vue';
 import ProductCard from '@/components/storefront/ProductCard.vue';
 import type { Product } from '@/pages/admin/products/all-products/types';
+import { reviews as reviewsPage } from '@/routes/storefront';
 import { index as catalog } from '@/routes/storefront/products';
+import { reviewDisplayName } from './review';
+import type { StorefrontReview } from './review';
+
+type HomepageReview = Pick<
+    StorefrontReview,
+    'id' | 'customer_name' | 'title' | 'description' | 'image_url'
+>;
 
 const props = defineProps<{
     featured: Product[];
     categories: string[];
+    reviews: HomepageReview[];
 }>();
 
 const activeTab = ref('All');
@@ -28,6 +38,20 @@ const shown = computed(() =>
               (product) => product.category === activeTab.value,
           ),
 );
+
+const failedReviewImageIds = ref<Set<number>>(new Set());
+
+const hasReviewPhoto = (review: HomepageReview) =>
+    Boolean(review.image_url && !failedReviewImageIds.value.has(review.id));
+
+const markReviewImageFailed = (reviewId: number) => {
+    failedReviewImageIds.value = new Set([
+        ...failedReviewImageIds.value,
+        reviewId,
+    ]);
+};
+
+const reviewTones = ['bg-sf-well-blue', 'bg-sf-surface', 'bg-sf-rose-tint/70'];
 
 const usps = [
     {
@@ -245,46 +269,78 @@ const subscribe = () => {
         </Link>
     </section>
 
-    <section class="mx-auto w-full max-w-[1680px] px-5 pt-16 sm:px-10">
-        <div
-            class="flex flex-wrap items-center gap-13 rounded-2xl bg-[linear-gradient(105deg,oklch(0.93_0.032_240)_0%,oklch(0.95_0.032_20)_100%)] px-14 py-13"
+    <section
+        v-if="reviews.length"
+        class="mx-auto w-full max-w-[1680px] px-5 pt-16 sm:px-10"
+    >
+        <header
+            class="flex flex-col items-start justify-between gap-5 border-b border-sf-line-strong pb-6 sm:flex-row sm:items-end"
         >
-            <div class="min-w-[280px] flex-1">
-                <div class="text-base text-sf-primary italic">
-                    Why Choose PepperzzHub?
-                </div>
-                <h2
-                    class="mt-3 font-display text-4xl leading-[1.25] font-medium tracking-[-0.02em] text-sf-ink"
+            <div>
+                <p
+                    class="text-[11px] font-semibold tracking-[0.3em] text-sf-primary uppercase"
                 >
-                    Science you can trust.<br />Results you can feel.
+                    In their words
+                </p>
+                <h2
+                    class="mt-3 font-display text-[clamp(2rem,4vw,2.5rem)] leading-tight font-medium tracking-[-0.025em] text-sf-ink"
+                >
+                    Why Choose PepperzzHub
                 </h2>
             </div>
-            <div
-                class="grid min-w-[320px] flex-[1.4] grid-cols-[repeat(auto-fit,minmax(130px,1fr))] gap-2"
+
+            <Link
+                :href="reviewsPage()"
+                class="inline-flex min-h-11 shrink-0 items-center gap-2.5 rounded-full border border-sf-primary/45 bg-white px-6 text-sm font-medium text-sf-primary transition-colors duration-200 ease-out hover:border-sf-primary hover:bg-sf-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+            >
+                Read all reviews
+                <ArrowRight class="size-4" aria-hidden="true" />
+            </Link>
+        </header>
+
+        <div class="mt-7 grid grid-cols-1 gap-5 md:grid-cols-3">
+            <article
+                v-for="(review, index) in reviews"
+                :key="review.id"
+                class="flex min-w-0 flex-col overflow-hidden rounded-xl border border-sf-line-strong bg-white shadow-[0_8px_24px_rgba(30,35,60,0.035)]"
             >
                 <div
-                    v-for="stat in [
-                        {
-                            icon: ShieldCheck,
-                            value: '100%',
-                            label: 'Lab Tested',
-                        },
-                        { icon: TestTube, value: '99%+', label: 'Purity' },
-                        { icon: Trophy, value: '5★', label: 'Rated Service' },
-                        { icon: HeartPulse, value: '24/7', label: 'Support' },
-                    ]"
-                    :key="stat.label"
-                    class="flex flex-col items-center gap-2.5 px-3 py-2.5 text-center"
+                    class="grid aspect-[2.08/1] w-full place-items-center overflow-hidden p-3"
+                    :class="reviewTones[index % reviewTones.length]"
                 >
-                    <component :is="stat.icon" class="size-6 text-sf-primary" />
-                    <span
-                        class="font-display text-[26px] font-semibold text-sf-ink"
-                    >
-                        {{ stat.value }}
-                    </span>
-                    <span class="text-sm text-sf-text">{{ stat.label }}</span>
+                    <img
+                        v-if="hasReviewPhoto(review)"
+                        :src="review.image_url ?? ''"
+                        :alt="`Photo shared with ${reviewDisplayName(review)}'s review`"
+                        class="size-full object-contain"
+                        loading="lazy"
+                        @error="markReviewImageFailed(review.id)"
+                    />
+                    <Quote
+                        v-else
+                        class="size-12 fill-sf-rose text-sf-rose"
+                        aria-hidden="true"
+                    />
                 </div>
-            </div>
+
+                <div class="flex min-h-48 flex-1 flex-col px-6 py-5">
+                    <h3
+                        class="font-display text-[18px] leading-snug font-semibold break-words text-sf-ink"
+                    >
+                        {{ review.title }}
+                    </h3>
+                    <p
+                        class="mt-2 line-clamp-4 text-[14px] leading-[1.75] break-words text-sf-text"
+                    >
+                        {{ review.description }}
+                    </p>
+                    <p
+                        class="mt-auto pt-6 text-[13px] leading-relaxed text-sf-primary italic"
+                    >
+                        — {{ reviewDisplayName(review) }}
+                    </p>
+                </div>
+            </article>
         </div>
     </section>
 
