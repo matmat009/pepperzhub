@@ -23,8 +23,9 @@ const props = withDefaults(
         idPrefix: string;
         readonly?: boolean;
         blueOutline?: boolean;
+        secondaryButtonClass?: string;
     }>(),
-    { readonly: false, blueOutline: false },
+    { readonly: false, blueOutline: false, secondaryButtonClass: '' },
 );
 
 /** Matches the readonly treatment used across the rest of the form. */
@@ -129,7 +130,7 @@ const update = (id: string, key: 'label' | 'value', next: string) => {
             type="button"
             variant="outline"
             size="sm"
-            class="mt-1 w-fit"
+            :class="['mt-1 w-fit', secondaryButtonClass]"
             @click="addEntry"
         >
             <Plus />

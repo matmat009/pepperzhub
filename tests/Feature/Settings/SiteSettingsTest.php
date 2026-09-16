@@ -11,11 +11,11 @@ use Tests\TestCase;
  * The storefront's contact and social details: saved from the profile page,
  * published as a shared prop, and rendered only where they are actually set.
  *
- * The footer and the FAQ nav item used to carry their own literals — an email,
- * a phone number, an address and three href="#" icons — so the shop advertised
- * contact details nobody maintained. The point of these tests is that the
- * operator's saved values are what reaches the client, and that a field left
- * blank produces no markup at all rather than an empty line or a dead link.
+ * The footer used to carry its own literals — an email, a phone number, an
+ * address and three href="#" icons — so the shop advertised contact details
+ * nobody maintained. The point of these tests is that the operator's saved
+ * values are what reaches the client, and that a field left blank produces no
+ * markup at all rather than an empty line or a dead link.
  */
 class SiteSettingsTest extends TestCase
 {
@@ -94,8 +94,8 @@ class SiteSettingsTest extends TestCase
 
     /**
      * Shared, not per-page: the footer renders on every storefront page and the
-     * nav's FAQ item with it, so a page that forgot to pass these would lose
-     * both.
+     * FAQ contact panel reads the same values, so a page that forgot to pass
+     * these would lose both.
      */
     public function test_the_settings_are_shared_with_every_response(): void
     {
@@ -154,7 +154,7 @@ class SiteSettingsTest extends TestCase
      * regressed — the literals — rather than the prop, which the test above
      * already covers.
      */
-    public function test_the_footer_and_nav_gate_every_piece_on_its_own_field(): void
+    public function test_the_footer_gates_each_setting_and_nav_uses_the_internal_faq(): void
     {
         $footer = file_get_contents(
             resource_path('js/components/storefront/StorefrontFooter.vue'),
@@ -192,10 +192,11 @@ class SiteSettingsTest extends TestCase
             resource_path('js/components/storefront/StorefrontNav.vue'),
         );
 
-        // FAQ is built from the setting and only exists when it is set.
-        $this->assertStringContainsString('settings.value.facebook_url', $nav);
+        // FAQ is always internal; the Facebook setting now belongs only to
+        // actual contact and social destinations.
         $this->assertStringContainsString("label: 'FAQ'", $nav);
-        $this->assertStringContainsString("link.external ? '_blank' : undefined", $nav);
+        $this->assertStringContainsString('href: faq()', $nav);
+        $this->assertStringNotContainsString('settings.value.facebook_url', $nav);
     }
 
     /**
@@ -227,8 +228,8 @@ class SiteSettingsTest extends TestCase
 
         // And that is what the next response carries: the cleared pair null,
         // the rest untouched. The footer's Contact Us column survives on the
-        // strength of the two fields still set; its phone line, its Facebook
-        // icon and the nav's FAQ item do not.
+        // strength of the two fields still set; its phone line and Facebook
+        // icon do not.
         $props = $this->get(route('home'))->assertOk()->inertiaProps();
 
         $this->assertNull($props['siteSettings']['contact_phone']);

@@ -180,14 +180,9 @@ const siteSettings = useSiteSettings();
                     :default-value="siteSettings.facebook_url ?? ''"
                     placeholder="https://facebook.com/pepperzhub"
                 />
-                <!--
-                    The only one of the three that is load-bearing beyond the
-                    footer: the storefront's FAQ nav item links here, and
-                    disappears entirely while this is blank.
-                -->
                 <p class="text-sm text-muted-foreground">
-                    Also used by the storefront's FAQ link, which is hidden
-                    while this is empty.
+                    Also used for the Messenger contact option on the storefront
+                    FAQ page.
                 </p>
                 <InputError class="mt-2" :message="errors.facebook_url" />
             </div>

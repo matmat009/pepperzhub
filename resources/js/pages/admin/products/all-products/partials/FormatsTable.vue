@@ -23,8 +23,9 @@ withDefaults(
         variants: ProductVariant[];
         readonly?: boolean;
         compact?: boolean;
+        secondaryButtonClass?: string;
     }>(),
-    { readonly: false, compact: false },
+    { readonly: false, compact: false, secondaryButtonClass: '' },
 );
 
 const emit = defineEmits<{
@@ -141,6 +142,7 @@ const emit = defineEmits<{
                                 type="button"
                                 variant="ghost"
                                 size="icon-sm"
+                                :class="secondaryButtonClass"
                                 @click="emit('edit', variant)"
                             >
                                 <Pencil class="size-3.5" />

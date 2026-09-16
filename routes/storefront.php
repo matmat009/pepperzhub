@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CheckoutController;
+use App\Http\Controllers\Storefront\FaqController;
 use App\Http\Controllers\Storefront\OrderConfirmationController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\ProtocolController;
@@ -43,6 +44,8 @@ Route::name('storefront.')->group(function () {
      */
     Route::get('reviews', [ReviewController::class, 'index'])
         ->name('reviews');
+
+    Route::get('faq', FaqController::class)->name('faq');
 
     /*
      * Cart lives in the session. Names and paths are unchanged from the stub

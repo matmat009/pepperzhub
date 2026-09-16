@@ -26,9 +26,9 @@ class SiteSettingUpdateRequest extends FormRequest
 
             /*
              * Validated as URLs because they are rendered as hrefs. The footer's
-             * icons and the FAQ nav item link straight to these, so a bare
-             * "facebook.com/pepperzhub" would resolve against the storefront's
-             * own origin and 404.
+             * icons use them directly, and the FAQ derives its Messenger link
+             * from Facebook, so a bare "facebook.com/pepperzhub" would resolve
+             * against the storefront's own origin and 404.
              */
             'facebook_url' => ['nullable', 'string', 'url', 'max:255'],
             'instagram_url' => ['nullable', 'string', 'url', 'max:255'],

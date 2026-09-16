@@ -20,9 +20,13 @@ import type { ProductVariant } from '../types';
  * One dialog instance owned by ProductForm, serving both add and edit:
  * `variant` null means add, a variant means edit.
  */
-const props = defineProps<{
-    variant: ProductVariant | null;
-}>();
+const props = withDefaults(
+    defineProps<{
+        variant: ProductVariant | null;
+        secondaryButtonClass?: string;
+    }>(),
+    { secondaryButtonClass: '' },
+);
 
 const open = defineModel<boolean>('open', { default: false });
 
@@ -214,7 +218,7 @@ const save = () => {
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                class="mt-1 w-fit"
+                                :class="['mt-1 w-fit', secondaryButtonClass]"
                                 @click="addInclusion"
                             >
                                 <Plus />
@@ -226,7 +230,13 @@ const save = () => {
             </div>
 
             <DialogFooter>
-                <Button variant="outline" @click="open = false">Cancel</Button>
+                <Button
+                    variant="outline"
+                    :class="secondaryButtonClass"
+                    @click="open = false"
+                >
+                    Cancel
+                </Button>
                 <Button :disabled="invalid" @click="save">
                     {{ isEdit ? 'Save format' : 'Add format' }}
                 </Button>

@@ -2,51 +2,31 @@
 import { Link } from '@inertiajs/vue3';
 import { Menu, ShoppingCart, X } from '@lucide/vue';
 import { computed, ref } from 'vue';
-import type { InertiaLinkProps } from '@inertiajs/vue3';
 import BrandWordmark from '@/components/storefront/BrandWordmark.vue';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
-import { useSiteSettings } from '@/composables/useSiteSettings';
 import { useStorefrontCart } from '@/composables/useStorefrontCart';
 import { home } from '@/routes';
-import { cart, protocols, reviews, track } from '@/routes/storefront';
+import { cart, faq, protocols, reviews, track } from '@/routes/storefront';
 import { index as catalog } from '@/routes/storefront/products';
 
 const { count } = useStorefrontCart();
 const { currentUrl } = useCurrentUrl();
 
-const settings = useSiteSettings();
-
 const menuOpen = ref(false);
 
 type NavLink = {
     label: string;
-    href: NonNullable<InertiaLinkProps['href']>;
-    section?: 'home' | 'products' | 'protocols' | 'reviews' | 'track';
-    /** Leaves the storefront, so a plain anchor into a new tab. */
-    external?: boolean;
+    href: ReturnType<typeof home>;
+    section?: 'home' | 'products' | 'protocols' | 'reviews' | 'track' | 'faq';
 };
 
-/**
- * Only destinations that actually resolve. FAQ has no page of its own — the
- * questions get asked and answered on the shop's Facebook, so that is where it
- * points, and it is absent entirely until that URL is set rather than sitting
- * in the bar going nowhere the way it used to.
- */
 const links = computed<NavLink[]>(() => [
     { label: 'Home', href: home(), section: 'home' },
     { label: 'Products', href: catalog(), section: 'products' },
     { label: 'Protocols', href: protocols(), section: 'protocols' },
     { label: 'Reviews', href: reviews(), section: 'reviews' },
     { label: 'Track Order', href: track(), section: 'track' },
-    ...(settings.value.facebook_url
-        ? [
-              {
-                  label: 'FAQ',
-                  href: settings.value.facebook_url,
-                  external: true,
-              },
-          ]
-        : []),
+    { label: 'FAQ', href: faq(), section: 'faq' },
 ]);
 
 type AriaCurrent = 'page' | undefined;
@@ -75,6 +55,8 @@ const navCurrent = (link: NavLink): AriaCurrent => {
             return path === reviews().url ? 'page' : undefined;
         case 'track':
             return path === track().url ? 'page' : undefined;
+        case 'faq':
+            return path === faq().url ? 'page' : undefined;
         default:
             return undefined;
     }
@@ -104,13 +86,10 @@ const cartCurrent = computed<AriaCurrent>(() =>
                 </Link>
 
                 <nav class="hidden items-center gap-1 lg:flex">
-                    <component
-                        :is="typeof link.href === 'string' ? 'a' : Link"
+                    <Link
                         v-for="link in links"
                         :key="link.label"
                         :href="link.href"
-                        :target="link.external ? '_blank' : undefined"
-                        :rel="link.external ? 'noopener noreferrer' : undefined"
                         :aria-current="navCurrent(link)"
                         class="relative flex min-h-11 items-center justify-center rounded-full px-[18px] pt-2 pb-3 font-medium transition-colors duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                         :class="
@@ -125,7 +104,7 @@ const cartCurrent = computed<AriaCurrent>(() =>
                             aria-hidden="true"
                             class="absolute bottom-1.5 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-linear-to-r from-sf-primary to-sf-rose"
                         />
-                    </component>
+                    </Link>
                 </nav>
 
                 <div class="flex flex-1 items-center justify-end gap-2">
@@ -174,13 +153,10 @@ const cartCurrent = computed<AriaCurrent>(() =>
                 v-if="menuOpen"
                 class="mx-auto mt-2.5 flex max-w-[1680px] flex-col rounded-xl border border-sf-line bg-white p-2.5 shadow-[0_24px_56px_rgba(30,35,60,0.18)] lg:hidden"
             >
-                <component
-                    :is="typeof link.href === 'string' ? 'a' : Link"
+                <Link
                     v-for="link in links"
                     :key="link.label"
                     :href="link.href"
-                    :target="link.external ? '_blank' : undefined"
-                    :rel="link.external ? 'noopener noreferrer' : undefined"
                     :aria-current="navCurrent(link)"
                     class="flex min-h-11 items-center rounded-lg px-4 py-2 text-base font-medium transition-colors duration-200 ease-out hover:bg-sf-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                     :class="
@@ -205,7 +181,7 @@ const cartCurrent = computed<AriaCurrent>(() =>
                             class="absolute bottom-1 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-linear-to-r from-sf-primary to-sf-rose"
                         />
                     </span>
-                </component>
+                </Link>
             </div>
         </Transition>
     </header>

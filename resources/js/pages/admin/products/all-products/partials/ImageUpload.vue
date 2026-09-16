@@ -17,8 +17,9 @@ const props = withDefaults(
     defineProps<{
         readonly?: boolean;
         blueOutline?: boolean;
+        secondaryButtonClass?: string;
     }>(),
-    { readonly: false, blueOutline: false },
+    { readonly: false, blueOutline: false, secondaryButtonClass: '' },
 );
 
 const activeIndex = ref(0);
@@ -144,6 +145,7 @@ const onDrop = (event: DragEvent) => {
                         type="button"
                         variant="outline"
                         size="sm"
+                        :class="secondaryButtonClass"
                         @click="browseInput?.click()"
                     >
                         Browse
@@ -168,6 +170,7 @@ const onDrop = (event: DragEvent) => {
                 type="button"
                 variant="outline"
                 size="sm"
+                :class="secondaryButtonClass"
                 @click="replaceInput?.click()"
             >
                 <RefreshCw />

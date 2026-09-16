@@ -697,3 +697,63 @@ Blocked with the full-view comparison. The date-filter card, summary-card strip,
 No P3-only assessment is valid until the blocked rendered comparison is completed.
 
 final result: blocked
+
+---
+
+# Storefront FAQ design QA
+
+## Comparison target
+
+- Source visual truth: two user-attached FAQ reference images in the current request (conversation attachments; no local filesystem path was exposed).
+- Source dimensions: 1572 × 1146 pixels for the upper-page reference and 1192 × 761 pixels for the lower-page reference.
+- Implementation route: `/faq`.
+- Implementation screenshot: unavailable — the configured browser runtime reported `No browser is available` and exposed no browser session.
+- Intended comparison viewport: a desktop viewport comparable to the references, plus a narrow mobile viewport at device scale factor 1.
+- State: FAQ default state with All selected and the first question expanded; search/filter, empty/reset, accordion, and contact-link states also requested.
+- Density normalization: unavailable because the implementation could not be browser-rendered.
+
+## Full-view comparison evidence
+
+The source references were visible in the request. The implementation was reviewed in source, compiled successfully, and served successfully at `/faq`, but no browser-rendered implementation image could be captured. A valid combined visual comparison was therefore not possible.
+
+## Focused-region comparison evidence
+
+Blocked with the full-view comparison. The hero/search proportions, category pills, open and closed accordion cards, empty state, support panel, and responsive wrapping still require browser-rendered focused comparisons.
+
+## Findings
+
+- [P1] Browser-rendered visual and interaction evidence is missing.
+  - Location: `/faq`, desktop and mobile.
+  - Evidence: Laravel and Vite respond successfully, the Inertia response resolves to `storefront/Faq`, and static checks pass, but the browser runtime exposed no available browser session.
+  - Impact: exact typography, spacing, gradient balance, wrapping, horizontal overflow, keyboard focus appearance, live interactions, and browser console errors cannot be signed off visually.
+  - Fix: capture the running page in an approved browser at desktop and mobile sizes, exercise the nav, search/category combinations, empty/reset state, keyboard accordions, and all rendered contact links, then compare the captures with the references.
+
+## Required fidelity surfaces
+
+- Fonts and typography: the FAQ uses the storefront's existing Lora `font-display` and `font-body` tokens, responsive hero scale, italic support copy, and compact letter-spaced labels. Rendered optical-weight and wrapping verification is blocked.
+- Spacing and layout rhythm: the implementation uses a centered 990px FAQ column, compact filter pills, 12px card gaps, restrained rounded corners, a divided expanded answer, and a responsive support-panel grid. Rendered verification is blocked.
+- Colors and visual tokens: the hero and support panel reuse the established Blue Serenity-to-white-to-Rose Quartz storefront wash; controls and open states use existing `sf-*` tokens. Rendered color matching is blocked.
+- Image quality and asset fidelity: the reference contains no raster imagery. Existing Tabler brand icons and the Lucide search/chevron icons are used; no custom or reconstructed visual assets were introduced.
+- Copy and content: every requested question is present in one structured source. Ordering and payment copy follows the live checkout/manual-verification flow. Unpublished policies remain neutral and support-directed instead of promising terms the business has not established.
+
+## Comparison history
+
+- Initial pass: blocked before visual comparison because no browser session was available. No browser-rendered implementation image exists, so there is no post-fix visual evidence.
+
+## Primary interaction coverage
+
+- Source inspection and compilation confirm combined case-insensitive question/answer search and category filtering, a resettable empty state, one-at-a-time accordions, native button keyboard behavior, `aria-expanded`/`aria-controls`/labelled regions, internal desktop/mobile FAQ navigation, and configured-only contact rendering.
+- Direct `/faq` request: HTTP 200 with the `storefront/Faq` Inertia component.
+- Current configured destinations verified: Messenger derived from the saved Facebook page, WhatsApp derived from the saved contact phone, and `pepperzzhub@gmail.com` via `mailto:`.
+- Browser interaction testing and console-error inspection: blocked.
+
+## Implementation checklist
+
+- Capture the default desktop state at a viewport comparable to the reference.
+- Exercise combined category/search filtering, empty/reset, and every accordion by pointer and keyboard.
+- Verify internal FAQ navigation and active state in desktop and mobile menus.
+- Open each configured contact destination and check the browser console.
+- Capture a narrow mobile layout and check wrapping and horizontal overflow.
+- Run combined source/implementation comparisons and resolve any P0/P1/P2 differences.
+
+final result: blocked

@@ -62,12 +62,15 @@ const props = withDefaults(
         createStyle?: boolean;
         /** Stronger section outlines used only by the Add Product page. */
         emphasizedSectionBorders?: boolean;
+        /** Optional page-owned treatment for non-destructive secondary actions. */
+        secondaryButtonClass?: string;
     }>(),
     {
         errors: () => ({}),
         readonly: false,
         createStyle: false,
         emphasizedSectionBorders: false,
+        secondaryButtonClass: '',
     },
 );
 
@@ -372,7 +375,7 @@ const removeNote = (index: number) => {
                             type="button"
                             variant="outline"
                             size="sm"
-                            class="shrink-0"
+                            :class="['shrink-0', secondaryButtonClass]"
                             @click="openAddFormat"
                         >
                             <Plus />
@@ -396,6 +399,7 @@ const removeNote = (index: number) => {
                         :variants="fields.variants"
                         :readonly="readonly"
                         :compact="createStyle"
+                        :secondary-button-class="secondaryButtonClass"
                         @edit="openEditFormat"
                         @remove="removeFormat"
                     />
@@ -446,6 +450,7 @@ const removeNote = (index: number) => {
                             value-placeholder="e.g. 99.2%"
                             :readonly="readonly"
                             :blue-outline="createStyle"
+                            :secondary-button-class="secondaryButtonClass"
                         />
                         <InputError :message="firstError('purity')" />
                     </div>
@@ -460,6 +465,7 @@ const removeNote = (index: number) => {
                             value-placeholder="Instruction or temperature, e.g. 2-8°C"
                             :readonly="readonly"
                             :blue-outline="createStyle"
+                            :secondary-button-class="secondaryButtonClass"
                         />
                         <InputError :message="firstError('storage')" />
                     </div>
@@ -614,7 +620,7 @@ const removeNote = (index: number) => {
                             type="button"
                             variant="outline"
                             size="sm"
-                            class="mt-1 w-fit"
+                            :class="['mt-1 w-fit', secondaryButtonClass]"
                             @click="addNote"
                         >
                             <Plus />
@@ -652,6 +658,7 @@ const removeNote = (index: number) => {
                         v-model="fields.images"
                         :readonly="readonly"
                         :blue-outline="createStyle"
+                        :secondary-button-class="secondaryButtonClass"
                     />
                 </CardContent>
             </Card>
@@ -661,6 +668,7 @@ const removeNote = (index: number) => {
     <FormatDialog
         v-model:open="formatDialogOpen"
         :variant="editingVariant"
+        :secondary-button-class="secondaryButtonClass"
         @save="saveFormat"
     />
 </template>

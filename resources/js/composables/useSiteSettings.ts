@@ -8,9 +8,8 @@ import type { SiteSettings } from '@/types/site-settings';
  *
  * The values are the single App\Models\SiteSetting row, shared on every Inertia
  * response by HandleInertiaRequests. Read through here rather than hardcoded
- * per component: the footer's contact block, its social icons and the nav's FAQ
- * link all previously carried their own literals, which is how the footer came
- * to advertise an address the operator had never used.
+ * per component: the footer's contact block, its social icons and the FAQ's
+ * contact panel all depend on the operator's saved values.
  *
  * No fallback object on purpose — a default here would be exactly the hardcoded
  * copy this removes. The prop is shared on every response, so its absence is a

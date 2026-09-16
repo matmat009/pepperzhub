@@ -3,6 +3,7 @@ import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ChevronLeft } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { index, store } from '@/routes/admin/products';
+import { addProductSecondaryButtonClass } from './add-product-styles';
 import ProductForm from './partials/ProductForm.vue';
 import { emptyProductForm, toSubmitPayload } from './types';
 import type { CategoryOption, ProductFormFields } from './types';
@@ -46,7 +47,12 @@ const submit = () => {
             class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
         >
             <div class="flex items-center gap-3">
-                <Button as-child variant="outline" size="icon" class="shrink-0">
+                <Button
+                    as-child
+                    variant="outline"
+                    size="icon"
+                    :class="['shrink-0', addProductSecondaryButtonClass]"
+                >
                     <Link :href="index()">
                         <ChevronLeft class="size-4" />
                         <span class="sr-only">Back to products</span>
@@ -65,6 +71,7 @@ const submit = () => {
             <div class="flex items-center gap-2 self-end sm:self-auto">
                 <Button
                     variant="outline"
+                    :class="addProductSecondaryButtonClass"
                     :disabled="form.processing"
                     @click="discard"
                 >
@@ -87,6 +94,7 @@ const submit = () => {
             :errors="form.errors as Record<string, string>"
             create-style
             emphasized-section-borders
+            :secondary-button-class="addProductSecondaryButtonClass"
         />
     </div>
 </template>
