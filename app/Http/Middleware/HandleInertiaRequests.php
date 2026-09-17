@@ -39,7 +39,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        return [
+        $shared = [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
@@ -78,6 +78,9 @@ class HandleInertiaRequests extends Middleware
                 'instagram_url',
                 'tiktok_url',
             ]),
+        ];
+
+        if ($this->shouldSharePendingOrdersCount($request)) {
             /*
              * The sidebar renders on every admin page, so the count it badges
              * cannot come from any one page's props — Orders/Index would leave
@@ -93,12 +96,41 @@ class HandleInertiaRequests extends Middleware
              *
              * One COUNT, no rows hydrated, and the two equality predicates are
              * the orders table's composite (payment_status, order_status)
-             * index in that order.
+             * index in that order. The closure also keeps the query unevaluated
+             * when downstream authorization redirects instead of rendering an
+             * admin Inertia page.
              */
-            'pendingOrdersCount' => Order::query()
+            $shared['pendingOrdersCount'] = fn (): int => Order::query()
                 ->where('payment_status', 'unverified')
                 ->where('order_status', 'pending')
-                ->count(),
-        ];
+                ->count();
+        }
+
+        return $shared;
+    }
+
+    /**
+     * Only pages rendered inside the authenticated admin shell need its badge.
+     *
+     * Route identity is checked as well as authentication: the operator can
+     * browse the public storefront while signed in, and that must not turn a
+     * public response into an admin response. Verification mirrors the route
+     * groups; Profile intentionally remains available under its existing
+     * auth-only rule.
+     */
+    private function shouldSharePendingOrdersCount(Request $request): bool
+    {
+        $user = $request->user();
+
+        if ($user === null) {
+            return false;
+        }
+
+        if ($request->routeIs('profile.edit')) {
+            return true;
+        }
+
+        return $user->hasVerifiedEmail()
+            && $request->routeIs('dashboard', 'admin.*', 'security.edit', 'appearance.edit');
     }
 }

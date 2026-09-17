@@ -31,10 +31,10 @@ declare module '@inertiajs/core' {
             siteSettings: SiteSettings;
             /**
              * Orders placed but not yet looked at (unverified payment, pending
-             * fulfillment) — the sidebar's attention badge. Shared on every
-             * response, so it is current on whichever admin page is open.
+             * fulfillment) — the sidebar's attention badge. Present only on
+             * authenticated admin-shell responses.
              */
-            pendingOrdersCount: number;
+            pendingOrdersCount?: number;
             [key: string]: unknown;
         };
     }

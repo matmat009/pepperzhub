@@ -62,7 +62,7 @@ const navMain: NavMainItem[] = [
 /*
  * Read the same way as `name` and `auth.user` above: straight off the shared
  * props, typed in resources/js/types/global.d.ts. HandleInertiaRequests puts it
- * on every response.
+ * only on responses rendered inside this authenticated admin shell.
  */
 const pendingOrdersCount = computed(() => page.props.pendingOrdersCount);
 
