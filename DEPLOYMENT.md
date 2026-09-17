@@ -23,8 +23,8 @@ are development defaults; several of them are actively unsafe in production.
 | `APP_DEBUG` | `false` | `true` renders stack traces, config values and connection strings to whoever triggers an error. |
 | `APP_URL` | The exact public origin, `https://` included, no trailing slash | The `public` disk builds product-image and payment-QR URLs from it. Wrong value ⇒ every image 404s. |
 | `DB_DATABASE` / `DB_USERNAME` / `DB_PASSWORD` | Per environment | `DB_PASSWORD` is blank in the example. It must not be blank in production. |
-| `MAIL_*` | A real transport | See "Mail" below — this one has a real consequence. |
-| `MAIL_FROM_ADDRESS` | A real sending address on your domain | Placeholder in the example. |
+| `MAIL_*` | Gmail SMTP with a private App Password | See "Mail" below — this one has a real consequence. |
+| `MAIL_FROM_ADDRESS` | The same authorized Gmail address as `MAIL_USERNAME` | Gmail can reject or rewrite unauthorized sender identities. |
 
 ### Should review
 
@@ -38,16 +38,46 @@ are development defaults; several of them are actively unsafe in production.
 
 ### Mail — read before deploying
 
-`MAIL_MAILER=log` writes mail to `storage/logs/` instead of sending it.
+Use these settings in the server's private `.env`:
+
+```dotenv
+MAIL_MAILER=smtp
+MAIL_SCHEME=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_REQUIRE_TLS=true
+MAIL_USERNAME="authorized-account@gmail.com"
+MAIL_PASSWORD="gmail-app-password"
+MAIL_FROM_ADDRESS="authorized-account@gmail.com"
+MAIL_FROM_NAME="PepperzHub"
+```
+
+For this installed Laravel/Symfony version, `MAIL_SCHEME=smtp` on port 587
+negotiates STARTTLS automatically, while `MAIL_REQUIRE_TLS=true` prevents a
+plaintext fallback. `tls` is not a supported scheme value. Use a Google App
+Password, never the account's regular password, and keep both the address and
+App Password out of version control. `MAIL_FROM_ADDRESS` must match the Gmail
+account authorized by `MAIL_USERNAME`.
+
+After changing mail or URL values, refresh cached configuration:
+
+```bash
+php artisan config:clear
+php artisan config:cache # production only
+```
+
+Local development keeps `APP_URL=http://localhost:8000`. Before testing links
+from a deployed inbox, set the server's `APP_URL` to the exact public HTTPS
+origin, without a trailing slash, so signed verification and password-reset
+links point back to the deployed application.
 
 Email verification **is enforced**: `App\Models\User` implements
 `MustVerifyEmail`, and every `admin.*` route sits behind `['auth', 'verified']`.
 The existing operator account is grandfathered by migration
 `2026_09_02_000001_backfill_email_verified_at_for_existing_users`, so it is
-unaffected. But **any account created after that migration runs will be unable
-to verify itself while `MAIL_MAILER=log`**, and will be stuck on
-`/email/verify` with no link to click. Configure a real transport before adding
-a second operator, or mark the new account verified by hand.
+unaffected. Do not create an unverified operator until Gmail SMTP has been
+configured and an authorized delivery test has succeeded; otherwise that
+account will be stuck on `/email/verify` with no usable link.
 
 ---
 
