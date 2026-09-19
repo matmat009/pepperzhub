@@ -21,6 +21,7 @@ class LoginThrottleTest extends TestCase
 
     public function test_first_five_failures_are_ordinary_and_the_next_attempt_is_rate_limited(): void
     {
+        $this->freezeSecond();
         $user = User::factory()->create();
 
         foreach (range(1, 4) as $_) {
@@ -62,6 +63,7 @@ class LoginThrottleTest extends TestCase
 
     public function test_retry_after_reports_the_remaining_cooldown(): void
     {
+        $this->freezeSecond();
         $email = 'unknown@example.com';
 
         foreach (range(1, 5) as $_) {
@@ -156,6 +158,7 @@ class LoginThrottleTest extends TestCase
 
     public function test_ip_limit_blocks_email_rotation_and_expires_after_one_hour(): void
     {
+        $this->freezeSecond();
         $ip = '192.0.2.20';
 
         foreach (range(1, LoginThrottle::IP_MAX_ATTEMPTS) as $attempt) {

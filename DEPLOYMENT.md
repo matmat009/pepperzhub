@@ -184,7 +184,12 @@ The password stage permits five failures per normalized-email/client-IP pair
 over 15 minutes and 20 failures per client IP over one hour. Ordinary expiry is
 automatic. For exceptional operator support, run
 `php artisan admin:clear-login-throttle` only through SSH or a protected hosting
-console; it clears the two prompted keys and does not bypass the password or 2FA.
+console. Enter the exact administrator email and explicitly confirm the reset;
+no client IP is required. The command rotates the login-throttle namespace, so
+all current buckets stop applying without clearing unrelated cache data; old
+buckets expire naturally under their original TTLs. This global reset fits
+PepperzHub's single-administrator model; review the design if multiple
+administrators are introduced. It does not bypass the password or 2FA.
 
 ```bash
 php artisan config:cache

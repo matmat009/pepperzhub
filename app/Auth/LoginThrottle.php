@@ -3,7 +3,10 @@
 namespace App\Auth;
 
 use Illuminate\Cache\RateLimiter;
+use Illuminate\Contracts\Cache\Factory as CacheFactory;
+use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Http\Request;
+use RuntimeException;
 
 final class LoginThrottle
 {
@@ -15,7 +18,20 @@ final class LoginThrottle
 
     public const IP_DECAY_SECONDS = 60 * 60;
 
-    public function __construct(private RateLimiter $limiter) {}
+    private const GENERATION_CACHE_KEY = 'login:password:namespace-generation:v1';
+
+    // A non-null TTL lets supported stores initialize atomically. Ten years is
+    // effectively durable while remaining vastly longer than any limiter TTL.
+    private const GENERATION_TTL_SECONDS = 10 * 365 * 24 * 60 * 60;
+
+    private Repository $cache;
+
+    public function __construct(
+        private RateLimiter $limiter,
+        CacheFactory $cache,
+    ) {
+        $this->cache = $cache->store(config('cache.limiter'));
+    }
 
     public function normalizeEmail(string $email): string
     {
@@ -29,24 +45,69 @@ final class LoginThrottle
 
     public function emailIpKey(string $email, string $ip): string
     {
-        return 'login:password:email-ip:v1:'.hash(
+        return $this->emailIpKeyForGeneration($email, $ip, $this->currentGeneration());
+    }
+
+    public function ipKey(string $ip): string
+    {
+        return $this->ipKeyForGeneration($ip, $this->currentGeneration());
+    }
+
+    public function currentGeneration(): string
+    {
+        $generation = $this->cache->get(self::GENERATION_CACHE_KEY);
+
+        if (is_string($generation) && $generation !== '') {
+            return $generation;
+        }
+
+        $generation = $this->newGeneration();
+
+        if ($this->cache->add(
+            self::GENERATION_CACHE_KEY,
+            $generation,
+            self::GENERATION_TTL_SECONDS,
+        )) {
+            return $generation;
+        }
+
+        $storedGeneration = $this->cache->get(self::GENERATION_CACHE_KEY);
+
+        if (! is_string($storedGeneration) || $storedGeneration === '') {
+            throw new RuntimeException('Unable to initialize the login-throttle namespace.');
+        }
+
+        return $storedGeneration;
+    }
+
+    public function rotateGeneration(): void
+    {
+        if (! $this->cache->forever(self::GENERATION_CACHE_KEY, $this->newGeneration())) {
+            throw new RuntimeException('Unable to rotate the login-throttle namespace.');
+        }
+    }
+
+    private function emailIpKeyForGeneration(string $email, string $ip, string $generation): string
+    {
+        return "login:password:v2:{$generation}:email-ip:".hash(
             'sha256',
             $this->normalizeEmail($email).'|'.$ip,
         );
     }
 
-    public function ipKey(string $ip): string
+    private function ipKeyForGeneration(string $ip, string $generation): string
     {
-        return 'login:password:ip:v1:'.hash('sha256', $ip);
+        return "login:password:v2:{$generation}:ip:".hash('sha256', $ip);
     }
 
     public function retryAfter(Request $request): int
     {
         $email = (string) $request->input('email');
         $ip = $this->resolvedIp($request);
+        $generation = $this->currentGeneration();
         $blockedFor = [];
-        $emailIpKey = $this->emailIpKey($email, $ip);
-        $ipKey = $this->ipKey($ip);
+        $emailIpKey = $this->emailIpKeyForGeneration($email, $ip, $generation);
+        $ipKey = $this->ipKeyForGeneration($ip, $generation);
 
         if ($this->limiter->tooManyAttempts($emailIpKey, self::PRIMARY_MAX_ATTEMPTS)) {
             $blockedFor[] = $this->limiter->availableIn($emailIpKey);
@@ -63,33 +124,25 @@ final class LoginThrottle
     {
         $email = (string) $request->input('email');
         $ip = $this->resolvedIp($request);
+        $generation = $this->currentGeneration();
 
         $this->limiter->hit(
-            $this->emailIpKey($email, $ip),
+            $this->emailIpKeyForGeneration($email, $ip, $generation),
             self::PRIMARY_DECAY_SECONDS,
         );
-        $this->limiter->hit($this->ipKey($ip), self::IP_DECAY_SECONDS);
+        $this->limiter->hit(
+            $this->ipKeyForGeneration($ip, $generation),
+            self::IP_DECAY_SECONDS,
+        );
     }
 
     public function clearPrimary(Request $request): void
     {
-        $this->limiter->clear($this->emailIpKey(
+        $this->limiter->clear($this->emailIpKeyForGeneration(
             (string) $request->input('email'),
             $this->resolvedIp($request),
+            $this->currentGeneration(),
         ));
-    }
-
-    public function clear(string $email, string $ip): bool
-    {
-        $emailIpKey = $this->emailIpKey($email, $ip);
-        $ipKey = $this->ipKey($ip);
-        $hadAttempts = $this->limiter->attempts($emailIpKey) > 0
-            || $this->limiter->attempts($ipKey) > 0;
-
-        $this->limiter->clear($emailIpKey);
-        $this->limiter->clear($ipKey);
-
-        return $hadAttempts;
     }
 
     public function resolvedIp(Request $request): string
@@ -117,5 +170,10 @@ final class LoginThrottle
         }
 
         return 'unavailable';
+    }
+
+    private function newGeneration(): string
+    {
+        return bin2hex(random_bytes(32));
     }
 }

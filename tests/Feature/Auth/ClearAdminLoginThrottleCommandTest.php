@@ -16,15 +16,20 @@ class ClearAdminLoginThrottleCommandTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const IP = '192.0.2.45';
+    private const FIRST_IP = '192.0.2.45';
 
-    public function test_command_has_no_arguments_or_options(): void
+    private const SECOND_IP = '198.51.100.72';
+
+    public function test_command_has_no_arguments_options_or_ip_prompt(): void
     {
         $command = $this->app->make(ClearAdminLoginThrottleCommand::class);
+        $source = file_get_contents(app_path('Console/Commands/ClearAdminLoginThrottleCommand.php'));
 
         $this->assertSame('admin:clear-login-throttle', $command->getName());
         $this->assertSame([], $command->getDefinition()->getArguments());
         $this->assertSame([], $command->getDefinition()->getOptions());
+        $this->assertStringNotContainsString('Affected client IP address', $source);
+        $this->assertStringNotContainsString('FILTER_VALIDATE_IP', $source);
     }
 
     public function test_command_requires_a_valid_exact_existing_email(): void
@@ -42,107 +47,120 @@ class ClearAdminLoginThrottleCommandTest extends TestCase
             ->assertFailed();
     }
 
-    public function test_command_rejects_an_invalid_ip_without_clearing_the_throttle(): void
+    public function test_cancelling_confirmation_does_not_rotate_the_namespace(): void
     {
         $user = User::factory()->create();
-        $key = $this->seedPrimary($user->email, self::IP);
+        $throttle = app(LoginThrottle::class);
+        $generation = $throttle->currentGeneration();
+        $key = $this->seedPrimary($user->email, self::FIRST_IP);
 
         $this->artisan('admin:clear-login-throttle')
             ->expectsQuestion('Exact admin email', $user->email)
-            ->expectsQuestion('Affected client IP address', 'not-an-ip')
-            ->expectsOutput('A valid IP address is required.')
-            ->assertFailed();
-
-        $this->assertSame(1, RateLimiter::attempts($key));
-    }
-
-    public function test_cancelling_confirmation_makes_no_changes(): void
-    {
-        $user = User::factory()->create();
-        $key = $this->seedPrimary($user->email, self::IP);
-
-        $this->artisan('admin:clear-login-throttle')
-            ->expectsQuestion('Exact admin email', $user->email)
-            ->expectsQuestion('Affected client IP address', self::IP)
-            ->expectsConfirmation('Clear only this administrator login throttle?', 'no')
+            ->expectsConfirmation('Clear all temporary login limits?', 'no')
             ->expectsOutput('Login throttle reset cancelled.')
             ->assertFailed();
 
+        $this->assertSame($generation, $throttle->currentGeneration());
         $this->assertSame(1, RateLimiter::attempts($key));
     }
 
-    public function test_command_clears_only_the_matching_primary_and_ip_counters(): void
+    public function test_command_rotates_all_primary_and_ip_buckets_without_deleting_old_entries(): void
+    {
+        $user = User::factory()->create();
+        $throttle = app(LoginThrottle::class);
+        $oldGeneration = $throttle->currentGeneration();
+        $oldKeys = [
+            $this->seedPrimary($user->email, self::FIRST_IP, LoginThrottle::PRIMARY_MAX_ATTEMPTS),
+            $this->seedIp(self::FIRST_IP, LoginThrottle::IP_MAX_ATTEMPTS),
+            $this->seedPrimary($user->email, self::SECOND_IP, LoginThrottle::PRIMARY_MAX_ATTEMPTS),
+            $this->seedIp(self::SECOND_IP, LoginThrottle::IP_MAX_ATTEMPTS),
+        ];
+
+        $this->runSuccessfulCommand($user);
+
+        $this->assertNotSame($oldGeneration, $throttle->currentGeneration());
+        $this->assertSame(LoginThrottle::PRIMARY_MAX_ATTEMPTS, RateLimiter::attempts($oldKeys[0]));
+        $this->assertSame(LoginThrottle::IP_MAX_ATTEMPTS, RateLimiter::attempts($oldKeys[1]));
+        $this->assertSame(LoginThrottle::PRIMARY_MAX_ATTEMPTS, RateLimiter::attempts($oldKeys[2]));
+        $this->assertSame(LoginThrottle::IP_MAX_ATTEMPTS, RateLimiter::attempts($oldKeys[3]));
+
+        foreach ([self::FIRST_IP, self::SECOND_IP] as $ip) {
+            $this->withServerVariables(['REMOTE_ADDR' => $ip])
+                ->post(route('login.store'), [
+                    'email' => $user->email,
+                    'password' => 'wrong-password',
+                ])
+                ->assertSessionHasErrors([
+                    'email' => 'The provided credentials are incorrect.',
+                ]);
+
+            $this->assertSame(1, RateLimiter::attempts($throttle->emailIpKey($user->email, $ip)));
+            $this->assertSame(1, RateLimiter::attempts($throttle->ipKey($ip)));
+        }
+    }
+
+    public function test_namespace_is_created_when_absent_and_new_failures_use_it(): void
+    {
+        $throttle = app(LoginThrottle::class);
+        $generation = $throttle->currentGeneration();
+
+        $this->assertNotSame('', $generation);
+        $this->assertSame($generation, $throttle->currentGeneration());
+
+        $key = $throttle->emailIpKey('unknown@example.com', self::FIRST_IP);
+
+        $this->withServerVariables(['REMOTE_ADDR' => self::FIRST_IP])
+            ->post(route('login.store'), [
+                'email' => 'unknown@example.com',
+                'password' => 'wrong-password',
+            ])
+            ->assertSessionHasErrors('email');
+
+        $this->assertSame(1, RateLimiter::attempts($key));
+    }
+
+    public function test_command_preserves_unrelated_cache_sessions_and_administrator_data(): void
     {
         $user = User::factory()->withTwoFactor()->create();
-        $throttle = app(LoginThrottle::class);
-        $targetPrimary = $this->seedPrimary($user->email, self::IP);
-        $targetIp = $this->seedIp(self::IP);
-        $unrelatedPrimary = $this->seedPrimary('other@example.com', self::IP);
-        $unrelatedIp = $this->seedIp('192.0.2.99');
+        $this->seedPrimary($user->email, self::FIRST_IP);
         Cache::put('unrelated-application-cache-entry', 'preserved', 3600);
         session(['preserved-session-value' => Str::random(20)]);
         $sessionValue = session('preserved-session-value');
-        $originalPassword = $user->password;
-        $originalTwoFactor = [
-            $user->getRawOriginal('two_factor_secret'),
-            $user->getRawOriginal('two_factor_recovery_codes'),
-            $user->getRawOriginal('two_factor_confirmed_at'),
+        $preservedUser = [
+            'password' => $user->password,
+            'email' => $user->email,
+            'email_verified_at' => $user->getRawOriginal('email_verified_at'),
+            'remember_token' => $user->remember_token,
+            'two_factor_secret' => $user->getRawOriginal('two_factor_secret'),
+            'two_factor_recovery_codes' => $user->getRawOriginal('two_factor_recovery_codes'),
+            'two_factor_confirmed_at' => $user->getRawOriginal('two_factor_confirmed_at'),
         ];
 
-        $this->artisan('admin:clear-login-throttle')
-            ->expectsQuestion('Exact admin email', $user->email)
-            ->expectsQuestion('Affected client IP address', self::IP)
-            ->expectsConfirmation('Clear only this administrator login throttle?', 'yes')
-            ->expectsOutput('Login throttle cleared. Normal authentication is still required.')
-            ->assertSuccessful();
+        $this->runSuccessfulCommand($user);
 
-        $this->assertSame(0, RateLimiter::attempts($targetPrimary));
-        $this->assertSame(0, RateLimiter::attempts($targetIp));
-        $this->assertSame(1, RateLimiter::attempts($unrelatedPrimary));
-        $this->assertSame(1, RateLimiter::attempts($unrelatedIp));
         $this->assertSame('preserved', Cache::get('unrelated-application-cache-entry'));
         $this->assertSame($sessionValue, session('preserved-session-value'));
         $this->assertGuest();
 
         $user->refresh();
-        $this->assertSame($originalPassword, $user->password);
-        $this->assertSame($originalTwoFactor, [
-            $user->getRawOriginal('two_factor_secret'),
-            $user->getRawOriginal('two_factor_recovery_codes'),
-            $user->getRawOriginal('two_factor_confirmed_at'),
+        $this->assertSame($preservedUser, [
+            'password' => $user->password,
+            'email' => $user->email,
+            'email_verified_at' => $user->getRawOriginal('email_verified_at'),
+            'remember_token' => $user->remember_token,
+            'two_factor_secret' => $user->getRawOriginal('two_factor_secret'),
+            'two_factor_recovery_codes' => $user->getRawOriginal('two_factor_recovery_codes'),
+            'two_factor_confirmed_at' => $user->getRawOriginal('two_factor_confirmed_at'),
         ]);
-        $this->assertSame(
-            hash('sha256', $throttle->normalizeEmail($user->email)),
-            $throttle->emailIdentifier($user->email),
-        );
     }
 
-    public function test_no_matching_throttle_returns_safe_information_and_preserves_other_cache(): void
-    {
-        $user = User::factory()->create();
-        Cache::put('unrelated-application-cache-entry', 'preserved', 3600);
-
-        $this->artisan('admin:clear-login-throttle')
-            ->expectsQuestion('Exact admin email', $user->email)
-            ->expectsQuestion('Affected client IP address', self::IP)
-            ->expectsConfirmation('Clear only this administrator login throttle?', 'yes')
-            ->expectsOutput('No matching login throttle was active.')
-            ->assertSuccessful();
-
-        $this->assertSame('preserved', Cache::get('unrelated-application-cache-entry'));
-    }
-
-    public function test_clearing_a_throttle_does_not_bypass_password_or_two_factor_authentication(): void
+    public function test_reset_does_not_bypass_password_or_two_factor_authentication(): void
     {
         $user = User::factory()->withTwoFactor()->create();
         $this->seedPrimary($user->email, '127.0.0.1', LoginThrottle::PRIMARY_MAX_ATTEMPTS);
-        $this->seedIp('127.0.0.1');
+        $this->seedIp('127.0.0.1', LoginThrottle::IP_MAX_ATTEMPTS);
 
-        $this->artisan('admin:clear-login-throttle')
-            ->expectsQuestion('Exact admin email', $user->email)
-            ->expectsQuestion('Affected client IP address', '127.0.0.1')
-            ->expectsConfirmation('Clear only this administrator login throttle?', 'yes')
-            ->assertSuccessful();
+        $this->runSuccessfulCommand($user);
 
         $this->post(route('login.store'), [
             'email' => $user->email,
@@ -157,31 +175,57 @@ class ClearAdminLoginThrottleCommandTest extends TestCase
         $this->assertGuest();
     }
 
-    public function test_reset_log_omits_credentials_full_ip_and_internal_keys(): void
+    public function test_reset_log_and_command_output_omit_sensitive_or_internal_values(): void
     {
         Log::spy();
         $user = User::factory()->create(['email' => 'operator@example.com']);
-        $this->seedPrimary($user->email, self::IP);
+        $throttle = app(LoginThrottle::class);
+        $oldGeneration = $throttle->currentGeneration();
+        $oldKey = $this->seedPrimary($user->email, self::FIRST_IP);
 
         $this->artisan('admin:clear-login-throttle')
             ->expectsQuestion('Exact admin email', $user->email)
-            ->expectsQuestion('Affected client IP address', self::IP)
-            ->expectsConfirmation('Clear only this administrator login throttle?', 'yes')
+            ->expectsConfirmation('Clear all temporary login limits?', 'yes')
+            ->expectsOutput('All temporary login limits cleared. Normal authentication is still required.')
+            ->doesntExpectOutputToContain($user->email)
+            ->doesntExpectOutputToContain($oldGeneration)
+            ->doesntExpectOutputToContain($oldKey)
             ->assertSuccessful();
 
+        $newGeneration = $throttle->currentGeneration();
+
         Log::shouldHaveReceived('notice')->once()->withArgs(
-            function (string $message, array $context) use ($user): bool {
+            function (string $message, array $context) use ($newGeneration, $oldGeneration, $oldKey, $user): bool {
                 $serialized = $message.json_encode($context, JSON_THROW_ON_ERROR);
 
-                return $message === 'Developer login throttle reset completed.'
+                return $message === 'Login-throttle namespace reset through authorized server command.'
                     && $context['user_id'] === $user->id
                     && $context['email_hash'] === hash('sha256', $user->email)
-                    && $context['ip_network'] === '192.0.2.0/24'
                     && ! str_contains($serialized, $user->email)
-                    && ! str_contains($serialized, self::IP)
+                    && ! str_contains($serialized, self::FIRST_IP)
+                    && ! str_contains($serialized, $oldGeneration)
+                    && ! str_contains($serialized, $newGeneration)
+                    && ! str_contains($serialized, $oldKey)
                     && ! str_contains($serialized, 'login:password:');
             },
         );
+    }
+
+    public function test_login_limit_policy_values_are_unchanged(): void
+    {
+        $this->assertSame(5, LoginThrottle::PRIMARY_MAX_ATTEMPTS);
+        $this->assertSame(15 * 60, LoginThrottle::PRIMARY_DECAY_SECONDS);
+        $this->assertSame(20, LoginThrottle::IP_MAX_ATTEMPTS);
+        $this->assertSame(60 * 60, LoginThrottle::IP_DECAY_SECONDS);
+    }
+
+    private function runSuccessfulCommand(User $user): void
+    {
+        $this->artisan('admin:clear-login-throttle')
+            ->expectsQuestion('Exact admin email', $user->email)
+            ->expectsConfirmation('Clear all temporary login limits?', 'yes')
+            ->expectsOutput('All temporary login limits cleared. Normal authentication is still required.')
+            ->assertSuccessful();
     }
 
     private function seedPrimary(string $email, string $ip, int $attempts = 1): string

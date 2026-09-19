@@ -15,7 +15,7 @@ final class ClearAdminLoginThrottleCommand extends Command
     protected $signature = 'admin:clear-login-throttle';
 
     /** @var string */
-    protected $description = 'Clear one targeted administrator login throttle';
+    protected $description = 'Clear all temporary administrator login throttles';
 
     public function __construct(private LoginThrottle $throttle)
     {
@@ -42,47 +42,30 @@ final class ClearAdminLoginThrottleCommand extends Command
             return self::FAILURE;
         }
 
-        $ip = $this->ask('Affected client IP address');
-
-        if (! is_string($ip) || filter_var($ip, FILTER_VALIDATE_IP) === false) {
-            $this->error('A valid IP address is required.');
-
-            return self::FAILURE;
-        }
-
-        if (! $this->confirm('Clear only this administrator login throttle?')) {
+        if (! $this->confirm('Clear all temporary login limits?')) {
             $this->warn('Login throttle reset cancelled.');
 
             return self::FAILURE;
         }
 
         try {
-            $hadAttempts = $this->throttle->clear($email, $ip);
+            $this->throttle->rotateGeneration();
 
-            Log::notice('Developer login throttle reset completed.', [
+            Log::notice('Login-throttle namespace reset through authorized server command.', [
                 'user_id' => $user->getKey(),
                 'email_hash' => $this->throttle->emailIdentifier($email),
-                'ip_network' => $this->throttle->minimizedIp($ip),
-                'had_attempts' => $hadAttempts,
             ]);
         } catch (Throwable) {
-            Log::error('Developer login throttle reset failed.', [
+            Log::error('Login-throttle namespace reset failed.', [
                 'user_id' => $user->getKey(),
                 'email_hash' => $this->throttle->emailIdentifier($email),
-                'ip_network' => $this->throttle->minimizedIp($ip),
             ]);
             $this->error('Login throttle reset failed. No account data was changed.');
 
             return self::FAILURE;
         }
 
-        if (! $hadAttempts) {
-            $this->info('No matching login throttle was active.');
-
-            return self::SUCCESS;
-        }
-
-        $this->info('Login throttle cleared. Normal authentication is still required.');
+        $this->info('All temporary login limits cleared. Normal authentication is still required.');
 
         return self::SUCCESS;
     }
