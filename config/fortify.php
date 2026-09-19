@@ -1,7 +1,11 @@
 <?php
 
+use App\Http\Middleware\EnsureTwoFactorSettingsAreUnlocked;
 use App\Http\Middleware\ProtectPasswordResetRoutes;
 use Laravel\Fortify\Features;
+
+$passwordResetEnabled = (bool) env('AUTH_PASSWORD_RESET_ENABLED', false);
+$twoFactorSettingsLocked = (bool) env('AUTH_TWO_FACTOR_SETTINGS_LOCKED', true);
 
 return [
 
@@ -30,6 +34,10 @@ return [
     */
 
     'passwords' => 'users',
+
+    'password_reset_enabled' => $passwordResetEnabled,
+
+    'two_factor_settings_locked' => $twoFactorSettingsLocked,
 
     /*
     |--------------------------------------------------------------------------
@@ -102,7 +110,11 @@ return [
     |
     */
 
-    'middleware' => ['web', ProtectPasswordResetRoutes::class],
+    'middleware' => [
+        'web',
+        ProtectPasswordResetRoutes::class,
+        EnsureTwoFactorSettingsAreUnlocked::class,
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -120,9 +132,6 @@ return [
         /* @chisel-2fa */
         'two-factor' => 'two-factor',
         /* @end-chisel-2fa */
-        /* @chisel-passkeys */
-        'passkeys' => 'passkeys',
-        /* @end-chisel-passkeys */
     ],
 
     /*
@@ -137,24 +146,6 @@ return [
     */
 
     'views' => true,
-
-    /* @chisel-passkeys */
-    /*
-    |--------------------------------------------------------------------------
-    | Passkeys
-    |--------------------------------------------------------------------------
-    |
-    | These settings configure Fortify's passkey (WebAuthn) support.
-    |
-    */
-
-    'passkeys' => [
-        'relying_party_id' => parse_url(config('app.url'), PHP_URL_HOST),
-        'allowed_origins' => [config('app.url')],
-        'user_handle_secret' => env('PASSKEYS_USER_HANDLE_SECRET', config('app.key')),
-        'timeout' => 60000,
-    ],
-    /* @end-chisel-passkeys */
 
     /*
     |--------------------------------------------------------------------------
@@ -178,7 +169,9 @@ return [
         // Re-enable only alongside a real authorisation layer.
         // Features::registration(),
         /* @end-chisel-registration */
-        Features::resetPasswords(),
+        // Public recovery is dormant until a reliable mail provider is tested.
+        // The hardened implementation stays in place behind this environment flag.
+        ...($passwordResetEnabled ? [Features::resetPasswords()] : []),
         /* @chisel-email-verification */
         Features::emailVerification(),
         /* @end-chisel-email-verification */
@@ -189,11 +182,6 @@ return [
             // 'window' => 0
         ]),
         /* @end-chisel-2fa */
-        /* @chisel-passkeys */
-        Features::passkeys([
-            'confirmPassword' => true,
-        ]),
-        /* @end-chisel-passkeys */
     ],
 
 ];

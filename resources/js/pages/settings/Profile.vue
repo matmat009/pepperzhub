@@ -76,13 +76,15 @@ const siteSettings = useSiteSettings();
                     id="email"
                     type="email"
                     class="mt-1 block w-full"
-                    name="email"
-                    :default-value="user.email"
-                    required
-                    autocomplete="username"
-                    placeholder="Email address"
+                    :model-value="user.email"
+                    disabled
+                    readonly
                 />
                 <InputError class="mt-2" :message="errors.email" />
+                <p class="text-sm text-muted-foreground">
+                    The administrator email is managed by the system and cannot
+                    be changed here.
+                </p>
             </div>
 
             <!-- @chisel-email-verification -->

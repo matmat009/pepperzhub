@@ -2,7 +2,6 @@
 import { Form, Head } from '@inertiajs/vue3';
 import { ArrowRight } from '@lucide/vue';
 import InputError from '@/components/InputError.vue';
-import PasskeyVerify from '@/components/PasskeyVerify.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,6 @@ import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { store } from '@/routes/login';
-import { request } from '@/routes/password';
 
 defineOptions({
     layout: {
@@ -23,6 +21,7 @@ defineOptions({
 defineProps<{
     status?: string;
     canResetPassword: boolean;
+    resetPasswordUrl: string | null;
 }>();
 </script>
 
@@ -36,12 +35,6 @@ defineProps<{
     >
         {{ status }}
     </div>
-
-    <!-- @chisel-passkeys -->
-    <PasskeyVerify
-        class="[&_.my-6]:my-4 [&_.uppercase]:normal-case [&_[data-slot=button]]:h-12 [&_[data-slot=button]]:rounded-lg [&_[data-slot=button]]:border-sf-serenity-blue/75 [&_[data-slot=button]]:text-sm [&_[data-slot=button]]:font-semibold [&_[data-slot=button]]:shadow-none [&_[data-slot=button]]:hover:border-sf-primary/60 [&_[data-slot=button]]:hover:bg-blue-50/65 dark:[&_[data-slot=button]]:hover:bg-sf-primary/10 [&_[data-slot=separator]]:bg-sf-serenity-blue/50"
-    />
-    <!-- @end-chisel-passkeys -->
 
     <Form
         v-bind="store.form()"
@@ -95,8 +88,8 @@ defineProps<{
                         class="h-12 rounded-lg border-sf-serenity-blue/75 px-4 pr-12 text-base shadow-none placeholder:text-slate-400 focus-visible:border-sf-primary focus-visible:ring-sf-primary/20 dark:border-sf-serenity-blue/45 dark:bg-white/[0.04]"
                     />
                     <TextLink
-                        v-if="canResetPassword"
-                        :href="request()"
+                        v-if="canResetPassword && resetPasswordUrl"
+                        :href="resetPasswordUrl"
                         class="col-start-2 row-start-1 text-sm font-medium text-blue-600 no-underline hover:text-blue-700 hover:underline focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-sf-primary/25 focus-visible:outline-none dark:text-blue-300 dark:hover:text-blue-200"
                     >
                         Forgot password?

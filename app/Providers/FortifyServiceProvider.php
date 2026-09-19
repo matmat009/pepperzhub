@@ -69,19 +69,27 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private function configureViews(): void
     {
-        Fortify::loginView(fn (Request $request) => Inertia::render('auth/Login', [
-            'canResetPassword' => Features::enabled(Features::resetPasswords()),
-            'status' => $request->session()->get('status'),
-        ]));
+        Fortify::loginView(function (Request $request) {
+            $canResetPassword = config('fortify.password_reset_enabled')
+                && Features::enabled(Features::resetPasswords());
+
+            return Inertia::render('auth/Login', [
+                'canResetPassword' => $canResetPassword,
+                'resetPasswordUrl' => $canResetPassword ? route('password.request') : null,
+                'status' => $request->session()->get('status'),
+            ]);
+        });
 
         Fortify::resetPasswordView(fn (Request $request) => Inertia::render('auth/ResetPassword', [
             'email' => $request->email,
+            'submitUrl' => route('password.update'),
             'token' => $request->route('token'),
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
         ]));
 
         Fortify::requestPasswordResetLinkView(fn (Request $request) => Inertia::render('auth/ForgotPassword', [
             'status' => $request->session()->get('status'),
+            'submitUrl' => route('password.email'),
         ]));
 
         /* @chisel-email-verification */
@@ -155,12 +163,5 @@ class FortifyServiceProvider extends ServiceProvider
             });
         }
 
-        /* @chisel-passkeys */
-        RateLimiter::for('passkeys', function (Request $request) {
-            return Limit::perMinute(10)->by(
-                ($request->input('credential.id') ?: $request->session()->getId()).'|'.$request->ip(),
-            );
-        });
-        /* @end-chisel-passkeys */
     }
 }

@@ -41,7 +41,7 @@ endpoints for the app's own screens.
 | Styling | Tailwind `^4.1` — **CSS-first**, no `tailwind.config.js` |
 | Components | shadcn-vue (on `reka-ui ^2.10`), icons from `@lucide/vue ^1.33` |
 | Build | Vite `^8`, Wayfinder `@laravel/vite-plugin-wayfinder ^0.1.3` |
-| Auth | Laravel Fortify + Passkeys (operator login only) |
+| Auth | Laravel Fortify + 2FA (operator login only) |
 
 **Tailwind v4 is CSS-first.** All theme tokens live in the `@theme` block in
 `resources/css/app.css`. There is no config file to edit — adding a colour means
@@ -144,7 +144,7 @@ truth. Import it; do not copy it. If it ever moves, update both sides together.
 | **Categories** | `categories`, `Admin\CategoryController` | Full CRUD. Deletion is **blocked** while products reference it — `CategoryDeletionTest` |
 | **Storefront reads** | `Storefront\ProductController` | Home / Catalog / Product Detail. Filters `status = 'active'` only; drafts and archived 404 |
 | **Stock movements** | `stock_movements`, `Admin\InventoryController` | One row per change to `product_variants.stock`, per variant. Checkout writes `Order Fulfilled`, cancel/reject writes `Order Cancelled`, the product form writes `Correction` — each inside the transaction that moved the stock. The Adjust dialog offers the manual reasons only |
-| **Auth** | Fortify + passkeys + 2FA | Operator login only |
+| **Auth** | Fortify + 2FA | Operator login only |
 
 Test suite: **61 passing, 235 assertions** (`php artisan test`). Coverage is
 concentrated on the admin write paths and storefront visibility rules —

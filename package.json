@@ -37,7 +37,6 @@
         "@dnd-kit/abstract": "^0.1.21",
         "@inertiajs/vite": "^3.0.0",
         "@inertiajs/vue3": "^3.0.0",
-        "@laravel/passkeys": "^0.2.0",
         "@lucide/vue": "^1.33.0",
         "@tabler/icons-vue": "^3.46.0",
         "@tanstack/vue-table": "^9.1.2",

@@ -16,7 +16,18 @@ class ProtectPasswordResetRoutes
 
     public function handle(Request $request, Closure $next): Response
     {
-        return match ($request->route()?->getName()) {
+        $routeName = $request->route()?->getName();
+
+        if (in_array($routeName, [
+            'password.request',
+            'password.email',
+            'password.reset',
+            'password.update',
+        ], true) && ! config('fortify.password_reset_enabled')) {
+            abort(404);
+        }
+
+        return match ($routeName) {
             'password.email' => $this->throttle->handle(
                 $request,
                 fn (Request $request): Response => $this->requestResetLink($request, $next),

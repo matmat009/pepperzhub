@@ -23,8 +23,9 @@ are development defaults; several of them are actively unsafe in production.
 | `APP_DEBUG` | `false` | `true` renders stack traces, config values and connection strings to whoever triggers an error. |
 | `APP_URL` | The exact public origin, `https://` included, no trailing slash | The `public` disk builds product-image and payment-QR URLs from it. Wrong value ⇒ every image 404s. |
 | `DB_DATABASE` / `DB_USERNAME` / `DB_PASSWORD` | Per environment | `DB_PASSWORD` is blank in the example. It must not be blank in production. |
-| `MAIL_*` | Gmail SMTP with a private App Password | See "Mail" below — this one has a real consequence. |
-| `MAIL_FROM_ADDRESS` | The same authorized Gmail address as `MAIL_USERNAME` | Gmail can reject or rewrite unauthorized sender identities. |
+| `AUTH_PASSWORD_RESET_ENABLED` | `false` while email delivery is paused | Removes every public password-reset route and the login link. |
+| `AUTH_TWO_FACTOR_SETTINGS_LOCKED` | `true` | Keeps the 2FA login challenge active while blocking every Settings management endpoint. |
+| `MAIL_*` | `MAIL_MAILER=log` while delivery is paused | Optional provider setup is documented below. |
 
 ### Should review
 
@@ -36,7 +37,16 @@ are development defaults; several of them are actively unsafe in production.
 | `AWS_*` | Unused — no disk targets S3. Left in place in case object storage is added later. |
 | `LOG_LEVEL` | Consider `warning` or `error` in production; `debug` is noisy and can log more than you want retained. |
 
-### Mail — read before deploying
+### Mail — currently disabled
+
+The current safe baseline is `MAIL_MAILER=log` with
+`AUTH_PASSWORD_RESET_ENABLED=false`. Public password recovery is unavailable,
+and the admin email is read-only in Profile so the sole operator cannot
+accidentally clear verification while no message can be delivered.
+
+The Gmail settings below are retained for a future retry. They are optional and
+must not be enabled until a controlled diagnostic message has been accepted by
+the provider and confirmed in the intended inbox.
 
 Use these settings in the server's private `.env`:
 
@@ -78,6 +88,59 @@ The existing operator account is grandfathered by migration
 unaffected. Do not create an unverified operator until Gmail SMTP has been
 configured and an authorized delivery test has succeeded; otherwise that
 account will be stuck on `/email/verify` with no usable link.
+
+### Temporary server-assisted admin recovery
+
+While public email recovery is disabled, the client depends on an authorized
+server maintainer:
+
+1. The client contacts the authorized maintainer.
+2. The maintainer verifies the client's identity through a known contact method.
+3. The maintainer uses authorized SSH or hosting-console access to reach the
+   production server.
+4. The maintainer runs `php artisan admin:reset-password` and enters the exact
+   existing admin email. The new password and confirmation are hidden prompts;
+   the command accepts no password argument or option.
+5. The client receives the new password through a secure channel or enters the
+   desired password privately during the assisted session.
+6. The client logs in and completes the existing 2FA challenge. This is a
+   normal password: the client may keep it or change it anytime in Security
+   settings.
+
+The command must be used only after independent identity verification. It
+rotates the remember token and revokes that admin's database sessions without
+changing verification, 2FA, recovery codes, dormant passkey records, profile
+data, other users' sessions, or guest carts.
+
+Hosting and SSH access are now part of the recovery chain and must have their
+own protected recovery method. Email changes also require server assistance
+until delivery returns.
+
+Two-factor authentication remains enforced during login, but its Settings
+controls and management endpoints are locked by
+`AUTH_TWO_FACTOR_SETTINGS_LOCKED=true`. If the administrator loses both the
+authenticator and all existing recovery codes, password recovery will not
+bypass the 2FA challenge. A separate authorized server-side 2FA recovery
+procedure would be required.
+
+### Dormant passkey data
+
+PepperzHub does not expose passkey login, registration, confirmation, or
+management. The historical `passkeys` table and its migration remain intact so
+existing credential rows are not destroyed. Laravel Fortify 1.38 also requires
+the Composer package `laravel/passkeys`, so that backend package remains
+installed as a dormant transitive dependency. Database cleanup requires a
+separately authorized migration after a verified backup.
+
+To restore public recovery safely:
+
+1. Configure a reliable mail provider privately and set the public HTTPS
+   `APP_URL`.
+2. Send one separately authorized diagnostic message and confirm it arrives.
+3. Set `AUTH_PASSWORD_RESET_ENABLED=true`.
+4. Run `php artisan config:clear && php artisan config:cache` on production.
+5. Confirm the Forgot Password link and all reset routes are available, then
+   run the hardened recovery tests before relying on the flow.
 
 ---
 

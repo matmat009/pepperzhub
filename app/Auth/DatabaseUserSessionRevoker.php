@@ -13,8 +13,11 @@ class DatabaseUserSessionRevoker
      * Change the password and revoke its sessions atomically. Failing before
      * either write is safer than silently accepting an unsupported driver.
      */
-    public function revokeWithinPasswordChange(User $user, Closure $changePassword): void
-    {
+    public function revokeWithinPasswordChange(
+        User $user,
+        Closure $changePassword,
+        ?string $exceptSessionId = null,
+    ): void {
         $connection = $this->connectionFor($user);
         $table = config('session.table');
 
@@ -22,12 +25,17 @@ class DatabaseUserSessionRevoker
             throw new LogicException('The database session table is not configured.');
         }
 
-        $connection->transaction(function () use ($changePassword, $connection, $table, $user): void {
+        $connection->transaction(function () use ($changePassword, $connection, $exceptSessionId, $table, $user): void {
             $changePassword();
 
-            $connection->table($table)
-                ->where('user_id', $user->getAuthIdentifier())
-                ->delete();
+            $sessions = $connection->table($table)
+                ->where('user_id', $user->getAuthIdentifier());
+
+            if ($exceptSessionId !== null) {
+                $sessions->where('id', '!=', $exceptSessionId);
+            }
+
+            $sessions->delete();
         });
     }
 

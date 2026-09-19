@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Auth\DatabaseUserSessionRevoker;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\PasswordUpdateRequest;
 use App\Http\Requests\Settings\TwoFactorAuthenticationRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -18,36 +21,24 @@ class SecurityController extends Controller
      */
     public function edit(TwoFactorAuthenticationRequest $request): Response
     {
+        $twoFactorAvailable = Features::canManageTwoFactorAuthentication();
+        $twoFactorSettingsLocked = (bool) config('fortify.two_factor_settings_locked');
         $props = [
             /* @chisel-2fa */
-            'canManageTwoFactor' => Features::canManageTwoFactorAuthentication(),
+            'twoFactorAvailable' => $twoFactorAvailable,
+            'canManageTwoFactor' => $twoFactorAvailable && ! $twoFactorSettingsLocked,
+            'twoFactorSettingsLocked' => $twoFactorAvailable && $twoFactorSettingsLocked,
             /* @end-chisel-2fa */
-            /* @chisel-passkeys */
-            'canManagePasskeys' => Features::canManagePasskeys(),
-            'passkeys' => Features::canManagePasskeys()
-                ? $request->user()
-                    ->passkeys()
-                    ->select(['id', 'name', 'credential', 'created_at', 'last_used_at'])
-                    ->latest()
-                    ->get()
-                    ->map(fn ($passkey) => [
-                        'id' => $passkey->id,
-                        'name' => $passkey->name,
-                        'authenticator' => $passkey->authenticator,
-                        'created_at_diff' => $passkey->created_at->diffForHumans(),
-                        'last_used_at_diff' => $passkey->last_used_at?->diffForHumans(),
-                    ])
-                    ->values()
-                    ->all()
-                : [],
-            /* @end-chisel-passkeys */
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
         ];
 
         /* @chisel-2fa */
-        if (Features::canManageTwoFactorAuthentication()) {
-            $request->ensureStateIsValid();
+        if ($twoFactorAvailable) {
+            if (! $twoFactorSettingsLocked) {
+                $request->ensureStateIsValid();
+            }
 
+            $props['twoFactorStatus'] = $this->twoFactorStatus($request->user());
             $props['twoFactorEnabled'] = $request->user()->hasEnabledTwoFactorAuthentication();
             $props['requiresConfirmation'] = Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm');
         }
@@ -56,14 +47,37 @@ class SecurityController extends Controller
         return Inertia::render('settings/Security', $props);
     }
 
+    private function twoFactorStatus(User $user): string
+    {
+        if ($user->hasEnabledTwoFactorAuthentication()) {
+            return 'enabled';
+        }
+
+        return $user->two_factor_secret === null ? 'disabled' : 'pending';
+    }
+
     /**
      * Update the user's password.
      */
-    public function update(PasswordUpdateRequest $request): RedirectResponse
-    {
-        $request->user()->update([
-            'password' => $request->password,
-        ]);
+    public function update(
+        PasswordUpdateRequest $request,
+        DatabaseUserSessionRevoker $sessions,
+    ): RedirectResponse {
+        $user = $request->user();
+
+        $sessions->revokeWithinPasswordChange(
+            $user,
+            function () use ($request, $user): void {
+                $user->forceFill([
+                    'password' => $request->validated('password'),
+                ]);
+                $user->setRememberToken(Str::random(60));
+                $user->save();
+            },
+            $request->session()->getId(),
+        );
+
+        $request->session()->regenerate(true);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Password updated.')]);
 

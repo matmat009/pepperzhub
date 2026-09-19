@@ -494,13 +494,17 @@ class PasswordResetTest extends TestCase
             ->assertOk();
     }
 
-    public function test_reset_preserves_two_factor_and_passkeys_and_next_login_still_challenges(): void
+    public function test_reset_preserves_two_factor_and_dormant_passkey_records_and_next_login_still_challenges(): void
     {
         $user = User::factory()->withTwoFactor()->create();
-        $passkey = $user->passkeys()->create([
+        $passkeyId = DB::table('passkeys')->insertGetId([
+            'user_id' => $user->id,
             'name' => 'Admin security key',
             'credential_id' => 'credential-id',
-            'credential' => ['public_key' => 'opaque-test-value'],
+            'credential' => json_encode(['public_key' => 'opaque-test-value'], JSON_THROW_ON_ERROR),
+            'last_used_at' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
         $twoFactorState = [
             'two_factor_secret' => $user->getRawOriginal('two_factor_secret'),
@@ -524,7 +528,7 @@ class PasswordResetTest extends TestCase
             'two_factor_recovery_codes' => $user->getRawOriginal('two_factor_recovery_codes'),
             'two_factor_confirmed_at' => $user->getRawOriginal('two_factor_confirmed_at'),
         ]);
-        $this->assertTrue($user->passkeys()->whereKey($passkey->id)->exists());
+        $this->assertDatabaseHas('passkeys', ['id' => $passkeyId, 'user_id' => $user->id]);
 
         $this->usingFreshGuestSession()
             ->post(route('login.store'), ['email' => $user->email, 'password' => 'newpassword123'])

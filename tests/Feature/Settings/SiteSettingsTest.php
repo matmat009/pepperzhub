@@ -348,7 +348,6 @@ class SiteSettingsTest extends TestCase
         $this->actingAs($user)
             ->patch(route('profile.update'), [
                 'name' => 'Operator',
-                'email' => 'operator@pepperzhub.ph',
             ])
             ->assertSessionHasNoErrors();
 
@@ -357,6 +356,7 @@ class SiteSettingsTest extends TestCase
         $this->assertSame('new@pepperzhub.ph', $settings->contact_email);
         $this->assertSame('Quezon City, Philippines', $settings->contact_address);
         $this->assertSame('Operator', $user->refresh()->name);
+        $this->assertSame($originalEmail, $user->email);
     }
 
     public function test_a_guest_cannot_change_the_settings(): void
