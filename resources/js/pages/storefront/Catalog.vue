@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/vue3';
 import { ChevronDown, Search, SlidersHorizontal, X } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import ProductCard from '@/components/storefront/ProductCard.vue';
+import { vReveal } from '@/lib/scrollReveal';
 import type { Product } from '@/pages/admin/products/all-products/types';
 
 const props = defineProps<{
@@ -121,7 +122,10 @@ const pickCategory = (category: string) => {
             class="pointer-events-none absolute inset-x-0 -top-24 -bottom-px -z-10 bg-[linear-gradient(125deg,var(--color-sf-hero-blue)_0%,#fff_48%,var(--color-sf-hero-rose)_100%)]"
         />
 
-        <div class="mx-auto flex w-full max-w-[860px] flex-col items-center">
+        <div
+            v-reveal="'stagger'"
+            class="mx-auto flex w-full max-w-[860px] flex-col items-center"
+        >
             <p
                 class="text-[11px] font-semibold tracking-[0.3em] text-sf-primary uppercase"
             >
@@ -163,13 +167,13 @@ const pickCategory = (category: string) => {
                         type="search"
                         placeholder="Search peptides"
                         aria-label="Search peptides"
-                        class="w-56 rounded-full border border-sf-line-strong py-2.5 pr-4 pl-10 text-sm text-sf-ink transition-colors duration-200 ease-out outline-none focus:border-sf-primary"
+                        class="w-56 rounded-full border border-sf-line-strong py-2.5 pr-4 pl-10 text-sm text-sf-ink transition-colors duration-sf-ui ease-sf outline-none focus:border-sf-primary"
                     />
                 </label>
 
                 <button
                     type="button"
-                    class="inline-flex items-center gap-2 rounded-full border border-sf-line-strong px-4 py-2.5 text-sm font-medium text-sf-text transition-colors duration-200 ease-out hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary lg:hidden"
+                    class="inline-flex items-center gap-2 rounded-full border border-sf-line-strong px-4 py-2.5 text-sm font-medium text-sf-text transition-colors duration-sf-fast ease-sf hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary lg:hidden"
                     @click="drawerOpen = true"
                 >
                     Filters
@@ -180,7 +184,7 @@ const pickCategory = (category: string) => {
                     Sort By
                     <select
                         v-model="sort"
-                        class="rounded-full border border-sf-line-strong px-4 py-2.5 text-sm text-sf-ink transition-colors duration-200 ease-out outline-none focus:border-sf-primary"
+                        class="rounded-full border border-sf-line-strong px-4 py-2.5 text-sm text-sf-ink transition-colors duration-sf-ui ease-sf outline-none focus:border-sf-primary"
                     >
                         <option value="featured">Featured</option>
                         <option value="price-asc">Price: Low to High</option>
@@ -193,11 +197,18 @@ const pickCategory = (category: string) => {
 
         <div class="mt-8 flex items-start gap-10">
             <!-- Static rail on desktop, slide-over drawer below lg. -->
-            <div
-                v-if="drawerOpen"
-                class="fixed inset-0 z-70 bg-[rgba(20,22,35,0.45)] lg:hidden"
-                @click="drawerOpen = false"
-            />
+            <Transition
+                enter-active-class="transition-opacity duration-sf-ui ease-sf"
+                enter-from-class="opacity-0"
+                leave-active-class="transition-opacity duration-sf-fast ease-sf"
+                leave-to-class="opacity-0"
+            >
+                <div
+                    v-if="drawerOpen"
+                    class="fixed inset-0 z-70 bg-[rgba(20,22,35,0.45)] lg:hidden"
+                    @click="drawerOpen = false"
+                />
+            </Transition>
             <!--
                 Sticky from lg up only, where the two-column layout exists.
 
@@ -215,7 +226,7 @@ const pickCategory = (category: string) => {
                 class="shrink-0 lg:block lg:w-56"
                 :class="
                     drawerOpen
-                        ? 'fixed inset-y-0 left-0 z-80 w-72 overflow-y-auto bg-white p-6 shadow-2xl'
+                        ? 'sf-drawer fixed inset-y-0 left-0 z-80 w-72 overflow-y-auto bg-white p-6 shadow-2xl'
                         : 'hidden lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:self-start lg:overflow-y-auto lg:pr-1'
                 "
             >
@@ -229,7 +240,7 @@ const pickCategory = (category: string) => {
                     <button
                         type="button"
                         aria-label="Close filters"
-                        class="grid size-8 place-items-center rounded-full border border-sf-line-strong text-sf-text hover:border-sf-primary hover:text-sf-primary"
+                        class="grid size-8 place-items-center rounded-full border border-sf-line-strong text-sf-text transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary"
                         @click="drawerOpen = false"
                     >
                         <X class="size-4" />
@@ -241,7 +252,7 @@ const pickCategory = (category: string) => {
                         v-for="category in categoryTabs"
                         :key="category"
                         type="button"
-                        class="text-left text-[15px] transition-colors duration-200 ease-out hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="text-left text-[15px] transition-colors duration-sf-ui ease-sf hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                         :class="
                             activeCategory === category
                                 ? 'font-semibold text-sf-primary'
@@ -258,29 +269,44 @@ const pickCategory = (category: string) => {
                         type="button"
                         class="flex w-full items-center justify-between font-display text-[15px] font-semibold text-sf-ink"
                         :aria-expanded="priceOpen"
+                        aria-controls="catalog-filter-price"
                         @click="priceOpen = !priceOpen"
                     >
                         Price Range
                         <ChevronDown
-                            class="size-4 transition-transform duration-200 ease-out"
+                            class="size-4 transition-transform duration-sf-ui ease-sf"
                             :class="priceOpen ? 'rotate-180' : ''"
                         />
                     </button>
-                    <div v-if="priceOpen" class="mt-4 flex flex-col gap-3">
-                        <label
-                            v-for="band in PRICE_BANDS"
-                            :key="band.id"
-                            class="flex cursor-pointer items-center gap-2.5 text-[15px] text-sf-text"
-                        >
-                            <input
-                                v-model="priceBand"
-                                type="radio"
-                                name="price-band"
-                                :value="band.id"
-                                class="size-4 accent-sf-primary"
-                            />
-                            {{ band.label }}
-                        </label>
+                    <!--
+                        Collapsed rather than unmounted, so the height has
+                        somewhere to travel. `visibility` in the .sf-collapse
+                        rule keeps the closed panel out of the tab order and out
+                        of the accessibility tree, which a bare 0fr would not.
+                    -->
+                    <div
+                        id="catalog-filter-price"
+                        class="sf-collapse"
+                        :data-open="priceOpen ? '' : undefined"
+                    >
+                        <div>
+                            <div class="mt-4 flex flex-col gap-3">
+                                <label
+                                    v-for="band in PRICE_BANDS"
+                                    :key="band.id"
+                                    class="flex cursor-pointer items-center gap-2.5 text-[15px] text-sf-text"
+                                >
+                                    <input
+                                        v-model="priceBand"
+                                        type="radio"
+                                        name="price-band"
+                                        :value="band.id"
+                                        class="size-4 accent-sf-primary"
+                                    />
+                                    {{ band.label }}
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -289,42 +315,60 @@ const pickCategory = (category: string) => {
                         type="button"
                         class="flex w-full items-center justify-between font-display text-[15px] font-semibold text-sf-ink"
                         :aria-expanded="formatOpen"
+                        aria-controls="catalog-filter-format"
                         @click="formatOpen = !formatOpen"
                     >
                         Format
                         <ChevronDown
-                            class="size-4 transition-transform duration-200 ease-out"
+                            class="size-4 transition-transform duration-sf-ui ease-sf"
                             :class="formatOpen ? 'rotate-180' : ''"
                         />
                     </button>
-                    <div v-if="formatOpen" class="mt-4 flex flex-col gap-3">
-                        <label
-                            class="flex cursor-pointer items-center gap-2.5 text-[15px] text-sf-text"
-                        >
-                            <input
-                                v-model="singleVialOnly"
-                                type="checkbox"
-                                class="size-4 accent-sf-primary"
-                            />
-                            Single Vial
-                        </label>
-                        <label
-                            class="flex cursor-pointer items-center gap-2.5 text-[15px] text-sf-text"
-                        >
-                            <input
-                                v-model="kitOnly"
-                                type="checkbox"
-                                class="size-4 accent-sf-primary"
-                            />
-                            Kit
-                        </label>
+                    <div
+                        id="catalog-filter-format"
+                        class="sf-collapse"
+                        :data-open="formatOpen ? '' : undefined"
+                    >
+                        <div>
+                            <div class="mt-4 flex flex-col gap-3">
+                                <label
+                                    class="flex cursor-pointer items-center gap-2.5 text-[15px] text-sf-text"
+                                >
+                                    <input
+                                        v-model="singleVialOnly"
+                                        type="checkbox"
+                                        class="size-4 accent-sf-primary"
+                                    />
+                                    Single Vial
+                                </label>
+                                <label
+                                    class="flex cursor-pointer items-center gap-2.5 text-[15px] text-sf-text"
+                                >
+                                    <input
+                                        v-model="kitOnly"
+                                        type="checkbox"
+                                        class="size-4 accent-sf-primary"
+                                    />
+                                    Kit
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </aside>
 
             <div class="min-w-0 flex-1">
+                <!--
+                    `v-show`, not `v-if`: the grid has to survive a search that
+                    matches nothing and then matches again. Unmounting it would
+                    hand the directive a brand-new element to hide and stagger
+                    all over again, which is exactly the replay filtering must
+                    not cause. Kept mounted, the group stays revealed and
+                    re-matched cards simply appear.
+                -->
                 <div
-                    v-if="filtered.length"
+                    v-show="filtered.length > 0"
+                    v-reveal="'stagger'"
                     class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
                 >
                     <ProductCard
@@ -336,8 +380,8 @@ const pickCategory = (category: string) => {
                     />
                 </div>
                 <div
-                    v-else
-                    class="rounded-2xl border border-dashed border-sf-line-strong px-8 py-20 text-center"
+                    v-if="filtered.length === 0"
+                    class="sf-fade rounded-2xl border border-dashed border-sf-line-strong px-8 py-20 text-center"
                 >
                     <p class="font-display text-xl font-semibold text-sf-ink">
                         No products match those filters.

@@ -72,7 +72,7 @@ const openLegal = (title: string) => {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="Facebook"
-                        class="grid size-11 place-items-center rounded-full border border-sf-line-strong bg-white text-sf-primary transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary-hover"
+                        class="grid size-11 place-items-center rounded-full border border-sf-line-strong bg-white text-sf-primary transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary-hover"
                     >
                         <svg
                             class="size-[19px]"
@@ -91,7 +91,7 @@ const openLegal = (title: string) => {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="Instagram"
-                        class="grid size-11 place-items-center rounded-full border border-sf-line-strong bg-white text-sf-primary transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary-hover"
+                        class="grid size-11 place-items-center rounded-full border border-sf-line-strong bg-white text-sf-primary transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary-hover"
                     >
                         <svg
                             class="size-[19px]"
@@ -116,7 +116,7 @@ const openLegal = (title: string) => {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="TikTok"
-                        class="grid size-11 place-items-center rounded-full border border-sf-line-strong bg-white text-sf-primary transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary-hover"
+                        class="grid size-11 place-items-center rounded-full border border-sf-line-strong bg-white text-sf-primary transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary-hover"
                     >
                         <svg
                             class="size-[18px]"
@@ -139,18 +139,18 @@ const openLegal = (title: string) => {
                 <div class="mt-5 flex flex-col gap-3.5 text-[15px]">
                     <Link
                         :href="home()"
-                        class="text-sf-muted transition-colors duration-200 ease-out hover:text-sf-primary"
+                        class="text-sf-muted transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
                         >Home</Link
                     >
                     <Link
                         :href="catalog()"
-                        class="text-sf-muted transition-colors duration-200 ease-out hover:text-sf-primary"
+                        class="text-sf-muted transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
                         >Products</Link
                     >
                     <a
                         v-if="settings.contact_email"
                         :href="`mailto:${settings.contact_email}`"
-                        class="text-sf-muted transition-colors duration-200 ease-out hover:text-sf-primary"
+                        class="text-sf-muted transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
                         >Contact</a
                     >
                 </div>
@@ -164,7 +164,7 @@ const openLegal = (title: string) => {
                     <a
                         v-if="settings.contact_email"
                         :href="`mailto:${settings.contact_email}`"
-                        class="flex items-center gap-3 text-sf-muted transition-colors duration-200 ease-out hover:text-sf-primary"
+                        class="flex items-center gap-3 text-sf-muted transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
                     >
                         <Mail class="size-[17px] shrink-0 text-sf-primary" />
                         {{ settings.contact_email }}
@@ -226,7 +226,7 @@ const openLegal = (title: string) => {
                 <span class="flex items-center gap-[18px]">
                     <button
                         type="button"
-                        class="text-sf-subtle transition-colors duration-200 ease-out hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="text-sf-subtle transition-colors duration-sf-fast ease-sf hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                         @click="openLegal('Privacy Policy')"
                     >
                         Privacy Policy
@@ -234,7 +234,7 @@ const openLegal = (title: string) => {
                     <span class="size-1 rounded-full bg-sf-line-strong" />
                     <button
                         type="button"
-                        class="text-sf-subtle transition-colors duration-200 ease-out hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="text-sf-subtle transition-colors duration-sf-fast ease-sf hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                         @click="openLegal('Terms of Service')"
                     >
                         Terms of Service
@@ -242,7 +242,7 @@ const openLegal = (title: string) => {
                     <span class="size-1 rounded-full bg-sf-line-strong" />
                     <button
                         type="button"
-                        class="text-sf-subtle transition-colors duration-200 ease-out hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="text-sf-subtle transition-colors duration-sf-fast ease-sf hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                         @click="openLegal('Shipping Policy')"
                     >
                         Shipping Policy
@@ -252,7 +252,7 @@ const openLegal = (title: string) => {
         </div>
 
         <Dialog v-model:open="legalOpen">
-            <DialogContent class="max-w-[520px]">
+            <DialogContent class="sf-dialog max-w-[520px]">
                 <DialogHeader>
                     <DialogTitle
                         class="font-display text-[22px] font-semibold tracking-[-0.02em] text-sf-ink"
@@ -273,7 +273,7 @@ const openLegal = (title: string) => {
                     Questions in the meantime? Reach us at
                     <a
                         :href="`mailto:${settings.contact_email}`"
-                        class="font-semibold text-sf-primary hover:text-sf-primary-hover"
+                        class="font-semibold text-sf-primary transition-colors duration-sf-fast ease-sf hover:text-sf-primary-hover"
                         >{{ settings.contact_email }}</a
                     >.
                 </p>

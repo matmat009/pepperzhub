@@ -10,8 +10,10 @@ import {
     Trash2,
 } from '@lucide/vue';
 import { computed } from 'vue';
+import FadeInImage from '@/components/storefront/FadeInImage.vue';
 import { useStorefrontCart } from '@/composables/useStorefrontCart';
 import type { CartLine } from '@/composables/useStorefrontCart';
+import { vReveal } from '@/lib/scrollReveal';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
 import { home } from '@/routes';
 import { checkout } from '@/routes/storefront';
@@ -47,7 +49,7 @@ const wellClass = (index: number) =>
         <div class="flex items-center gap-2 text-sm text-sf-subtle">
             <Link
                 :href="home()"
-                class="transition-colors duration-200 ease-out hover:text-sf-primary"
+                class="transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
                 >Home</Link
             >
             <span>/</span>
@@ -67,7 +69,7 @@ const wellClass = (index: number) =>
 
         <div
             v-if="isEmpty"
-            class="mt-8 flex flex-col items-center rounded-2xl border border-dashed border-sf-line-strong px-8 py-24 text-center"
+            class="sf-fade mt-8 flex flex-col items-center rounded-2xl border border-dashed border-sf-line-strong px-8 py-24 text-center"
         >
             <span
                 class="grid size-20 place-items-center rounded-full bg-sf-tint text-sf-primary"
@@ -84,10 +86,10 @@ const wellClass = (index: number) =>
             </p>
             <Link
                 :href="catalog()"
-                class="mt-8 inline-flex items-center gap-2.5 rounded-full bg-sf-primary px-9 py-3.5 font-display text-base font-medium text-white transition-colors duration-200 ease-out hover:bg-sf-primary-deep"
+                class="sf-cta mt-8 inline-flex items-center gap-2.5 rounded-full bg-sf-primary px-9 py-3.5 font-display text-base font-medium text-white transition-colors duration-sf-fast ease-sf hover:bg-sf-primary-deep"
             >
                 Browse peptides
-                <ArrowRight class="size-4" />
+                <ArrowRight class="sf-arrow size-4" />
             </Link>
         </div>
 
@@ -97,13 +99,25 @@ const wellClass = (index: number) =>
         -->
         <div
             v-else
+            v-reveal="'fade-in'"
             class="mt-8 grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]"
         >
-            <div class="flex flex-col gap-4">
+            <!--
+                Leave-only, and opacity-only: the row fades where it stands
+                while the totals beside it have already updated. Nothing here
+                waits on an animation, and no height is animated, so the page
+                cannot shift under a second click on the stepper.
+            -->
+            <TransitionGroup
+                tag="div"
+                class="flex flex-col gap-4"
+                leave-active-class="transition-opacity duration-sf-fast ease-sf"
+                leave-to-class="opacity-0"
+            >
                 <div
                     v-for="(line, i) in lines"
                     :key="line.variant_id"
-                    class="rounded-2xl border border-sf-line bg-white p-4 transition-colors duration-200 ease-out hover:border-sf-line-strong sm:p-5"
+                    class="rounded-2xl border border-sf-line bg-white p-4 transition-colors duration-sf-fast ease-sf hover:border-sf-line-strong sm:p-5"
                 >
                     <div class="flex gap-4 sm:gap-5">
                         <Link
@@ -120,9 +134,10 @@ const wellClass = (index: number) =>
                                 v-if="line.image_url"
                                 class="absolute inset-0 grid place-items-center overflow-hidden"
                             >
-                                <img
+                                <FadeInImage
                                     :src="line.image_url"
                                     :alt="line.product_name"
+                                    loading="lazy"
                                     class="block size-full min-h-0 min-w-0 object-contain object-center"
                                 />
                             </span>
@@ -143,7 +158,7 @@ const wellClass = (index: number) =>
                                     </div>
                                     <Link
                                         :href="show(line.product_slug)"
-                                        class="mt-0.5 block truncate font-display text-lg font-semibold text-sf-ink transition-colors duration-200 ease-out hover:text-sf-primary"
+                                        class="mt-0.5 block truncate font-display text-lg font-semibold text-sf-ink transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
                                     >
                                         {{ line.product_name }}
                                     </Link>
@@ -200,7 +215,7 @@ const wellClass = (index: number) =>
                                     <button
                                         type="button"
                                         aria-label="Decrease quantity"
-                                        class="grid size-7 place-items-center rounded-full text-sf-text transition-colors duration-200 ease-out hover:bg-sf-tint hover:text-sf-primary"
+                                        class="grid size-7 place-items-center rounded-full text-sf-text transition-colors duration-sf-fast ease-sf hover:bg-sf-tint hover:text-sf-primary"
                                         @click="
                                             setQuantity(
                                                 line.variant_id,
@@ -220,7 +235,7 @@ const wellClass = (index: number) =>
                                         type="button"
                                         aria-label="Increase quantity"
                                         :disabled="line.quantity >= line.stock"
-                                        class="grid size-7 place-items-center rounded-full text-sf-text transition-colors duration-200 ease-out hover:bg-sf-tint hover:text-sf-primary disabled:cursor-not-allowed disabled:opacity-40"
+                                        class="grid size-7 place-items-center rounded-full text-sf-text transition-colors duration-sf-fast ease-sf hover:bg-sf-tint hover:text-sf-primary disabled:cursor-not-allowed disabled:opacity-40"
                                         @click="
                                             setQuantity(
                                                 line.variant_id,
@@ -234,7 +249,7 @@ const wellClass = (index: number) =>
 
                                 <button
                                     type="button"
-                                    class="inline-flex items-center gap-1.5 text-sm text-sf-subtle transition-colors duration-200 ease-out hover:text-sf-rose-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-rose-deep"
+                                    class="inline-flex items-center gap-1.5 text-sm text-sf-subtle transition-colors duration-sf-fast ease-sf hover:text-sf-rose-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-rose-deep"
                                     @click="remove(line.variant_id)"
                                 >
                                     <Trash2 class="size-4" />
@@ -244,7 +259,7 @@ const wellClass = (index: number) =>
                         </div>
                     </div>
                 </div>
-            </div>
+            </TransitionGroup>
 
             <aside class="lg:sticky lg:top-28">
                 <div class="rounded-2xl border border-sf-line bg-white p-6">
@@ -280,14 +295,14 @@ const wellClass = (index: number) =>
 
                     <Link
                         :href="checkout()"
-                        class="mt-6 flex w-full items-center justify-center rounded-full bg-sf-primary px-6 py-3.5 font-display text-[15px] font-semibold text-white shadow-[0_6px_16px_-6px_rgba(50,70,160,0.55)] transition-colors duration-200 ease-out hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="mt-6 flex w-full items-center justify-center rounded-full bg-sf-primary px-6 py-3.5 font-display text-[15px] font-semibold text-white shadow-[0_6px_16px_-6px_rgba(50,70,160,0.55)] transition duration-sf-fast ease-sf hover:bg-sf-primary-deep hover:shadow-[0_10px_22px_-8px_rgba(50,70,160,0.7)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0"
                     >
                         Checkout
                     </Link>
 
                     <Link
                         :href="catalog()"
-                        class="mt-3 flex w-full items-center justify-center rounded-full border border-sf-line-strong bg-white px-6 py-3 font-display text-[15px] font-medium text-sf-text transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary"
+                        class="mt-3 flex w-full items-center justify-center rounded-full border border-sf-line-strong bg-white px-6 py-3 font-display text-[15px] font-medium text-sf-text transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary"
                     >
                         Continue Shopping
                     </Link>

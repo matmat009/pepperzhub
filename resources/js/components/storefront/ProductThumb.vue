@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { FlaskConical } from '@lucide/vue';
 import { computed } from 'vue';
+import FadeInImage from '@/components/storefront/FadeInImage.vue';
 import type { Product } from '@/pages/admin/products/all-products/types';
 
 /**
@@ -30,7 +31,7 @@ const image = computed(() => props.product.images[0] ?? null);
         aspect ratio it arrives with.
     -->
     <span class="relative block size-full">
-        <img
+        <FadeInImage
             v-if="image"
             :src="image.url"
             :alt="product.name"

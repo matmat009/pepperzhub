@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowRight, MessageSquareQuote, Quote } from '@lucide/vue';
 import { computed, ref } from 'vue';
+import FadeInImage from '@/components/storefront/FadeInImage.vue';
 import {
     Dialog,
     DialogClose,
@@ -11,6 +12,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { useSiteSettings } from '@/composables/useSiteSettings';
+import { vReveal } from '@/lib/scrollReveal';
 import { formatDate } from '@/pages/admin/products/all-products/types';
 import { index as catalog, show } from '@/routes/storefront/products';
 import { reviewDisplayName } from './review';
@@ -104,7 +106,10 @@ const resetFilter = () => {
             class="pointer-events-none absolute inset-x-0 -top-24 -bottom-px -z-10 bg-[linear-gradient(125deg,var(--color-sf-hero-blue)_0%,#fff_48%,var(--color-sf-hero-rose)_100%)]"
         />
 
-        <div class="mx-auto flex w-full max-w-[860px] flex-col items-center">
+        <div
+            v-reveal="'stagger'"
+            class="mx-auto flex w-full max-w-[860px] flex-col items-center"
+        >
             <p
                 class="text-[11px] font-semibold tracking-[0.3em] text-sf-primary uppercase"
             >
@@ -127,6 +132,7 @@ const resetFilter = () => {
     <section class="bg-white px-5 py-12 sm:px-10 sm:py-14 lg:py-16">
         <div class="mx-auto w-full max-w-[1180px]">
             <div
+                v-reveal
                 class="flex flex-col gap-5 border-b border-sf-line pb-5 sm:flex-row sm:items-center sm:justify-between"
             >
                 <h2
@@ -145,7 +151,7 @@ const resetFilter = () => {
                         :key="filter.value"
                         type="button"
                         :aria-pressed="activeFilter === filter.value"
-                        class="min-h-10 rounded-full border px-4 py-2 text-[13px] transition-colors duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="min-h-10 rounded-full border px-4 py-2 text-[13px] transition-colors duration-sf-ui ease-sf focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                         :class="
                             activeFilter === filter.value
                                 ? 'border-sf-primary bg-sf-primary font-semibold text-white'
@@ -158,14 +164,20 @@ const resetFilter = () => {
                 </div>
             </div>
 
+            <!--
+                Kept mounted through an empty filter for the same reason the
+                catalog grid is: a remount would re-hide cards the reader has
+                already seen and stagger them a second time.
+            -->
             <div
-                v-if="filteredReviews.length"
+                v-show="filteredReviews.length > 0"
+                v-reveal="'stagger'"
                 class="mt-5 grid grid-cols-1 items-stretch gap-5 md:grid-cols-2 lg:grid-cols-3"
             >
                 <article
                     v-for="review in filteredReviews"
                     :key="review.id"
-                    class="relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-sf-line-strong bg-white p-5 shadow-[0_10px_28px_-22px_rgba(30,35,60,0.42)] transition duration-200 ease-out hover:border-sf-primary/30 hover:shadow-[0_14px_30px_-20px_rgba(30,35,60,0.38)]"
+                    class="relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-sf-line-strong bg-white p-5 shadow-[0_10px_28px_-22px_rgba(30,35,60,0.42)] transition duration-sf-fast ease-sf hover:border-sf-primary/30 hover:shadow-[0_14px_30px_-20px_rgba(30,35,60,0.38)]"
                 >
                     <span
                         aria-hidden="true"
@@ -210,7 +222,7 @@ const resetFilter = () => {
                     <div
                         class="mt-4 grid aspect-[3/2] w-full place-items-center overflow-hidden rounded-lg bg-sf-well-blue p-2"
                     >
-                        <img
+                        <FadeInImage
                             v-if="hasPhoto(review)"
                             :src="review.image_url ?? ''"
                             :alt="`Photo shared with ${reviewDisplayName(review)}'s review`"
@@ -231,7 +243,7 @@ const resetFilter = () => {
                         <Link
                             v-if="review.product_name && review.product_slug"
                             :href="show(review.product_slug)"
-                            class="max-w-full min-w-0 rounded-full bg-sf-rose-tint px-3 py-2 text-[11px] leading-snug break-words text-sf-rose-deep transition-colors hover:bg-sf-rose-line/55 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-rose-deep"
+                            class="max-w-full min-w-0 rounded-full bg-sf-rose-tint px-3 py-2 text-[11px] leading-snug break-words text-sf-rose-deep transition-colors duration-sf-fast ease-sf hover:bg-sf-rose-line/55 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-rose-deep"
                         >
                             Product:
                             <span class="font-semibold">
@@ -240,19 +252,22 @@ const resetFilter = () => {
                         </Link>
                         <button
                             type="button"
-                            class="ml-auto inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border border-sf-primary px-4 py-2 text-[11px] font-semibold text-sf-primary transition-colors hover:bg-sf-tint hover:text-sf-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                            class="sf-cta ml-auto inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border border-sf-primary px-4 py-2 text-[11px] font-semibold text-sf-primary transition-colors duration-sf-fast ease-sf hover:bg-sf-tint hover:text-sf-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                             @click="openReview(review)"
                         >
                             Read review
-                            <ArrowRight class="size-3.5" aria-hidden="true" />
+                            <ArrowRight
+                                class="sf-arrow size-3.5"
+                                aria-hidden="true"
+                            />
                         </button>
                     </footer>
                 </article>
             </div>
 
             <div
-                v-else
-                class="mt-5 flex flex-col items-center rounded-xl border border-dashed border-sf-rule px-6 py-16 text-center"
+                v-if="filteredReviews.length === 0"
+                class="sf-fade mt-5 flex flex-col items-center rounded-xl border border-dashed border-sf-rule px-6 py-16 text-center"
             >
                 <span
                     class="grid size-12 place-items-center rounded-full bg-sf-tint text-sf-primary"
@@ -279,7 +294,7 @@ const resetFilter = () => {
                 <button
                     v-if="reviews.length"
                     type="button"
-                    class="mt-5 min-h-10 rounded-full border border-sf-primary px-5 py-2 text-sm font-semibold text-sf-primary transition-colors hover:bg-sf-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                    class="mt-5 min-h-10 rounded-full border border-sf-primary px-5 py-2 text-sm font-semibold text-sf-primary transition-colors duration-sf-fast ease-sf hover:bg-sf-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                     @click="resetFilter"
                 >
                     Show all reviews
@@ -287,13 +302,14 @@ const resetFilter = () => {
                 <Link
                     v-else
                     :href="catalog()"
-                    class="mt-6 inline-flex min-h-11 items-center rounded-full bg-sf-primary px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                    class="mt-6 inline-flex min-h-11 items-center rounded-full bg-sf-primary px-7 py-3 text-sm font-semibold text-white transition-colors duration-sf-fast ease-sf hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                 >
                     Browse peptides
                 </Link>
             </div>
 
             <section
+                v-reveal
                 class="mt-10 flex flex-col gap-6 rounded-xl bg-[linear-gradient(105deg,oklch(0.93_0.032_240)_0%,oklch(0.95_0.032_20)_100%)] px-6 py-7 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-10"
             >
                 <div class="max-w-[620px]">
@@ -312,10 +328,10 @@ const resetFilter = () => {
                 <a
                     v-if="shareReviewMailto"
                     :href="shareReviewMailto"
-                    class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-sf-primary px-7 py-3 text-sm font-semibold text-white shadow-[0_8px_22px_rgba(50,70,160,0.22)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                    class="sf-cta inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-sf-primary px-7 py-3 text-sm font-semibold text-white shadow-[0_8px_22px_rgba(50,70,160,0.22)] transition duration-sf-fast ease-sf hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary motion-safe:hover:-translate-y-0.5"
                 >
                     Share your experience
-                    <ArrowRight class="size-4" aria-hidden="true" />
+                    <ArrowRight class="sf-arrow size-4" aria-hidden="true" />
                 </a>
             </section>
         </div>
@@ -324,7 +340,7 @@ const resetFilter = () => {
     <Dialog v-model:open="reviewOpen">
         <DialogContent
             v-if="activeReview"
-            class="max-h-[calc(100vh-2rem)] max-w-[720px] overflow-y-auto border-sf-line-strong bg-white p-0"
+            class="sf-dialog max-h-[calc(100vh-2rem)] max-w-[720px] overflow-y-auto border-sf-line-strong bg-white p-0"
         >
             <div class="p-5 sm:p-7">
                 <DialogHeader class="pr-8 text-left">
@@ -353,7 +369,7 @@ const resetFilter = () => {
                     v-if="hasPhoto(activeReview)"
                     class="mt-5 grid max-h-[55vh] min-h-56 w-full place-items-center overflow-hidden rounded-lg bg-sf-primary/8"
                 >
-                    <img
+                    <FadeInImage
                         :src="activeReview.image_url ?? ''"
                         :alt="`Photo shared with ${reviewDisplayName(activeReview)}'s review`"
                         class="max-h-[55vh] w-full object-contain"
@@ -385,7 +401,7 @@ const resetFilter = () => {
                             activeReview.product_slug
                         "
                         :href="show(activeReview.product_slug)"
-                        class="text-[13px] text-sf-muted transition-colors hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="text-[13px] text-sf-muted transition-colors duration-sf-fast ease-sf hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                     >
                         Product:
                         <span class="font-semibold text-sf-primary">
@@ -393,7 +409,7 @@ const resetFilter = () => {
                         </span>
                     </Link>
                     <DialogClose
-                        class="ml-auto min-h-10 rounded-full border border-sf-line-strong px-5 py-2 text-sm font-semibold text-sf-text transition-colors hover:border-sf-primary/40 hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="ml-auto min-h-10 rounded-full border border-sf-line-strong px-5 py-2 text-sm font-semibold text-sf-text transition-colors duration-sf-fast ease-sf hover:border-sf-primary/40 hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                     >
                         Close review
                     </DialogClose>

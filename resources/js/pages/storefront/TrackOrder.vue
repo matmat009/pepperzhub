@@ -10,6 +10,7 @@ import {
 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useSiteSettings } from '@/composables/useSiteSettings';
+import { vReveal } from '@/lib/scrollReveal';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
 import { index as catalog } from '@/routes/storefront/products';
 import { lookup as lookupRoute } from '@/routes/storefront/track';
@@ -98,7 +99,7 @@ const copyTracking = async () => {
 };
 
 const fieldClass =
-    'h-12 w-full rounded-xl border border-sf-line-strong bg-white px-4 text-base text-sf-ink outline-none transition-[border-color,box-shadow] duration-200 ease-out placeholder:text-sf-subtle focus-visible:border-sf-primary focus-visible:ring-2 focus-visible:ring-sf-primary/20 sm:text-[15px]';
+    'h-12 w-full rounded-xl border border-sf-line-strong bg-white px-4 text-base text-sf-ink outline-none transition-[border-color,box-shadow] duration-sf-ui ease-sf placeholder:text-sf-subtle focus-visible:border-sf-primary focus-visible:ring-2 focus-visible:ring-sf-primary/20 sm:text-[15px]';
 </script>
 
 <template>
@@ -114,7 +115,7 @@ const fieldClass =
                 class="pointer-events-none absolute inset-x-0 -top-24 -bottom-px -z-10 bg-[linear-gradient(125deg,var(--color-sf-hero-blue)_0%,#fff_48%,var(--color-sf-hero-rose)_100%)]"
             />
 
-            <div class="mx-auto max-w-3xl">
+            <div v-reveal="'stagger'" class="mx-auto max-w-3xl">
                 <p
                     class="text-[11px] font-semibold tracking-[0.28em] text-sf-primary uppercase"
                 >
@@ -149,9 +150,14 @@ const fieldClass =
             </div>
         </section>
 
+        <!--
+            Patched rather than remounted when a lookup comes back empty, so a
+            failed attempt leaves the form exactly where it was — only the alert
+            below is new, and it only ever fades.
+        -->
         <form
             v-if="!found"
-            class="mx-auto mt-10 mb-24 w-[calc(100%-2rem)] max-w-[440px] rounded-xl border border-sf-line-strong bg-white p-6 shadow-lg shadow-sf-ink/5 sm:mt-12 sm:w-full sm:p-8"
+            class="sf-enter mx-auto mt-10 mb-24 w-[calc(100%-2rem)] max-w-[440px] rounded-xl border border-sf-line-strong bg-white p-6 shadow-lg shadow-sf-ink/5 sm:mt-12 sm:w-full sm:p-8"
             @submit.prevent="lookup"
         >
             <h2 class="font-display text-xl font-semibold text-sf-ink">
@@ -186,16 +192,16 @@ const fieldClass =
 
             <button
                 type="submit"
-                class="mt-6 inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-sf-primary px-6 font-display text-base font-medium text-white shadow-md shadow-sf-primary/20 transition-colors duration-200 ease-out hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                class="sf-cta mt-6 inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-sf-primary px-6 font-display text-base font-medium text-white shadow-md shadow-sf-primary/20 transition-colors duration-sf-fast ease-sf hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
             >
                 Track Order
-                <ArrowRight class="size-4" />
+                <ArrowRight class="sf-arrow size-4" />
             </button>
 
             <div
                 v-if="notFound"
                 role="alert"
-                class="mt-6 flex items-start gap-3 rounded-xl border border-sf-rose-line bg-sf-rose-tint p-5"
+                class="sf-fade mt-6 flex items-start gap-3 rounded-xl border border-sf-rose-line bg-sf-rose-tint p-5"
             >
                 <CircleAlert class="mt-0.5 size-5 shrink-0 text-sf-rose-deep" />
                 <div>
@@ -225,16 +231,22 @@ const fieldClass =
                 <a
                     v-if="supportMailto"
                     :href="supportMailto"
-                    class="mt-2 inline-block font-medium text-sf-primary transition-colors duration-200 ease-out hover:text-sf-primary-hover"
+                    class="mt-2 inline-block font-medium text-sf-primary transition-colors duration-sf-fast ease-sf hover:text-sf-primary-hover"
                 >
                     Message us for help
                 </a>
             </div>
         </form>
 
+        <!--
+            Only the result animates, and only once: it is the one thing on this
+            page that genuinely arrives. The stages below stagger on mount,
+            which is why the list carries `data-sf-revealed` outright rather
+            than waiting on an observer that would never see it scroll in.
+        -->
         <div
             v-else
-            class="mx-auto mt-8 flex w-full max-w-[980px] flex-col gap-8 px-5 pb-24 sm:px-10"
+            class="sf-enter mx-auto mt-8 flex w-full max-w-[980px] flex-col gap-8 px-5 pb-24 sm:px-10"
         >
             <div class="rounded-2xl border border-sf-line bg-white p-7">
                 <div
@@ -248,7 +260,11 @@ const fieldClass =
                     }}</span>
                 </div>
 
-                <ol v-if="!cancelled" class="mt-8 flex flex-col gap-0">
+                <ol
+                    v-if="!cancelled"
+                    data-sf-revealed
+                    class="sf-stagger mt-8 flex flex-col gap-0"
+                >
                     <li
                         v-for="(stage, index) in stages"
                         :key="stage.label"
@@ -287,9 +303,14 @@ const fieldClass =
                             >
                                 {{ stage.label }}
                             </div>
+                            <!--
+                                Lands after the last stage has, which is the
+                                whole emphasis: no pulse, no loop, nothing that
+                                repeats on a completed step.
+                            -->
                             <div
                                 v-if="stage.current"
-                                class="mt-1 text-sm text-sf-primary"
+                                class="sf-fade sf-delay-6 mt-1 text-sm text-sf-primary"
                             >
                                 Current status
                             </div>
@@ -298,7 +319,7 @@ const fieldClass =
                 </ol>
                 <div
                     v-else
-                    class="mt-8 flex items-start gap-3 rounded-xl border border-sf-rose-line bg-sf-rose-tint p-5"
+                    class="sf-fade mt-8 flex items-start gap-3 rounded-xl border border-sf-rose-line bg-sf-rose-tint p-5"
                 >
                     <CircleAlert
                         class="mt-0.5 size-5 shrink-0 text-sf-rose-deep"
@@ -338,7 +359,12 @@ const fieldClass =
                         <button
                             v-if="result?.tracking_number"
                             type="button"
-                            class="inline-flex items-center gap-2 rounded-full border border-sf-line-strong bg-white px-4 py-2 text-sm font-medium text-sf-text transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary"
+                            class="inline-flex items-center gap-2 rounded-full border border-sf-line-strong bg-white px-4 py-2 text-sm font-medium transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary"
+                            :class="
+                                copied
+                                    ? 'border-sf-primary/40 text-sf-primary'
+                                    : 'text-sf-text'
+                            "
                             @click="copyTracking"
                         >
                             <Copy class="size-3.5" />
@@ -353,7 +379,7 @@ const fieldClass =
                             :href="result.tracking_url"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="inline-flex items-center gap-2 rounded-full bg-sf-primary px-4 py-2 text-sm font-medium text-white transition-colors duration-200 ease-out hover:bg-sf-primary-deep"
+                            class="inline-flex items-center gap-2 rounded-full bg-sf-primary px-4 py-2 text-sm font-medium text-white transition-colors duration-sf-fast ease-sf hover:bg-sf-primary-deep"
                         >
                             Track with {{ result.courier }}
                             <ExternalLink class="size-3.5" />
@@ -440,14 +466,14 @@ const fieldClass =
             <div class="flex flex-wrap gap-3">
                 <button
                     type="button"
-                    class="rounded-full border-2 border-sf-primary bg-white px-8 py-3.5 font-display font-medium text-sf-primary transition-colors duration-200 ease-out hover:bg-sf-tint"
+                    class="rounded-full border-2 border-sf-primary bg-white px-8 py-3.5 font-display font-medium text-sf-primary transition-colors duration-sf-fast ease-sf hover:border-sf-primary-deep hover:bg-sf-tint hover:text-sf-primary-deep"
                     @click="reset"
                 >
                     Track another order
                 </button>
                 <Link
                     :href="catalog()"
-                    class="rounded-full bg-sf-primary px-8 py-3.5 font-display font-medium text-white transition-colors duration-200 ease-out hover:bg-sf-primary-deep"
+                    class="rounded-full bg-sf-primary px-8 py-3.5 font-display font-medium text-white transition-colors duration-sf-fast ease-sf hover:bg-sf-primary-deep"
                 >
                     Continue shopping
                 </Link>

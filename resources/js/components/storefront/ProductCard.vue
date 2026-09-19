@@ -25,7 +25,7 @@ const props = withDefaults(
 
 const isCatalog = computed(() => props.variant === 'catalog');
 
-/** Keep uploaded placeholder artwork at its established scale. */
+/** Placeholder artwork sits inset in the well; real uploads fill it. */
 const usesPlaceholderAsset = computed(() =>
     Boolean(
         props.product.images[0]?.url.toLowerCase().endsWith('/placeholder.svg'),
@@ -123,8 +123,13 @@ const prices = computed(() => {
 </script>
 
 <template>
+    <!--
+        Hover is a 2px lift and a slightly heavier shadow, nothing more. The
+        card keeps its footprint: nothing around it moves, and its own height
+        never changes, so a grid cannot reflow under the pointer.
+    -->
     <div
-        class="group relative flex flex-col overflow-hidden border bg-white transition duration-300 ease-out hover:-translate-y-1 hover:border-sf-primary/30"
+        class="group relative flex flex-col overflow-hidden border bg-white transition duration-sf-fast ease-sf hover:border-sf-primary/30 motion-safe:hover:-translate-y-0.5"
         :class="
             isCatalog
                 ? 'h-full rounded-xl border-sf-line-strong font-sans shadow-[0_8px_24px_-18px_rgba(30,35,60,0.3)] hover:shadow-[0_14px_30px_-16px_rgba(30,35,60,0.28)]'
@@ -143,18 +148,21 @@ const prices = computed(() => {
                 rather than being cropped to fill it.
 
                 Compact cards give real uploads the full panel so their canvas
-                grows without cropping; their hover lift stays deliberately
-                slight for the same reason. Placeholder artwork keeps the
-                original inset and zoom treatment.
+                grows without cropping; placeholder artwork keeps its inset.
+
+                The hover scale is capped at 1.02 in every branch, matching the
+                rest of the storefront. Under object-contain a larger scale only
+                pushes the subject further into the well's padding anyway — it
+                never revealed more of the image.
             -->
             <span
-                class="block size-full transition duration-500 ease-out group-hover:blur-[3px]"
+                class="block size-full transition duration-sf-fast ease-sf group-hover:blur-[3px]"
                 :class="
                     isCatalog
                         ? usesPlaceholderAsset
-                            ? 'p-4 motion-safe:group-hover:scale-110 sm:p-5'
+                            ? 'p-4 motion-safe:group-hover:scale-[1.02] sm:p-5'
                             : 'p-0 motion-safe:group-hover:scale-[1.02]'
-                        : 'p-6 motion-safe:group-hover:scale-110'
+                        : 'p-6 motion-safe:group-hover:scale-[1.02]'
                 "
             >
                 <ProductThumb
@@ -171,7 +179,7 @@ const prices = computed(() => {
             <!-- Scrim, so the white pill below keeps contrast over pale vials. -->
             <span
                 aria-hidden="true"
-                class="absolute inset-0 bg-sf-ink/15 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100"
+                class="absolute inset-0 bg-sf-ink/15 opacity-0 transition-opacity duration-sf-fast ease-sf group-hover:opacity-100"
             />
 
             <span
@@ -184,7 +192,7 @@ const prices = computed(() => {
                     1.47:1.
                 -->
                 <span
-                    class="inline-flex translate-y-2 items-center gap-2 rounded-full bg-sf-rose-quartz px-5 py-2.5 text-sm font-semibold text-sf-ink opacity-0 shadow-[0_8px_24px_rgba(30,35,60,0.18)] transition duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100"
+                    class="inline-flex translate-y-2 items-center gap-2 rounded-full bg-sf-rose-quartz px-5 py-2.5 text-sm font-semibold text-sf-ink opacity-0 shadow-[0_8px_24px_rgba(30,35,60,0.18)] transition duration-sf-fast ease-sf group-hover:translate-y-0 group-hover:opacity-100"
                     :class="isCatalog ? 'font-sans' : 'font-display'"
                 >
                     <Eye class="size-4" />
@@ -218,7 +226,7 @@ const prices = computed(() => {
         >
             <Link
                 :href="show(product.slug)"
-                class="font-semibold tracking-[-0.01em] text-sf-rose-deep transition-colors duration-200 ease-out hover:text-sf-primary"
+                class="font-semibold tracking-[-0.01em] text-sf-rose-deep transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
                 :class="
                     isCatalog
                         ? 'font-sans text-lg leading-[1.3]'
@@ -290,7 +298,7 @@ const prices = computed(() => {
                 :aria-label="
                     inStock ? `Add ${product.name} to cart` : 'Out of stock'
                 "
-                class="inline-flex w-full items-center justify-center gap-2.5 bg-sf-primary px-5 font-semibold text-white transition duration-200 ease-out hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary active:translate-y-px disabled:cursor-not-allowed disabled:bg-sf-line-strong disabled:text-sf-subtle disabled:shadow-none disabled:hover:bg-sf-line-strong"
+                class="inline-flex w-full items-center justify-center gap-2.5 bg-sf-primary px-5 font-semibold text-white transition duration-sf-fast ease-sf hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary active:translate-y-px disabled:cursor-not-allowed disabled:bg-sf-line-strong disabled:text-sf-subtle disabled:shadow-none disabled:hover:bg-sf-line-strong"
                 :class="
                     isCatalog
                         ? 'mt-3 min-h-11 rounded-lg py-2.5 font-sans text-sm shadow-[0_5px_14px_-6px_rgba(50,70,160,0.45)] hover:shadow-[0_8px_18px_-7px_rgba(50,70,160,0.55)]'

@@ -16,6 +16,7 @@ import {
     Thermometer,
 } from '@lucide/vue';
 import { computed, ref } from 'vue';
+import { vReveal } from '@/lib/scrollReveal';
 import type { LabeledEntry } from '@/pages/admin/products/all-products/types';
 import { show } from '@/routes/storefront/products';
 
@@ -168,7 +169,10 @@ const STORAGE_GUIDELINES = [
             class="pointer-events-none absolute inset-x-0 -top-24 -bottom-px -z-10 bg-[linear-gradient(125deg,var(--color-sf-hero-blue)_0%,#fff_48%,var(--color-sf-hero-rose)_100%)]"
         />
 
-        <div class="mx-auto flex w-full max-w-[860px] flex-col items-center">
+        <div
+            v-reveal="'stagger'"
+            class="mx-auto flex w-full max-w-[860px] flex-col items-center"
+        >
             <p
                 class="text-[11px] font-semibold tracking-[0.3em] text-sf-primary uppercase"
             >
@@ -193,6 +197,7 @@ const STORAGE_GUIDELINES = [
             class="mx-auto grid w-full max-w-[1180px] gap-10 lg:grid-cols-[270px_minmax(0,1fr)] lg:items-start xl:gap-10"
         >
             <aside
+                v-reveal="'stagger'"
                 class="grid gap-4 lg:sticky lg:top-24"
                 aria-label="Reference guidance"
             >
@@ -293,7 +298,7 @@ const STORAGE_GUIDELINES = [
                 </section>
             </aside>
 
-            <div class="min-w-0">
+            <div v-reveal="'stagger'" class="min-w-0">
                 <div
                     class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"
                 >
@@ -321,7 +326,7 @@ const STORAGE_GUIDELINES = [
                             v-model="searchQuery"
                             type="search"
                             placeholder="Search a product…"
-                            class="h-11 w-full rounded-full border border-sf-line-strong bg-white pr-4 pl-11 text-sm text-sf-ink transition-colors outline-none placeholder:text-sf-subtle focus:border-sf-primary focus:ring-2 focus:ring-sf-primary/15"
+                            class="h-11 w-full rounded-full border border-sf-line-strong bg-white pr-4 pl-11 text-sm text-sf-ink transition-colors duration-sf-ui ease-sf outline-none placeholder:text-sf-subtle focus:border-sf-primary focus:ring-2 focus:ring-sf-primary/15"
                         />
                     </label>
                 </div>
@@ -336,7 +341,7 @@ const STORAGE_GUIDELINES = [
                         :key="category"
                         type="button"
                         :aria-pressed="activeCategory === category"
-                        class="inline-flex min-h-9 items-center gap-2 rounded-full border px-4 py-2 text-[13px] transition-colors duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="inline-flex min-h-9 items-center gap-2 rounded-full border px-4 py-2 text-[13px] transition-colors duration-sf-ui ease-sf focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                         :class="
                             activeCategory === category
                                 ? 'border-sf-primary bg-sf-primary font-semibold text-white'
@@ -362,7 +367,7 @@ const STORAGE_GUIDELINES = [
                     <article
                         v-for="product in filtered"
                         :key="product.id"
-                        class="overflow-hidden rounded-xl border bg-white transition-colors duration-200"
+                        class="overflow-hidden rounded-xl border bg-white transition-colors duration-sf-ui ease-sf"
                         :class="
                             openProtocolId === product.id
                                 ? 'border-sf-primary/70 shadow-[0_12px_32px_-24px_rgba(50,70,160,0.45)]'
@@ -403,7 +408,7 @@ const STORAGE_GUIDELINES = [
                             </div>
 
                             <span
-                                class="grid size-9 shrink-0 place-items-center rounded-full bg-sf-tint text-sf-primary transition-colors duration-200"
+                                class="grid size-9 shrink-0 place-items-center rounded-full bg-sf-tint text-sf-primary transition-colors duration-sf-ui ease-sf"
                                 :class="
                                     openProtocolId === product.id
                                         ? 'bg-sf-primary text-white'
@@ -412,7 +417,7 @@ const STORAGE_GUIDELINES = [
                                 aria-hidden="true"
                             >
                                 <ChevronDown
-                                    class="size-4 transition-transform duration-200"
+                                    class="size-4 transition-transform duration-sf-ui ease-sf"
                                     :class="
                                         openProtocolId === product.id
                                             ? 'rotate-180'
@@ -422,113 +427,138 @@ const STORAGE_GUIDELINES = [
                             </span>
                         </button>
 
+                        <!--
+                            Same collapse the FAQ uses: a 0fr-to-1fr grid row
+                            for the height, and `visibility` for the tab order
+                            and the accessibility tree. The panel keeps its id
+                            and its `role`, so `aria-controls` above still
+                            resolves whether it is open or shut.
+                        -->
                         <div
-                            v-if="openProtocolId === product.id"
-                            :id="`protocol-panel-${product.id}`"
-                            role="region"
-                            :aria-labelledby="`protocol-trigger-${product.id}`"
-                            class="border-t border-sf-primary/25 px-4 pt-4 pb-5 sm:px-5 sm:pt-5 sm:pb-6"
+                            class="sf-collapse"
+                            :data-open="
+                                openProtocolId === product.id ? '' : undefined
+                            "
                         >
-                            <dl
-                                v-if="summary(product).length"
-                                class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
-                            >
+                            <div>
                                 <div
-                                    v-for="row in summary(product)"
-                                    :key="row.label"
-                                    class="rounded-lg border border-sf-line bg-sf-tint/65 px-4 py-3"
+                                    :id="`protocol-panel-${product.id}`"
+                                    role="region"
+                                    :aria-labelledby="`protocol-trigger-${product.id}`"
+                                    class="border-t border-sf-primary/25 px-4 pt-4 pb-5 sm:px-5 sm:pt-5 sm:pb-6"
                                 >
-                                    <dt
-                                        class="text-[10px] font-semibold tracking-[0.16em] text-sf-primary uppercase"
+                                    <dl
+                                        v-if="summary(product).length"
+                                        class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
                                     >
-                                        {{ row.label }}
-                                    </dt>
-                                    <dd
-                                        class="mt-1.5 text-[13px] leading-relaxed font-medium text-sf-ink"
-                                    >
-                                        {{ row.value }}
-                                    </dd>
-                                </div>
-                            </dl>
+                                        <div
+                                            v-for="row in summary(product)"
+                                            :key="row.label"
+                                            class="rounded-lg border border-sf-line bg-sf-tint/65 px-4 py-3"
+                                        >
+                                            <dt
+                                                class="text-[10px] font-semibold tracking-[0.16em] text-sf-primary uppercase"
+                                            >
+                                                {{ row.label }}
+                                            </dt>
+                                            <dd
+                                                class="mt-1.5 text-[13px] leading-relaxed font-medium text-sf-ink"
+                                            >
+                                                {{ row.value }}
+                                            </dd>
+                                        </div>
+                                    </dl>
 
-                            <div
-                                v-if="product.protocol_notes.length"
-                                :class="summary(product).length ? 'mt-5' : ''"
-                            >
-                                <h4
-                                    class="text-[10px] font-semibold tracking-[0.16em] text-sf-muted uppercase"
-                                >
-                                    Protocol Notes
-                                </h4>
-                                <ul class="mt-2.5 grid gap-2">
-                                    <li
-                                        v-for="(
-                                            note, index
-                                        ) in product.protocol_notes"
-                                        :key="index"
-                                        class="flex min-w-0 gap-3 text-[13px] leading-[1.7] text-sf-text"
+                                    <div
+                                        v-if="product.protocol_notes.length"
+                                        :class="
+                                            summary(product).length
+                                                ? 'mt-5'
+                                                : ''
+                                        "
                                     >
-                                        <Diamond
-                                            class="mt-2 size-2.5 shrink-0 fill-sf-rose text-sf-rose"
+                                        <h4
+                                            class="text-[10px] font-semibold tracking-[0.16em] text-sf-muted uppercase"
+                                        >
+                                            Protocol Notes
+                                        </h4>
+                                        <ul class="mt-2.5 grid gap-2">
+                                            <li
+                                                v-for="(
+                                                    note, index
+                                                ) in product.protocol_notes"
+                                                :key="index"
+                                                class="flex min-w-0 gap-3 text-[13px] leading-[1.7] text-sf-text"
+                                            >
+                                                <Diamond
+                                                    class="mt-2 size-2.5 shrink-0 fill-sf-rose text-sf-rose"
+                                                    aria-hidden="true"
+                                                />
+                                                <span
+                                                    class="min-w-0 break-words"
+                                                    >{{ note }}</span
+                                                >
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <div
+                                        v-if="
+                                            product.storage_instructions.length
+                                        "
+                                        class="mt-5 rounded-lg border border-sf-primary/15 bg-sf-primary/6 p-4"
+                                    >
+                                        <div
+                                            class="flex items-center gap-2 text-sf-primary"
+                                        >
+                                            <Snowflake
+                                                class="size-4 shrink-0"
+                                                aria-hidden="true"
+                                            />
+                                            <h4
+                                                class="text-[10px] font-semibold tracking-[0.16em] uppercase"
+                                            >
+                                                Storage
+                                            </h4>
+                                        </div>
+                                        <ul class="mt-2 grid gap-2">
+                                            <li
+                                                v-for="entry in product.storage_instructions"
+                                                :key="entry.id"
+                                                class="min-w-0 text-[13px] leading-[1.65] text-sf-text"
+                                            >
+                                                <span
+                                                    v-if="entry.label"
+                                                    class="font-semibold text-sf-ink"
+                                                >
+                                                    {{ entry.label }}:
+                                                </span>
+                                                <span class="break-words">
+                                                    {{ entry.value }}</span
+                                                >
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <Link
+                                        :href="show(product.slug)"
+                                        class="sf-cta mt-5 inline-flex min-h-10 items-center gap-2 text-[13px] font-semibold text-sf-primary transition-colors duration-sf-fast ease-sf hover:text-sf-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                                    >
+                                        View product
+                                        <ArrowRight
+                                            class="sf-arrow size-4"
                                             aria-hidden="true"
                                         />
-                                        <span class="min-w-0 break-words">{{
-                                            note
-                                        }}</span>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <div
-                                v-if="product.storage_instructions.length"
-                                class="mt-5 rounded-lg border border-sf-primary/15 bg-sf-primary/6 p-4"
-                            >
-                                <div
-                                    class="flex items-center gap-2 text-sf-primary"
-                                >
-                                    <Snowflake
-                                        class="size-4 shrink-0"
-                                        aria-hidden="true"
-                                    />
-                                    <h4
-                                        class="text-[10px] font-semibold tracking-[0.16em] uppercase"
-                                    >
-                                        Storage
-                                    </h4>
+                                    </Link>
                                 </div>
-                                <ul class="mt-2 grid gap-2">
-                                    <li
-                                        v-for="entry in product.storage_instructions"
-                                        :key="entry.id"
-                                        class="min-w-0 text-[13px] leading-[1.65] text-sf-text"
-                                    >
-                                        <span
-                                            v-if="entry.label"
-                                            class="font-semibold text-sf-ink"
-                                        >
-                                            {{ entry.label }}:
-                                        </span>
-                                        <span class="break-words">
-                                            {{ entry.value }}</span
-                                        >
-                                    </li>
-                                </ul>
                             </div>
-
-                            <Link
-                                :href="show(product.slug)"
-                                class="mt-5 inline-flex min-h-10 items-center gap-2 text-[13px] font-semibold text-sf-primary transition-colors duration-200 ease-out hover:text-sf-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
-                            >
-                                View product
-                                <ArrowRight class="size-4" aria-hidden="true" />
-                            </Link>
                         </div>
                     </article>
                 </div>
 
                 <div
                     v-else
-                    class="mt-5 rounded-xl border border-dashed border-sf-rule px-6 py-16 text-center"
+                    class="sf-fade mt-5 rounded-xl border border-dashed border-sf-rule px-6 py-16 text-center"
                 >
                     <span
                         class="mx-auto grid size-11 place-items-center rounded-full bg-sf-tint text-sf-primary"
@@ -557,7 +587,7 @@ const STORAGE_GUIDELINES = [
                     <button
                         v-if="products.length"
                         type="button"
-                        class="mt-5 min-h-10 rounded-full border border-sf-primary px-5 py-2 text-sm font-semibold text-sf-primary transition-colors hover:bg-sf-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="mt-5 min-h-10 rounded-full border border-sf-primary px-5 py-2 text-sm font-semibold text-sf-primary transition-colors duration-sf-fast ease-sf hover:bg-sf-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                         @click="clearFilters"
                     >
                         Clear filters

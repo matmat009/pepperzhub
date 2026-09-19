@@ -9,7 +9,9 @@ import {
     Trophy,
 } from '@lucide/vue';
 import { computed, ref } from 'vue';
+import FadeInImage from '@/components/storefront/FadeInImage.vue';
 import ProductCard from '@/components/storefront/ProductCard.vue';
+import { vReveal } from '@/lib/scrollReveal';
 import type { Product } from '@/pages/admin/products/all-products/types';
 import {
     reviews as reviewsPage,
@@ -105,13 +107,22 @@ const usps = [
             <div
                 class="mx-auto flex w-full max-w-[1680px] flex-col items-center"
             >
+                <!--
+                    The hero's arrival order: emblem, wordmark block, headline,
+                    promise, call to action, reassurances. One 50ms step apart,
+                    so the last of it has settled inside 600ms — and every one
+                    of them is clickable from the first frame, because opacity
+                    and transform do not gate hit testing.
+                -->
                 <img
                     src="/images/branding/pepperzhub-emblem.png"
                     alt="PepperzzHub"
-                    class="w-[260px] max-w-full"
+                    class="sf-enter w-[260px] max-w-full"
                 />
 
-                <div class="mt-7 flex flex-col items-center gap-4">
+                <div
+                    class="sf-enter sf-delay-1 mt-7 flex flex-col items-center gap-4"
+                >
                     <div
                         class="font-display text-5xl leading-none font-medium tracking-[-0.015em]"
                     >
@@ -133,25 +144,27 @@ const usps = [
                 </div>
 
                 <h1
-                    class="mt-11 font-display text-[clamp(2.5rem,5.5vw,5rem)] leading-[1.08] font-medium tracking-[-0.02em] text-balance text-sf-ink"
+                    class="sf-enter sf-delay-2 mt-11 font-display text-[clamp(2.5rem,5.5vw,5rem)] leading-[1.08] font-medium tracking-[-0.02em] text-balance text-sf-ink"
                 >
                     Better Science.
                     <span class="text-sf-primary italic">Better you.</span>
                 </h1>
-                <p class="mt-5 text-2xl leading-[1.6] text-sf-muted italic">
+                <p
+                    class="sf-enter sf-delay-3 mt-5 text-2xl leading-[1.6] text-sf-muted italic"
+                >
                     Peptides that work. Results that matter.
                 </p>
 
                 <Link
                     :href="catalog()"
-                    class="mt-10 inline-flex items-center gap-3 rounded-full bg-sf-primary px-10 py-4 text-[17px] font-medium text-white shadow-[0_8px_22px_rgba(50,70,160,0.28)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-sf-primary-deep hover:shadow-[0_12px_30px_rgba(50,70,160,0.38)]"
+                    class="sf-cta sf-enter sf-delay-4 mt-10 inline-flex items-center gap-3 rounded-full bg-sf-primary px-10 py-4 text-[17px] font-medium text-white shadow-[0_8px_22px_rgba(50,70,160,0.28)] transition duration-sf-fast ease-sf hover:bg-sf-primary-deep hover:shadow-[0_12px_30px_rgba(50,70,160,0.38)] motion-safe:hover:-translate-y-0.5"
                 >
                     Browse peptides
-                    <ArrowRight class="size-[17px]" />
+                    <ArrowRight class="sf-arrow size-[17px]" />
                 </Link>
 
                 <div
-                    class="mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[15px] text-sf-muted"
+                    class="sf-enter sf-delay-5 mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[15px] text-sf-muted"
                 >
                     <span class="flex items-center gap-2.5">
                         <ShieldCheck class="size-[17px] text-sf-primary" />
@@ -172,6 +185,7 @@ const usps = [
             class="relative z-5 mx-auto -mt-12 w-full max-w-[1680px] px-5 sm:px-10"
         >
             <div
+                v-reveal="'stagger'"
                 class="grid grid-cols-1 gap-11 rounded-2xl border border-sf-line bg-white px-6 py-11 shadow-[0_18px_44px_rgba(30,35,60,0.09)] sm:grid-cols-2 xl:grid-cols-4"
             >
                 <div
@@ -201,6 +215,7 @@ const usps = [
         </section>
 
         <section
+            v-reveal="'stagger'"
             class="mx-auto flex w-full max-w-[1680px] flex-col items-center px-5 pt-24 sm:px-10"
         >
             <h2
@@ -220,7 +235,7 @@ const usps = [
                     v-for="tab in tabs"
                     :key="tab"
                     type="button"
-                    class="rounded-full border px-[22px] py-2.5 font-display text-[15px] transition duration-200 ease-out hover:border-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                    class="rounded-full border px-[22px] py-2.5 font-display text-[15px] transition duration-sf-ui ease-sf hover:border-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                     :class="
                         activeTab === tab
                             ? 'border-sf-primary bg-sf-primary font-semibold text-white'
@@ -237,8 +252,18 @@ const usps = [
     <section
         class="mx-auto flex w-full max-w-[1680px] flex-col items-center px-5 pb-8 sm:px-10"
     >
+        <!--
+            One reveal for the grid, not one per card: the container is what is
+            observed, and the ladder in app.css caps at the sixth tile so a long
+            row never keeps a customer waiting.
+
+            `v-show` rather than `v-if` keeps that container mounted through a
+            category that has nothing in it, so switching back does not hand the
+            directive a fresh element to hide and stagger again.
+        -->
         <div
-            v-if="shown.length"
+            v-show="shown.length > 0"
+            v-reveal="'stagger'"
             class="mt-11 grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
         >
             <ProductCard
@@ -249,16 +274,19 @@ const usps = [
                 variant="catalog"
             />
         </div>
-        <p v-else class="mt-11 text-[15px] text-sf-muted italic">
+        <p
+            v-if="shown.length === 0"
+            class="sf-fade mt-11 text-[15px] text-sf-muted italic"
+        >
             No featured products in this category yet.
         </p>
 
         <Link
             :href="catalog()"
-            class="mt-11 inline-flex items-center gap-2.5 rounded-full border-2 border-sf-primary bg-white px-9 py-3.5 font-display text-base font-medium text-sf-primary transition-colors duration-200 ease-out hover:bg-sf-tint"
+            class="sf-cta mt-11 inline-flex items-center gap-2.5 rounded-full border-2 border-sf-primary bg-white px-9 py-3.5 font-display text-base font-medium text-sf-primary transition-colors duration-sf-fast ease-sf hover:bg-sf-tint"
         >
             View all products
-            <ArrowRight class="size-4" />
+            <ArrowRight class="sf-arrow size-4" />
         </Link>
     </section>
 
@@ -267,6 +295,7 @@ const usps = [
         class="mx-auto w-full max-w-[1680px] px-5 pt-16 sm:px-10"
     >
         <header
+            v-reveal
             class="flex flex-col items-start justify-between gap-5 border-b border-sf-line-strong pb-6 sm:flex-row sm:items-end"
         >
             <div>
@@ -284,24 +313,27 @@ const usps = [
 
             <Link
                 :href="reviewsPage()"
-                class="inline-flex min-h-11 shrink-0 items-center gap-2.5 rounded-full border border-sf-primary/45 bg-white px-6 text-sm font-medium text-sf-primary transition-colors duration-200 ease-out hover:border-sf-primary hover:bg-sf-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                class="sf-cta inline-flex min-h-11 shrink-0 items-center gap-2.5 rounded-full border border-sf-primary/45 bg-white px-6 text-sm font-medium text-sf-primary transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:bg-sf-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
             >
                 Read all reviews
-                <ArrowRight class="size-4" aria-hidden="true" />
+                <ArrowRight class="sf-arrow size-4" aria-hidden="true" />
             </Link>
         </header>
 
-        <div class="mt-7 grid grid-cols-1 gap-5 md:grid-cols-3">
+        <div
+            v-reveal="'stagger'"
+            class="mt-7 grid grid-cols-1 gap-5 md:grid-cols-3"
+        >
             <article
                 v-for="(review, index) in reviews"
                 :key="review.id"
-                class="flex min-w-0 flex-col overflow-hidden rounded-xl border border-sf-line-strong bg-white shadow-[0_8px_24px_rgba(30,35,60,0.035)]"
+                class="flex min-w-0 flex-col overflow-hidden rounded-xl border border-sf-line-strong bg-white shadow-[0_8px_24px_rgba(30,35,60,0.035)] transition duration-sf-fast ease-sf hover:border-sf-primary/30 hover:shadow-[0_12px_28px_rgba(30,35,60,0.08)]"
             >
                 <div
                     class="grid aspect-[2.08/1] w-full place-items-center overflow-hidden p-3"
                     :class="reviewTones[index % reviewTones.length]"
                 >
-                    <img
+                    <FadeInImage
                         v-if="hasReviewPhoto(review)"
                         :src="review.image_url ?? ''"
                         :alt="`Photo shared with ${reviewDisplayName(review)}'s review`"
@@ -347,7 +379,10 @@ const usps = [
             <div
                 class="grid items-center gap-10 px-7 sm:px-12 lg:grid-cols-[minmax(0,1fr)_clamp(17rem,27vw,23rem)] lg:px-16 xl:gap-14 xl:px-24"
             >
-                <div class="flex min-w-0 flex-col items-center text-center">
+                <div
+                    v-reveal="'stagger'"
+                    class="flex min-w-0 flex-col items-center text-center"
+                >
                     <div
                         class="flex items-center justify-center gap-4 text-[11px] font-semibold tracking-[0.34em] text-sf-primary uppercase sm:text-xs"
                     >
@@ -378,22 +413,32 @@ const usps = [
                     >
                         <Link
                             :href="catalog()"
-                            class="inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-sf-primary px-8 py-3.5 text-[15px] font-medium text-white shadow-[0_8px_22px_rgba(50,70,160,0.22)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-sf-primary-deep hover:shadow-[0_12px_28px_rgba(50,70,160,0.3)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sf-primary sm:min-w-56"
+                            class="sf-cta inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-sf-primary px-8 py-3.5 text-[15px] font-medium text-white shadow-[0_8px_22px_rgba(50,70,160,0.22)] transition duration-sf-fast ease-sf hover:bg-sf-primary-deep hover:shadow-[0_12px_28px_rgba(50,70,160,0.3)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sf-primary motion-safe:hover:-translate-y-0.5 sm:min-w-56"
                         >
                             Browse Products
-                            <ArrowRight class="size-4" aria-hidden="true" />
+                            <ArrowRight
+                                class="sf-arrow size-4"
+                                aria-hidden="true"
+                            />
                         </Link>
 
                         <Link
                             :href="trackOrder()"
-                            class="inline-flex min-h-12 items-center justify-center rounded-full border border-sf-primary bg-white/65 px-8 py-3.5 text-[15px] font-medium text-sf-primary transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sf-primary sm:min-w-48"
+                            class="inline-flex min-h-12 items-center justify-center rounded-full border border-sf-primary bg-white/65 px-8 py-3.5 text-[15px] font-medium text-sf-primary transition duration-sf-fast ease-sf hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sf-primary motion-safe:hover:-translate-y-0.5 sm:min-w-48"
                         >
                             Track Order
                         </Link>
                     </div>
                 </div>
 
+                <!--
+                    Fade and a 0.98 settle, once. No float, no parallax, no
+                    tint: the vials stay in the foreground layer above the
+                    section's gradient, and nothing here touches their glass or
+                    their caps.
+                -->
                 <div
+                    v-reveal="'scale-in'"
                     aria-hidden="true"
                     class="relative mx-auto h-[270px] w-full max-w-[320px] sm:h-[320px] lg:h-[370px] lg:max-w-none"
                 >

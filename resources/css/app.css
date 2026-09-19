@@ -76,6 +76,24 @@
     --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 
     /*
+     * Storefront motion curve. Slower out of the gate and long in the tail,
+     * which is what makes a reveal read as settling rather than sliding. Only
+     * the public pages use it; the admin keeps the two curves above.
+     */
+    --ease-sf: cubic-bezier(0.22, 1, 0.36, 1);
+
+    /*
+     * `duration-sf-fast` and friends, so a storefront component states which
+     * band of the motion ladder it belongs to rather than a number nobody can
+     * retune later. Declared `inline`, so the utilities resolve the
+     * `--sf-motion-*` tokens at use time and there is still only one place to
+     * change a duration.
+     */
+    --transition-duration-sf-fast: var(--sf-motion-fast);
+    --transition-duration-sf-ui: var(--sf-motion-ui);
+    --transition-duration-sf-page: var(--sf-motion-page);
+
+    /*
      * Storefront brand.
      *
      * The public storefront is a light-only surface with its own palette and
@@ -243,6 +261,24 @@
        brand pair so headline copy still clears contrast over them. */
     --sf-hero-blue: oklch(0.89 0.07 250);
     --sf-hero-rose: oklch(0.89 0.075 20);
+
+    /*
+     * Motion tokens.
+     *
+     * One ladder for the whole storefront, so retuning the feel is an edit
+     * here rather than a sweep through every component. Components reach for
+     * these rather than inventing a duration: a hover that lasts as long as a
+     * scroll reveal is what makes a page feel sluggish.
+     */
+    --sf-motion-fast: 160ms;
+    --sf-motion-ui: 200ms;
+    --sf-motion-page: 240ms;
+    --sf-motion-collapse-in: 220ms;
+    /* Closing is shorter than opening — a panel on its way out is not news. */
+    --sf-motion-collapse-out: 170ms;
+    --sf-motion-reveal: 350ms;
+    --sf-motion-stagger: 50ms;
+    --sf-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @layer components {
@@ -325,5 +361,334 @@
     }
     body {
         @apply bg-background text-foreground;
+    }
+}
+
+/*
+ * ---------------------------------------------------------------------------
+ * Storefront motion system
+ * ---------------------------------------------------------------------------
+ *
+ * One vocabulary for every public page. Components reach for a class here
+ * rather than hand-rolling a duration, which is what keeps a hover on the
+ * catalog and a hover in the cart feeling like the same product.
+ *
+ * Everything that *hides* something is gated on `[data-sf-motion]`, an
+ * attribute StorefrontLayout writes onto <html> once Vue has mounted. That is
+ * the progressive-enhancement contract: if the bundle never boots, none of
+ * these selectors match, nothing is transparent, and the page is simply the
+ * page. Structural rules that must hold with or without motion — the collapse
+ * below — are deliberately left ungated.
+ *
+ * Reveals are CSS *animations*, never transitions. Storefront components carry
+ * their own `transition`/`duration-*` utilities for hover, and a transition on
+ * the same element would fight them for the `transform` property. An animation
+ * runs beside them and, with `backwards` fill rather than `forwards`, hands the
+ * element back to its own styles the moment it finishes — so a card that has
+ * just revealed still lifts on hover.
+ */
+@layer utilities {
+    /*
+     * Page enter. Keyed on the resolved page in StorefrontLayout, so it plays
+     * once per navigation and never on a prop-only update — a cart quantity
+     * step or a checkout validation round trip leaves it alone.
+     */
+    [data-sf-motion] .sf-page {
+        animation: sf-page-in var(--sf-motion-page) var(--sf-ease);
+    }
+
+    /*
+     * Mount-time entrance, for content that is on screen the moment it exists:
+     * hero copy, a panel that appears on demand, an alert. No observer — the
+     * element animating *is* the element arriving.
+     */
+    [data-sf-motion] .sf-enter {
+        animation: sf-fade-up var(--sf-motion-reveal) var(--sf-ease) backwards;
+    }
+
+    [data-sf-motion] .sf-enter-down {
+        animation: sf-fade-down var(--sf-motion-ui) var(--sf-ease) backwards;
+    }
+
+    /* Opacity only, at interface speed — errors and results appear at once. */
+    [data-sf-motion] .sf-fade {
+        animation: sf-fade var(--sf-motion-ui) var(--sf-ease) backwards;
+    }
+
+    /*
+     * Scroll reveal. `data-sf-revealed` is set once, by the single shared
+     * IntersectionObserver in lib/scrollReveal.ts, which unobserves the element
+     * on the way out — so a reveal cannot replay on a scroll back up.
+     *
+     * Directional variants move *toward* their name, matching fade-up: a
+     * fade-left starts 12px to the right and travels left.
+     */
+    [data-sf-motion] .sf-reveal,
+    [data-sf-motion] .sf-stagger > * {
+        opacity: 0;
+    }
+
+    [data-sf-motion] .sf-reveal[data-sf-revealed],
+    [data-sf-motion] .sf-stagger[data-sf-revealed] > * {
+        opacity: 1;
+        animation: sf-fade-up var(--sf-motion-reveal) var(--sf-ease) backwards;
+    }
+
+    [data-sf-motion] .sf-reveal-fade-in[data-sf-revealed] {
+        animation-name: sf-fade;
+    }
+
+    [data-sf-motion] .sf-reveal-fade-left[data-sf-revealed] {
+        animation-name: sf-fade-left;
+    }
+
+    [data-sf-motion] .sf-reveal-fade-right[data-sf-revealed] {
+        animation-name: sf-fade-right;
+    }
+
+    [data-sf-motion] .sf-reveal-scale-in[data-sf-revealed] {
+        animation-name: sf-scale-in;
+    }
+
+    /*
+     * Stagger ladder.
+     *
+     * Declared after the `animation` shorthand above on purpose — the shorthand
+     * resets animation-delay, so these have to come last to survive.
+     *
+     * Capped at the sixth item: a 40-product catalog staggered all the way
+     * down would still be arriving long after it was asked for.
+     */
+    [data-sf-motion] .sf-stagger[data-sf-revealed] > *:nth-child(2),
+    [data-sf-motion] .sf-delay-1 {
+        animation-delay: calc(var(--sf-motion-stagger) * 1);
+    }
+
+    [data-sf-motion] .sf-stagger[data-sf-revealed] > *:nth-child(3),
+    [data-sf-motion] .sf-delay-2 {
+        animation-delay: calc(var(--sf-motion-stagger) * 2);
+    }
+
+    [data-sf-motion] .sf-stagger[data-sf-revealed] > *:nth-child(4),
+    [data-sf-motion] .sf-delay-3 {
+        animation-delay: calc(var(--sf-motion-stagger) * 3);
+    }
+
+    [data-sf-motion] .sf-stagger[data-sf-revealed] > *:nth-child(5),
+    [data-sf-motion] .sf-delay-4 {
+        animation-delay: calc(var(--sf-motion-stagger) * 4);
+    }
+
+    [data-sf-motion] .sf-stagger[data-sf-revealed] > *:nth-child(6),
+    [data-sf-motion] .sf-delay-5 {
+        animation-delay: calc(var(--sf-motion-stagger) * 5);
+    }
+
+    [data-sf-motion] .sf-stagger[data-sf-revealed] > *:nth-child(n + 7),
+    [data-sf-motion] .sf-delay-6 {
+        animation-delay: calc(var(--sf-motion-stagger) * 6);
+    }
+
+    [data-sf-motion] .sf-delay-7 {
+        animation-delay: calc(var(--sf-motion-stagger) * 7);
+    }
+
+    /*
+     * Image arrival. Opacity only — the catalog card scales its own thumbnail
+     * to fill the well, and a transform here would overwrite it. The coloured
+     * well behind the image is what the customer looks at meanwhile, so there
+     * is never a blank box.
+     */
+    [data-sf-motion] img.sf-img {
+        opacity: 0;
+        transition: opacity var(--sf-motion-ui) var(--sf-ease);
+    }
+
+    [data-sf-motion] img.sf-img[data-loaded] {
+        opacity: 1;
+    }
+
+    /* Trailing arrow on a CTA that already has one. Never added, only moved. */
+    [data-sf-motion] .sf-arrow {
+        transition: transform var(--sf-motion-fast) var(--sf-ease);
+    }
+
+    @media (hover: hover) {
+        [data-sf-motion] .sf-cta:hover .sf-arrow {
+            transform: translate3d(3px, 0, 0);
+        }
+    }
+
+    [data-sf-motion] .sf-badge-pop {
+        animation: sf-badge-pop 420ms var(--sf-ease);
+    }
+
+    /*
+     * The catalog's filter drawer. It is the same <aside> in both states — the
+     * class list is what turns it into a panel — so an animation added with
+     * that class is what plays, and there is no mount to hook.
+     */
+    [data-sf-motion] .sf-drawer {
+        animation: sf-fade-right var(--sf-motion-ui) var(--sf-ease) backwards;
+    }
+
+    /*
+     * Storefront dialogs. shadcn's DialogContent ships a 95% zoom at 200ms;
+     * these two declarations retune it to the storefront's own 98% at 240ms
+     * without editing the vendored component. Custom properties rather than
+     * competing utilities, so tailwind-merge has nothing to arbitrate.
+     */
+    [data-sf-motion] .sf-dialog[data-state='open'] {
+        --tw-enter-scale: 0.98;
+        --tw-duration: var(--sf-motion-page);
+    }
+
+    [data-sf-motion] .sf-dialog[data-state='closed'] {
+        --tw-exit-scale: 0.98;
+        --tw-duration: var(--sf-motion-ui);
+    }
+}
+
+/*
+ * Accessible collapse for the hand-rolled FAQ / protocol / filter accordions.
+ *
+ * `grid-template-rows: 0fr -> 1fr` is the only way to animate to a content
+ * height without measuring it in JS. `visibility` rather than `display: none`
+ * keeps the panel out of the tab order and the accessibility tree while
+ * collapsed, and still leaves something to flip: it changes discretely at the
+ * far end of the close and the near end of the open, so the panel is never
+ * both invisible and animating.
+ *
+ * Structure is ungated: a collapsed panel has to stay collapsed whether or not
+ * the motion attribute ever lands. Only the transition is an enhancement.
+ */
+.sf-collapse {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+}
+
+.sf-collapse > * {
+    overflow: hidden;
+}
+
+.sf-collapse[data-open] {
+    grid-template-rows: 1fr;
+    visibility: visible;
+}
+
+[data-sf-motion] .sf-collapse {
+    transition:
+        grid-template-rows var(--sf-motion-collapse-out) var(--sf-ease),
+        visibility 0s linear var(--sf-motion-collapse-out);
+}
+
+[data-sf-motion] .sf-collapse[data-open] {
+    transition:
+        grid-template-rows var(--sf-motion-collapse-in) var(--sf-ease),
+        visibility 0s;
+}
+
+@keyframes sf-page-in {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 8px, 0);
+    }
+}
+
+@keyframes sf-fade-up {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 16px, 0);
+    }
+}
+
+@keyframes sf-fade-down {
+    from {
+        opacity: 0;
+        transform: translate3d(0, -8px, 0);
+    }
+}
+
+@keyframes sf-fade {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes sf-fade-left {
+    from {
+        opacity: 0;
+        transform: translate3d(12px, 0, 0);
+    }
+}
+
+@keyframes sf-fade-right {
+    from {
+        opacity: 0;
+        transform: translate3d(-12px, 0, 0);
+    }
+}
+
+@keyframes sf-scale-in {
+    from {
+        opacity: 0;
+        transform: scale3d(0.98, 0.98, 1);
+    }
+}
+
+@keyframes sf-badge-pop {
+    0% {
+        transform: scale(1);
+    }
+
+    45% {
+        transform: scale(1.14);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/*
+ * Reduced motion.
+ *
+ * Not "shorter" — off. Every reveal resolves to its finished state, every
+ * stagger delay collapses, and nothing translates or scales. The observer in
+ * lib/scrollReveal.ts short-circuits under the same query so it never even
+ * runs, but these rules stand on their own: a viewer who turns the preference
+ * on mid-session gets a fully visible page rather than a frozen one.
+ */
+@media (prefers-reduced-motion: reduce) {
+    [data-sf-motion] .sf-page,
+    [data-sf-motion] .sf-enter,
+    [data-sf-motion] .sf-enter-down,
+    [data-sf-motion] .sf-fade,
+    [data-sf-motion] .sf-badge-pop,
+    [data-sf-motion] .sf-drawer,
+    [data-sf-motion] .sf-reveal,
+    [data-sf-motion] .sf-reveal[data-sf-revealed],
+    [data-sf-motion] .sf-stagger > *,
+    [data-sf-motion] .sf-stagger[data-sf-revealed] > * {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    [data-sf-motion] img.sf-img {
+        opacity: 1 !important;
+        transition: none !important;
+    }
+
+    [data-sf-motion] .sf-collapse,
+    [data-sf-motion] .sf-collapse[data-open] {
+        transition: none !important;
+    }
+
+    [data-sf-motion] .sf-arrow,
+    [data-sf-motion] .sf-cta:hover .sf-arrow {
+        transition: none !important;
+        transform: none !important;
     }
 }

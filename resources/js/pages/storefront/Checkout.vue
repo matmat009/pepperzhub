@@ -17,6 +17,7 @@ import {
 } from '@lucide/vue';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import InputError from '@/components/InputError.vue';
+import { vReveal } from '@/lib/scrollReveal';
 import {
     Dialog,
     DialogClose,
@@ -466,7 +467,7 @@ const onPhoneInput = (event: Event) => {
 };
 
 const fieldClass =
-    'w-full rounded-xl border border-sf-rule bg-white px-4 py-3 text-[15px] text-sf-ink outline-none transition-colors duration-200 ease-out placeholder:text-sf-subtle focus:border-sf-primary';
+    'w-full rounded-xl border border-sf-rule bg-white px-4 py-3 text-[15px] text-sf-ink outline-none transition-colors duration-sf-ui ease-sf placeholder:text-sf-subtle focus:border-sf-primary';
 </script>
 
 <template>
@@ -476,7 +477,7 @@ const fieldClass =
         <div class="flex items-center gap-2 text-sm text-sf-subtle">
             <Link
                 :href="home()"
-                class="transition-colors duration-200 ease-out hover:text-sf-primary"
+                class="transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
                 >Home</Link
             >
             <span>/</span>
@@ -493,7 +494,17 @@ const fieldClass =
             class="mt-8 grid grid-cols-1 gap-16 lg:grid-cols-[1fr_420px]"
             @submit.prevent="placeOrder"
         >
-            <div class="flex flex-col gap-10">
+            <!--
+                The reveal lives on the column, not on each section, and the
+                column is never re-keyed — so a validation round trip repaints
+                the errors and leaves the form exactly where the customer left
+                it. Nothing they have already typed is ever animated again.
+
+                The order summary opposite is deliberately left out of it: a
+                running total is the last thing that should be waiting on an
+                observer.
+            -->
+            <div v-reveal="'stagger'" class="flex flex-col gap-10">
                 <section>
                     <h2
                         class="flex items-center gap-3 font-display text-xl font-semibold text-sf-ink"
@@ -657,7 +668,7 @@ const fieldClass =
                         <InputError :message="form.errors.courier" />
                     </label>
 
-                    <div v-if="selectedCourier" class="mt-6">
+                    <div v-if="selectedCourier" class="sf-fade mt-6">
                         <div
                             class="font-display text-[15px] font-semibold text-sf-ink"
                         >
@@ -669,7 +680,7 @@ const fieldClass =
                                     region, index
                                 ) in selectedCourier.regions"
                                 :key="region.id"
-                                class="flex cursor-pointer items-center justify-between gap-4 rounded-xl border px-5 py-4 transition-colors duration-200 ease-out"
+                                class="flex cursor-pointer items-center justify-between gap-4 rounded-xl border px-5 py-4 transition-colors duration-sf-ui ease-sf"
                                 :class="
                                     form.shipping_region_id === region.id
                                         ? 'border-sf-primary bg-sf-tint'
@@ -753,7 +764,7 @@ const fieldClass =
 
                     <div
                         v-if="selectedPayment"
-                        class="mt-6 grid grid-cols-1 gap-6 rounded-xl border border-sf-line bg-sf-tint p-6 md:grid-cols-2 md:gap-0"
+                        class="sf-fade mt-6 grid grid-cols-1 gap-6 rounded-xl border border-sf-line bg-sf-tint p-6 md:grid-cols-2 md:gap-0"
                     >
                         <!--
                             qr_code_path is nullable and currently unset — the
@@ -838,7 +849,7 @@ const fieldClass =
                                         <img
                                             :src="proofPreviewUrl"
                                             alt=""
-                                            class="size-full object-contain transition-opacity duration-200"
+                                            class="size-full object-contain transition-opacity duration-sf-ui"
                                             :class="
                                                 proofImageReady
                                                     ? 'opacity-100'
@@ -855,13 +866,13 @@ const fieldClass =
                                         <span
                                             v-else
                                             aria-hidden="true"
-                                            class="absolute right-3 bottom-3 grid size-9 place-items-center rounded-full bg-sf-primary-soft text-white shadow-sm transition-transform duration-200 ease-out group-hover:scale-105"
+                                            class="absolute right-3 bottom-3 grid size-9 place-items-center rounded-full bg-sf-primary-soft text-white shadow-sm transition-transform duration-sf-fast ease-sf motion-safe:group-hover:scale-105"
                                         >
                                             <Search class="size-4" />
                                         </span>
                                     </span>
                                     <span
-                                        class="text-sm transition-colors duration-200 group-hover:text-sf-primary"
+                                        class="text-sm transition-colors duration-sf-fast ease-sf group-hover:text-sf-primary"
                                     >
                                         {{
                                             proofImageReady
@@ -917,14 +928,14 @@ const fieldClass =
                                 <button
                                     id="checkout-payment_proof"
                                     type="button"
-                                    class="mt-6 w-full rounded-xl border border-sf-primary px-5 py-3 text-[15px] font-semibold text-sf-primary transition-colors duration-200 ease-out outline-none hover:bg-sf-tint focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
+                                    class="mt-6 w-full rounded-xl border border-sf-primary px-5 py-3 text-[15px] font-semibold text-sf-primary transition-colors duration-sf-fast ease-sf outline-none hover:bg-sf-tint focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
                                     @click="openProofPicker"
                                 >
                                     Replace image
                                 </button>
                                 <button
                                     type="button"
-                                    class="mt-2 self-center rounded-lg px-4 py-2 text-sm font-medium text-sf-primary-soft transition-colors duration-200 ease-out outline-none hover:bg-sf-tint hover:text-sf-primary-deep focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
+                                    class="mt-2 self-center rounded-lg px-4 py-2 text-sm font-medium text-sf-primary-soft transition-colors duration-sf-fast ease-sf outline-none hover:bg-sf-tint hover:text-sf-primary-deep focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
                                     @click="removeProof"
                                 >
                                     Remove
@@ -934,7 +945,7 @@ const fieldClass =
 
                         <DialogContent
                             :show-close-button="false"
-                            class="h-[min(88vh,900px)] max-w-[calc(100%-1.5rem)] grid-rows-[1fr] overflow-hidden rounded-xl border-sf-line bg-white p-3 sm:max-w-5xl sm:p-5"
+                            class="sf-dialog h-[min(88vh,900px)] max-w-[calc(100%-1.5rem)] grid-rows-[1fr] overflow-hidden rounded-xl border-sf-line bg-white p-3 sm:max-w-5xl sm:p-5"
                         >
                             <DialogTitle class="sr-only">
                                 Payment proof preview
@@ -955,7 +966,7 @@ const fieldClass =
                                 <button
                                     type="button"
                                     aria-label="Close enlarged payment proof"
-                                    class="absolute top-5 right-5 grid size-10 place-items-center rounded-full bg-white text-sf-ink shadow-md transition-colors duration-200 ease-out outline-none hover:bg-sf-tint focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
+                                    class="absolute top-5 right-5 grid size-10 place-items-center rounded-full bg-white text-sf-ink shadow-md transition-colors duration-sf-fast ease-sf outline-none hover:bg-sf-tint focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
                                 >
                                     <X class="size-5" />
                                 </button>
@@ -995,14 +1006,14 @@ const fieldClass =
                             <button
                                 id="checkout-payment_proof"
                                 type="button"
-                                class="rounded-xl border border-sf-primary px-4 py-2.5 text-sm font-semibold text-sf-primary transition-colors duration-200 ease-out outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
+                                class="rounded-xl border border-sf-primary px-4 py-2.5 text-sm font-semibold text-sf-primary transition-colors duration-sf-fast ease-sf outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
                                 @click="openProofPicker"
                             >
                                 Replace file
                             </button>
                             <button
                                 type="button"
-                                class="rounded-lg px-3 py-2.5 text-sm font-medium text-sf-primary-soft transition-colors duration-200 ease-out outline-none hover:bg-white hover:text-sf-primary-deep focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
+                                class="rounded-lg px-3 py-2.5 text-sm font-medium text-sf-primary-soft transition-colors duration-sf-fast ease-sf outline-none hover:bg-white hover:text-sf-primary-deep focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
                                 @click="removeProof"
                             >
                                 Remove
@@ -1014,7 +1025,7 @@ const fieldClass =
                         v-else
                         id="checkout-payment_proof"
                         type="button"
-                        class="mt-5 flex w-full cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed border-sf-line-strong px-6 py-12 text-center text-sf-subtle transition-colors duration-200 ease-out outline-none hover:border-sf-primary hover:text-sf-primary focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
+                        class="mt-5 flex w-full cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed border-sf-line-strong px-6 py-12 text-center text-sf-subtle transition-colors duration-sf-fast ease-sf outline-none hover:border-sf-primary hover:text-sf-primary focus-visible:ring-2 focus-visible:ring-sf-primary focus-visible:ring-offset-2"
                         @click="openProofPicker"
                     >
                         <Upload class="size-8" />
@@ -1027,10 +1038,11 @@ const fieldClass =
                         </span>
                     </button>
 
+                    <!-- Opacity only, and short: an error must not look like it is arriving. -->
                     <p
                         v-if="proofClientError"
                         role="alert"
-                        class="mt-2 text-sm text-sf-rose-deep"
+                        class="sf-fade mt-2 text-sm text-sf-rose-deep"
                     >
                         {{ proofClientError }}
                     </p>
@@ -1163,7 +1175,7 @@ const fieldClass =
                     <button
                         type="submit"
                         :disabled="form.processing"
-                        class="mt-6 w-full rounded-full bg-sf-primary px-8 py-4 font-display text-base font-medium text-white transition-colors duration-200 ease-out hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary disabled:cursor-not-allowed disabled:opacity-40"
+                        class="mt-6 w-full rounded-full bg-sf-primary px-8 py-4 font-display text-base font-medium text-white transition-colors duration-sf-fast ease-sf hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary disabled:cursor-not-allowed disabled:opacity-40"
                     >
                         {{ form.processing ? 'Placing order…' : 'Place order' }}
                     </button>

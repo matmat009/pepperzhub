@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { Menu, ShoppingCart, X } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { useWindowScroll } from '@vueuse/core';
+import { computed, ref, watch } from 'vue';
 import BrandWordmark from '@/components/storefront/BrandWordmark.vue';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { useStorefrontCart } from '@/composables/useStorefrontCart';
@@ -13,6 +14,29 @@ const { count } = useStorefrontCart();
 const { currentUrl } = useCurrentUrl();
 
 const menuOpen = ref(false);
+
+/**
+ * One passive scroll listener for the whole storefront, cleaned up with this
+ * component. It drives nothing but a boolean — no per-pixel geometry, and the
+ * pill's height, padding and position are untouched, so lifting off the top of
+ * the page costs a shadow and a little more opacity and nothing else.
+ */
+const { y } = useWindowScroll();
+
+const scrolled = computed(() => y.value > 16);
+
+/**
+ * Bumped only when the count goes up, and used as the badge's key: a fresh
+ * element replays the pop, while a decrement or a re-render patches the number
+ * in place. Removing an item is not an event worth a flourish.
+ */
+const additions = ref(0);
+
+watch(count, (next, previous) => {
+    if (next > previous) {
+        additions.value += 1;
+    }
+});
 
 type NavLink = {
     label: string;
@@ -74,8 +98,18 @@ const cartCurrent = computed<AriaCurrent>(() =>
 <template>
     <header class="sticky top-0 z-30 px-5 pt-3.5 pb-2 sm:px-10">
         <div class="mx-auto max-w-[1680px]">
+            <!--
+                The scrolled state is colour and shadow only. Height, padding
+                and position stay exactly where they are, so nothing below the
+                nav moves when the page does.
+            -->
             <div
-                class="flex h-16 items-center justify-between gap-4 rounded-full border border-sf-line bg-white/92 pr-3 pl-5 shadow-[0_10px_30px_rgba(30,35,60,0.08)] backdrop-blur-[10px] sm:pl-[22px]"
+                class="sf-enter-down flex h-16 items-center justify-between gap-4 rounded-full border pr-3 pl-5 backdrop-blur-[10px] transition-[background-color,border-color,box-shadow] duration-sf-ui ease-sf sm:pl-[22px]"
+                :class="
+                    scrolled
+                        ? 'border-sf-line-strong bg-white/96 shadow-[0_14px_36px_rgba(30,35,60,0.14)]'
+                        : 'border-sf-line bg-white/92 shadow-[0_10px_30px_rgba(30,35,60,0.08)]'
+                "
             >
                 <Link
                     :href="home()"
@@ -91,7 +125,7 @@ const cartCurrent = computed<AriaCurrent>(() =>
                         :key="link.label"
                         :href="link.href"
                         :aria-current="navCurrent(link)"
-                        class="relative flex min-h-11 items-center justify-center rounded-full px-[18px] pt-2 pb-3 font-medium transition-colors duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="relative flex min-h-11 items-center justify-center rounded-full px-[18px] pt-2 pb-3 font-medium transition-colors duration-sf-ui ease-sf focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                         :class="
                             navCurrent(link)
                                 ? 'bg-sf-serenity-blue/15 font-semibold text-sf-primary-deep'
@@ -112,7 +146,7 @@ const cartCurrent = computed<AriaCurrent>(() =>
                         type="button"
                         :aria-label="menuOpen ? 'Close menu' : 'Open menu'"
                         :aria-expanded="menuOpen"
-                        class="grid size-11 place-items-center rounded-full border border-sf-line-strong bg-white text-sf-ink transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary lg:hidden"
+                        class="grid size-11 place-items-center rounded-full border border-sf-line-strong bg-white text-sf-ink transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary lg:hidden"
                         @click="menuOpen = !menuOpen"
                     >
                         <component :is="menuOpen ? X : Menu" class="size-5" />
@@ -122,7 +156,7 @@ const cartCurrent = computed<AriaCurrent>(() =>
                         :href="cart()"
                         :aria-label="cartLabel"
                         :aria-current="cartCurrent"
-                        class="relative inline-flex h-11 min-w-11 items-center justify-center gap-2 overflow-visible rounded-full border border-sf-primary bg-white px-2.5 text-sf-ink shadow-[0_4px_12px_rgba(50,70,160,0.12)] transition duration-200 ease-out hover:bg-sf-tint hover:shadow-[0_6px_16px_rgba(50,70,160,0.16)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary sm:px-4"
+                        class="relative inline-flex h-11 min-w-11 items-center justify-center gap-2 overflow-visible rounded-full border border-sf-primary bg-white px-2.5 text-sf-ink shadow-[0_4px_12px_rgba(50,70,160,0.12)] transition duration-sf-fast ease-sf hover:bg-sf-tint hover:shadow-[0_6px_16px_rgba(50,70,160,0.16)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary sm:px-4"
                     >
                         <ShoppingCart
                             class="size-5 shrink-0 text-sf-primary"
@@ -133,8 +167,10 @@ const cartCurrent = computed<AriaCurrent>(() =>
                         </span>
                         <span
                             v-if="count > 0"
+                            :key="additions"
                             aria-hidden="true"
                             class="absolute -top-2 -right-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-sf-rose-deep px-1 text-[10px] leading-none font-semibold text-white tabular-nums shadow-[0_2px_6px_rgba(135,40,65,0.24)]"
+                            :class="additions > 0 ? 'sf-badge-pop' : undefined"
                         >
                             {{ count }}
                         </span>
@@ -144,10 +180,10 @@ const cartCurrent = computed<AriaCurrent>(() =>
         </div>
 
         <Transition
-            enter-active-class="transition duration-200 ease-out"
-            enter-from-class="-translate-y-2 opacity-0"
-            leave-active-class="transition duration-150 ease-out"
-            leave-to-class="-translate-y-2 opacity-0"
+            enter-active-class="transition duration-sf-ui ease-sf motion-reduce:transition-opacity"
+            enter-from-class="-translate-y-2 opacity-0 motion-reduce:translate-y-0"
+            leave-active-class="transition duration-sf-fast ease-sf motion-reduce:transition-opacity"
+            leave-to-class="-translate-y-2 opacity-0 motion-reduce:translate-y-0"
         >
             <div
                 v-if="menuOpen"
@@ -158,7 +194,7 @@ const cartCurrent = computed<AriaCurrent>(() =>
                     :key="link.label"
                     :href="link.href"
                     :aria-current="navCurrent(link)"
-                    class="flex min-h-11 items-center rounded-lg px-4 py-2 text-base font-medium transition-colors duration-200 ease-out hover:bg-sf-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                    class="flex min-h-11 items-center rounded-lg px-4 py-2 text-base font-medium transition-colors duration-sf-ui ease-sf hover:bg-sf-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                     :class="
                         navCurrent(link)
                             ? 'font-semibold text-sf-primary-deep'

@@ -8,6 +8,7 @@ import {
 import { ChevronDown, Search } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { useSiteSettings } from '@/composables/useSiteSettings';
+import { vReveal } from '@/lib/scrollReveal';
 import { FAQ_CATEGORIES, FAQ_ITEMS } from './faqContent';
 import type { FaqCategory } from './faqContent';
 
@@ -90,7 +91,10 @@ const whatsappLink = computed(() => {
             class="pointer-events-none absolute inset-x-0 -top-24 -bottom-px -z-10 bg-[linear-gradient(125deg,var(--color-sf-hero-blue)_0%,#fff_48%,var(--color-sf-hero-rose)_100%)]"
         />
 
-        <div class="mx-auto flex w-full max-w-[860px] flex-col items-center">
+        <div
+            v-reveal="'stagger'"
+            class="mx-auto flex w-full max-w-[860px] flex-col items-center"
+        >
             <p
                 class="text-[11px] font-semibold tracking-[0.32em] text-sf-primary uppercase"
             >
@@ -117,14 +121,19 @@ const whatsappLink = computed(() => {
                     v-model="search"
                     type="search"
                     placeholder="Search a question..."
-                    class="h-12 w-full rounded-full border border-sf-rule bg-white/95 pr-5 pl-12 text-sm text-sf-ink shadow-[0_6px_20px_rgba(30,35,60,0.04)] transition-colors duration-200 ease-out outline-none placeholder:text-sf-subtle focus:border-sf-primary focus:ring-2 focus:ring-sf-primary/15"
+                    class="h-12 w-full rounded-full border border-sf-rule bg-white/95 pr-5 pl-12 text-sm text-sf-ink shadow-[0_6px_20px_rgba(30,35,60,0.04)] transition-colors duration-sf-ui ease-sf outline-none placeholder:text-sf-subtle focus:border-sf-primary focus:ring-2 focus:ring-sf-primary/15"
                 />
             </label>
         </div>
     </section>
 
     <section class="bg-white px-5 pt-12 pb-24 sm:px-10 sm:pt-14 sm:pb-28">
-        <div class="mx-auto w-full max-w-[990px]">
+        <!--
+            Revealed once, on the wrapper rather than on the list: the list is
+            behind a v-if, and re-mounting it on every search would re-hide
+            content the customer is actively reading.
+        -->
+        <div v-reveal="'stagger'" class="mx-auto w-full max-w-[990px]">
             <div
                 class="flex flex-wrap items-center justify-center gap-2"
                 aria-label="FAQ categories"
@@ -133,7 +142,7 @@ const whatsappLink = computed(() => {
                     v-for="category in FAQ_CATEGORIES"
                     :key="category"
                     type="button"
-                    class="min-h-10 rounded-full border px-5 py-2 text-sm font-medium transition-colors duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                    class="min-h-10 rounded-full border px-5 py-2 text-sm font-medium transition-colors duration-sf-ui ease-sf focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                     :class="
                         activeCategory === category
                             ? 'border-sf-primary bg-sf-primary text-white'
@@ -150,7 +159,7 @@ const whatsappLink = computed(() => {
                 <article
                     v-for="item in filteredQuestions"
                     :key="item.id"
-                    class="overflow-hidden rounded-xl border bg-white transition-colors duration-200 ease-out"
+                    class="overflow-hidden rounded-xl border bg-white transition-colors duration-sf-ui ease-sf"
                     :class="
                         openQuestion === item.id
                             ? 'border-sf-primary shadow-[0_8px_28px_rgba(50,70,160,0.07)]'
@@ -180,7 +189,7 @@ const whatsappLink = computed(() => {
                             </span>
                             <span
                                 aria-hidden="true"
-                                class="grid size-8 shrink-0 place-items-center rounded-full transition-colors duration-200 ease-out"
+                                class="grid size-8 shrink-0 place-items-center rounded-full transition-colors duration-sf-ui ease-sf"
                                 :class="
                                     openQuestion === item.id
                                         ? 'bg-sf-primary text-white'
@@ -188,7 +197,7 @@ const whatsappLink = computed(() => {
                                 "
                             >
                                 <ChevronDown
-                                    class="size-4 transition-transform duration-200 ease-out"
+                                    class="size-4 transition-transform duration-sf-ui ease-sf"
                                     :class="
                                         openQuestion === item.id
                                             ? 'rotate-180'
@@ -199,25 +208,39 @@ const whatsappLink = computed(() => {
                         </button>
                     </h2>
 
+                    <!--
+                        A grid row from 0fr to 1fr is the only way to reach the
+                        answer's real height without measuring it, and the
+                        `visibility` flip in .sf-collapse is what keeps a closed
+                        answer out of the tab order and the accessibility tree.
+                        `aria-expanded` above and `aria-controls` still point at
+                        the region itself, which never moves.
+                    -->
                     <div
-                        v-show="openQuestion === item.id"
-                        :id="`faq-answer-${item.id}`"
-                        role="region"
-                        :aria-labelledby="`faq-heading-${item.id}`"
-                        class="border-t border-sf-line-strong px-6 py-5 sm:px-7"
+                        class="sf-collapse"
+                        :data-open="openQuestion === item.id ? '' : undefined"
                     >
-                        <p
-                            class="max-w-[880px] text-[15px] leading-[1.75] text-sf-muted"
-                        >
-                            {{ item.answer }}
-                        </p>
+                        <div>
+                            <div
+                                :id="`faq-answer-${item.id}`"
+                                role="region"
+                                :aria-labelledby="`faq-heading-${item.id}`"
+                                class="border-t border-sf-line-strong px-6 py-5 sm:px-7"
+                            >
+                                <p
+                                    class="max-w-[880px] text-[15px] leading-[1.75] text-sf-muted"
+                                >
+                                    {{ item.answer }}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </article>
             </div>
 
             <div
                 v-else
-                class="mt-9 rounded-xl border border-sf-line-strong bg-sf-surface px-6 py-14 text-center"
+                class="sf-fade mt-9 rounded-xl border border-sf-line-strong bg-sf-surface px-6 py-14 text-center"
                 role="status"
             >
                 <h2 class="font-display text-xl font-semibold text-sf-ink">
@@ -228,7 +251,7 @@ const whatsappLink = computed(() => {
                 </p>
                 <button
                     type="button"
-                    class="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-sf-primary px-6 text-sm font-semibold text-white transition-colors duration-200 ease-out hover:bg-sf-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                    class="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-sf-primary px-6 text-sm font-semibold text-white transition-colors duration-sf-fast ease-sf hover:bg-sf-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                     @click="resetFilters"
                 >
                     Reset filters
@@ -259,7 +282,7 @@ const whatsappLink = computed(() => {
                         :href="messengerLink"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="flex min-h-13 items-center gap-3 rounded-full border border-sf-line-strong bg-white/95 px-5 text-sm font-medium text-sf-ink transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="flex min-h-13 items-center gap-3 rounded-full border border-sf-line-strong bg-white/95 px-5 text-sm font-medium text-sf-ink transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                     >
                         <span
                             class="grid size-8 shrink-0 place-items-center rounded-full bg-sf-serenity-blue/20 text-sf-primary"
@@ -273,7 +296,7 @@ const whatsappLink = computed(() => {
                         :href="whatsappLink"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="flex min-h-13 items-center gap-3 rounded-full border border-sf-line-strong bg-white/95 px-5 text-sm font-medium text-sf-ink transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="flex min-h-13 items-center gap-3 rounded-full border border-sf-line-strong bg-white/95 px-5 text-sm font-medium text-sf-ink transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                     >
                         <span
                             class="grid size-8 shrink-0 place-items-center rounded-full bg-sf-rose-quartz/35 text-sf-rose-deep"
@@ -285,7 +308,7 @@ const whatsappLink = computed(() => {
                     <a
                         v-if="settings.contact_email"
                         :href="`mailto:${settings.contact_email}`"
-                        class="flex min-h-13 min-w-0 items-center gap-3 rounded-full border border-sf-line-strong bg-white/95 px-5 text-sm font-medium text-sf-ink transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="flex min-h-13 min-w-0 items-center gap-3 rounded-full border border-sf-line-strong bg-white/95 px-5 text-sm font-medium text-sf-ink transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                     >
                         <span
                             class="grid size-8 shrink-0 place-items-center rounded-full bg-sf-tint text-sf-muted"

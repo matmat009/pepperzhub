@@ -9,9 +9,11 @@ import {
     Share2,
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
+import FadeInImage from '@/components/storefront/FadeInImage.vue';
 import ProductCard from '@/components/storefront/ProductCard.vue';
 import ProductThumb from '@/components/storefront/ProductThumb.vue';
 import { useStorefrontCart } from '@/composables/useStorefrontCart';
+import { vReveal } from '@/lib/scrollReveal';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
 import type { Product } from '@/pages/admin/products/all-products/types';
 import { home } from '@/routes';
@@ -184,13 +186,13 @@ const share = async () => {
         <div class="flex flex-wrap items-center gap-2 text-sm text-sf-subtle">
             <Link
                 :href="home()"
-                class="transition-colors duration-200 ease-out hover:text-sf-primary"
+                class="transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
                 >Home</Link
             >
             <span>›</span>
             <Link
                 :href="catalog()"
-                class="transition-colors duration-200 ease-out hover:text-sf-primary"
+                class="transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
                 >{{ product.category || 'Products' }}</Link
             >
             <span>›</span>
@@ -203,8 +205,15 @@ const share = async () => {
                 <div
                     class="relative aspect-square overflow-hidden rounded-2xl border border-sf-line bg-sf-tint"
                 >
-                    <img
+                    <!--
+                        Keyed on the image, so stepping through the gallery
+                        mounts a fresh element and the same load fade that the
+                        first one got plays for the next. A cached image is
+                        already complete on mount, so switching stays instant.
+                    -->
+                    <FadeInImage
                         v-if="currentImage"
+                        :key="currentImage.id"
                         :src="currentImage.url"
                         :alt="product.name"
                         class="absolute inset-0 size-full rounded-2xl object-contain"
@@ -218,15 +227,20 @@ const share = async () => {
                     <button
                         type="button"
                         aria-label="Copy link to this product"
-                        class="absolute top-4 right-4 grid size-10 place-items-center rounded-full border border-sf-line bg-white/90 text-sf-text backdrop-blur transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary"
+                        class="absolute top-4 right-4 grid size-10 place-items-center rounded-full border border-sf-line bg-white/90 text-sf-text backdrop-blur transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary"
                         @click="share"
                     >
                         <Share2 class="size-4" />
                     </button>
+                    <!--
+                        Confirmation of a copy that has already happened, so it
+                        only ever fades — nothing about it may look like the
+                        clipboard write is still in flight.
+                    -->
                     <span
                         v-if="shared"
                         role="status"
-                        class="absolute top-16 right-4 rounded-full bg-sf-ink px-3 py-1 text-xs text-white"
+                        class="sf-fade absolute top-16 right-4 rounded-full bg-sf-ink px-3 py-1 text-xs text-white"
                     >
                         Link copied
                     </span>
@@ -235,7 +249,7 @@ const share = async () => {
                         <button
                             type="button"
                             aria-label="Previous image"
-                            class="absolute top-1/2 left-4 grid size-10 -translate-y-1/2 place-items-center rounded-full border border-sf-line bg-white/90 text-sf-text backdrop-blur transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary"
+                            class="absolute top-1/2 left-4 grid size-10 -translate-y-1/2 place-items-center rounded-full border border-sf-line bg-white/90 text-sf-text backdrop-blur transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary"
                             @click="cycleImage(-1)"
                         >
                             <ChevronLeft class="size-4" />
@@ -243,7 +257,7 @@ const share = async () => {
                         <button
                             type="button"
                             aria-label="Next image"
-                            class="absolute top-1/2 right-4 grid size-10 -translate-y-1/2 place-items-center rounded-full border border-sf-line bg-white/90 text-sf-text backdrop-blur transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary"
+                            class="absolute top-1/2 right-4 grid size-10 -translate-y-1/2 place-items-center rounded-full border border-sf-line bg-white/90 text-sf-text backdrop-blur transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary"
                             @click="cycleImage(1)"
                         >
                             <ChevronRight class="size-4" />
@@ -258,7 +272,7 @@ const share = async () => {
                         type="button"
                         :aria-label="`Show image ${index + 1}`"
                         :aria-current="index === imageIndex"
-                        class="relative size-20 overflow-hidden rounded-lg border bg-sf-tint transition-colors duration-200 ease-out"
+                        class="relative size-20 overflow-hidden rounded-lg border bg-sf-tint transition-colors duration-sf-ui ease-sf"
                         :class="
                             index === imageIndex
                                 ? 'border-sf-primary'
@@ -266,9 +280,10 @@ const share = async () => {
                         "
                         @click="imageIndex = index"
                     >
-                        <img
+                        <FadeInImage
                             :src="image.url"
                             :alt="`${product.name} view ${index + 1}`"
+                            loading="lazy"
                             class="absolute inset-0 size-full rounded-lg object-contain"
                         />
                     </button>
@@ -312,7 +327,7 @@ const share = async () => {
                         <button
                             v-if="canExpand"
                             type="button"
-                            class="ml-1 font-semibold text-sf-primary hover:text-sf-primary-hover"
+                            class="ml-1 font-semibold text-sf-primary transition-colors duration-sf-fast ease-sf hover:text-sf-primary-hover"
                             @click="descExpanded = !descExpanded"
                         >
                             {{ descExpanded ? 'Show less' : 'Read more' }}
@@ -332,7 +347,7 @@ const share = async () => {
                             v-for="variant in product.variants"
                             :key="variant.id"
                             type="button"
-                            class="rounded-full border px-5 py-2.5 text-[15px] font-medium transition duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                            class="rounded-full border px-5 py-2.5 text-[15px] font-medium transition duration-sf-ui ease-sf focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                             :class="[
                                 variant.id === selectedVariantId
                                     ? 'border-sf-primary bg-sf-primary font-semibold text-white'
@@ -401,7 +416,7 @@ const share = async () => {
                         </div>
                         <Link
                             :href="protocols()"
-                            class="text-sm font-medium text-sf-primary transition-colors duration-200 ease-out hover:text-sf-primary-hover"
+                            class="text-sm font-medium text-sf-primary transition-colors duration-sf-fast ease-sf hover:text-sf-primary-hover"
                         >
                             Compare all protocols
                         </Link>
@@ -460,7 +475,7 @@ const share = async () => {
                             type="button"
                             aria-label="Decrease quantity"
                             :disabled="quantity <= 1"
-                            class="grid size-9 place-items-center rounded-full text-sf-text transition-colors duration-200 ease-out hover:bg-sf-tint hover:text-sf-primary disabled:opacity-40"
+                            class="grid size-9 place-items-center rounded-full text-sf-text transition-colors duration-sf-fast ease-sf hover:bg-sf-tint hover:text-sf-primary disabled:opacity-40"
                             @click="step(-1)"
                         >
                             <Minus class="size-4" />
@@ -475,7 +490,7 @@ const share = async () => {
                             type="button"
                             aria-label="Increase quantity"
                             :disabled="quantity >= stock"
-                            class="grid size-9 place-items-center rounded-full text-sf-text transition-colors duration-200 ease-out hover:bg-sf-tint hover:text-sf-primary disabled:opacity-40"
+                            class="grid size-9 place-items-center rounded-full text-sf-text transition-colors duration-sf-fast ease-sf hover:bg-sf-tint hover:text-sf-primary disabled:opacity-40"
                             @click="step(1)"
                         >
                             <Plus class="size-4" />
@@ -487,7 +502,7 @@ const share = async () => {
                     <button
                         type="button"
                         :disabled="outOfStock"
-                        class="flex-1 rounded-full bg-sf-primary px-8 py-4 font-display text-base font-medium text-white transition-colors duration-200 ease-out hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary disabled:cursor-not-allowed disabled:opacity-40"
+                        class="flex-1 rounded-full bg-sf-primary px-8 py-4 font-display text-base font-medium text-white shadow-[0_6px_16px_-8px_rgba(50,70,160,0.55)] transition duration-sf-fast ease-sf hover:bg-sf-primary-deep hover:shadow-[0_10px_22px_-10px_rgba(50,70,160,0.7)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0"
                         @click="addToCart"
                     >
                         {{ outOfStock ? 'Out of stock' : 'Add to cart' }}
@@ -495,7 +510,7 @@ const share = async () => {
                     <button
                         type="button"
                         :disabled="outOfStock"
-                        class="flex-1 rounded-full border-2 border-sf-primary bg-white px-8 py-4 font-display text-base font-medium text-sf-primary transition-colors duration-200 ease-out hover:bg-sf-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary disabled:cursor-not-allowed disabled:opacity-40"
+                        class="flex-1 rounded-full border-2 border-sf-primary bg-white px-8 py-4 font-display text-base font-medium text-sf-primary transition-colors duration-sf-fast ease-sf hover:border-sf-primary-deep hover:bg-sf-tint hover:text-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary disabled:cursor-not-allowed disabled:opacity-40"
                         @click="buyNow"
                     >
                         Buy now
@@ -505,7 +520,10 @@ const share = async () => {
         </div>
 
         <section v-if="reviews.length" class="mt-24">
-            <div class="flex flex-wrap items-baseline justify-between gap-4">
+            <div
+                v-reveal
+                class="flex flex-wrap items-baseline justify-between gap-4"
+            >
                 <h2
                     class="font-display text-[32px] font-medium tracking-[-0.02em] text-sf-ink"
                 >
@@ -513,24 +531,26 @@ const share = async () => {
                 </h2>
                 <Link
                     :href="reviewsIndex()"
-                    class="text-sm font-medium text-sf-primary transition-colors duration-200 ease-out hover:text-sf-primary-hover"
+                    class="text-sm font-medium text-sf-primary transition-colors duration-sf-fast ease-sf hover:text-sf-primary-hover"
                 >
                     Read all reviews
                 </Link>
             </div>
 
             <div
+                v-reveal="'stagger'"
                 class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
             >
                 <article
                     v-for="review in reviews"
                     :key="review.id"
-                    class="flex flex-col overflow-hidden rounded-2xl border border-sf-line bg-white"
+                    class="flex flex-col overflow-hidden rounded-2xl border border-sf-line bg-white transition duration-sf-fast ease-sf hover:border-sf-primary/30 hover:shadow-[0_12px_28px_rgba(30,35,60,0.08)]"
                 >
-                    <img
+                    <FadeInImage
                         v-if="review.image_url"
                         :src="review.image_url"
                         :alt="review.title"
+                        loading="lazy"
                         class="aspect-4/3 w-full object-cover"
                     />
                     <div class="flex flex-1 flex-col p-6">
@@ -557,11 +577,13 @@ const share = async () => {
 
         <section v-if="related.length" class="mt-24">
             <h2
+                v-reveal
                 class="font-display text-[32px] font-medium tracking-[-0.02em] text-sf-ink"
             >
                 You may also like
             </h2>
             <div
+                v-reveal="'stagger'"
                 class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             >
                 <ProductCard

@@ -49,7 +49,7 @@ const open = computed({
         -->
         <DialogContent
             :show-close-button="false"
-            class="top-auto bottom-0 left-0 w-full max-w-full translate-x-0 translate-y-0 gap-0 rounded-t-2xl rounded-b-none border-sf-line bg-white p-6 font-body shadow-[0_-8px_40px_rgba(30,35,60,0.18)] sm:top-[88px] sm:right-[calc(max(0px,(100vw-1760px)/2)+3.25rem)] sm:bottom-auto sm:left-auto sm:w-[380px] sm:max-w-[calc(100vw-5rem)] sm:rounded-2xl sm:shadow-[0_20px_48px_rgba(30,35,60,0.22)]"
+            class="sf-dialog top-auto bottom-0 left-0 w-full max-w-full translate-x-0 translate-y-0 gap-0 rounded-t-2xl rounded-b-none border-sf-line bg-white p-6 font-body shadow-[0_-8px_40px_rgba(30,35,60,0.18)] sm:top-[88px] sm:right-[calc(max(0px,(100vw-1760px)/2)+3.25rem)] sm:bottom-auto sm:left-auto sm:w-[380px] sm:max-w-[calc(100vw-5rem)] sm:rounded-2xl sm:shadow-[0_20px_48px_rgba(30,35,60,0.22)]"
         >
             <div class="flex items-center justify-between gap-4">
                 <DialogTitle
@@ -66,7 +66,7 @@ const open = computed({
                 <button
                     type="button"
                     aria-label="Close"
-                    class="grid size-8 shrink-0 place-items-center rounded-full border border-sf-line-strong bg-white text-sf-muted transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                    class="grid size-8 shrink-0 place-items-center rounded-full border border-sf-line-strong bg-white text-sf-muted transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                     @click="dismissAdded"
                 >
                     <X class="size-4" />
@@ -119,7 +119,7 @@ const open = computed({
                 -->
                 <Link
                     :href="cart()"
-                    class="inline-flex w-full items-center justify-center rounded-full border-2 border-sf-rose-quartz bg-white px-6 py-3 font-display text-[15px] font-semibold text-sf-rose-deep transition-colors duration-200 ease-out hover:bg-sf-rose-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-rose-deep"
+                    class="inline-flex w-full items-center justify-center rounded-full border-2 border-sf-rose-quartz bg-white px-6 py-3 font-display text-[15px] font-semibold text-sf-rose-deep transition-colors duration-sf-fast ease-sf hover:bg-sf-rose-tint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-rose-deep"
                     @click="dismissAdded"
                 >
                     View Cart ({{ count }})
@@ -127,7 +127,7 @@ const open = computed({
 
                 <Link
                     :href="checkout()"
-                    class="inline-flex w-full items-center justify-center rounded-full bg-sf-primary px-6 py-3.5 font-display text-[15px] font-semibold text-white shadow-[0_6px_16px_-6px_rgba(50,70,160,0.55)] transition-colors duration-200 ease-out hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                    class="inline-flex w-full items-center justify-center rounded-full bg-sf-primary px-6 py-3.5 font-display text-[15px] font-semibold text-white shadow-[0_6px_16px_-6px_rgba(50,70,160,0.55)] transition-colors duration-sf-fast ease-sf hover:bg-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
                     @click="dismissAdded"
                 >
                     Checkout

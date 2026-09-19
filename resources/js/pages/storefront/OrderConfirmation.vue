@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import { ArrowRight, Check, Clock } from '@lucide/vue';
 import { computed } from 'vue';
 import { useSiteSettings } from '@/composables/useSiteSettings';
+import { vReveal } from '@/lib/scrollReveal';
 import { formatPrice } from '@/pages/admin/products/all-products/types';
 import { index as catalog } from '@/routes/storefront/products';
 import { cancellationMessage, isCancelled, trackerSteps } from './orderTracker';
@@ -141,14 +142,20 @@ const hasContactChannel = computed(
     <Head title="Order Placed" />
 
     <div class="mx-auto w-full max-w-[980px] px-5 pt-12 pb-24 sm:px-10">
+        <!--
+            Status icon, then the headline, then the sentence, then the order
+            number — the order someone reads them in, 50ms apart, and all of it
+            settled inside half a second. Nothing here is gated on scrolling:
+            this is the whole reason the customer is on the page.
+        -->
         <div class="flex flex-col items-center text-center">
             <span
-                class="grid size-21 place-items-center rounded-full border border-sf-primary/25 bg-sf-tint text-sf-primary"
+                class="sf-enter grid size-21 place-items-center rounded-full border border-sf-primary/25 bg-sf-tint text-sf-primary"
             >
                 <Clock class="size-9.5 stroke-[1.8]" />
             </span>
             <h1
-                class="mt-6 font-display text-[40px] leading-[1.15] font-medium tracking-[-0.02em] text-balance text-sf-ink"
+                class="sf-enter sf-delay-1 mt-6 font-display text-[40px] leading-[1.15] font-medium tracking-[-0.02em] text-balance text-sf-ink"
             >
                 {{
                     cancelled
@@ -158,13 +165,13 @@ const hasContactChannel = computed(
             </h1>
             <p
                 v-if="cancelled"
-                class="mt-4 max-w-[600px] text-[17px] leading-[1.7] text-balance text-sf-rose-deep"
+                class="sf-enter sf-delay-2 mt-4 max-w-[600px] text-[17px] leading-[1.7] text-balance text-sf-rose-deep"
             >
                 {{ cancelledMessage }}
             </p>
             <p
                 v-else
-                class="mt-4 max-w-[600px] text-[17px] leading-[1.7] text-balance text-sf-muted"
+                class="sf-enter sf-delay-2 mt-4 max-w-[600px] text-[17px] leading-[1.7] text-balance text-sf-muted"
             >
                 We've received your order and payment proof. We'll verify your
                 payment and reach out via
@@ -177,7 +184,7 @@ const hasContactChannel = computed(
             </p>
 
             <div
-                class="mt-7 rounded-full border border-sf-line bg-sf-tint px-6 py-3 font-display text-lg font-semibold text-sf-ink"
+                class="sf-enter sf-delay-3 mt-7 rounded-full border border-sf-line bg-sf-tint px-6 py-3 font-display text-lg font-semibold text-sf-ink"
             >
                 Order {{ order.order_number }}
             </div>
@@ -185,6 +192,7 @@ const hasContactChannel = computed(
 
         <ol
             v-if="!cancelled"
+            v-reveal="'stagger'"
             class="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-3"
         >
             <li
@@ -231,6 +239,7 @@ const hasContactChannel = computed(
         -->
         <section
             v-if="awaitingVerification && hasContactChannel"
+            v-reveal
             class="mt-10 rounded-2xl border border-sf-line bg-sf-tint px-7 py-6 text-center"
         >
             <p class="text-[15px] leading-[1.7] text-sf-muted">
@@ -245,7 +254,7 @@ const hasContactChannel = computed(
                     :href="facebookLink"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="inline-flex items-center gap-3 rounded-full border border-sf-line-strong bg-white py-2 pr-6 pl-2 font-display text-[15px] font-medium text-sf-ink transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary"
+                    class="inline-flex items-center gap-3 rounded-full border border-sf-line-strong bg-white py-2 pr-6 pl-2 font-display text-[15px] font-medium text-sf-ink transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary"
                 >
                     <span
                         class="grid size-9 place-items-center rounded-full border border-sf-line-strong bg-sf-tint text-sf-primary"
@@ -268,7 +277,7 @@ const hasContactChannel = computed(
                     :href="whatsappLink"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="inline-flex items-center gap-3 rounded-full border border-sf-line-strong bg-white py-2 pr-6 pl-2 font-display text-[15px] font-medium text-sf-ink transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary"
+                    class="inline-flex items-center gap-3 rounded-full border border-sf-line-strong bg-white py-2 pr-6 pl-2 font-display text-[15px] font-medium text-sf-ink transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary"
                 >
                     <span
                         class="grid size-9 place-items-center rounded-full border border-sf-line-strong bg-sf-tint text-sf-primary"
@@ -291,7 +300,7 @@ const hasContactChannel = computed(
                     :href="gmailLink"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="inline-flex items-center gap-3 rounded-full border border-sf-line-strong bg-white py-2 pr-6 pl-2 font-display text-[15px] font-medium text-sf-ink transition-colors duration-200 ease-out hover:border-sf-primary hover:text-sf-primary"
+                    class="inline-flex items-center gap-3 rounded-full border border-sf-line-strong bg-white py-2 pr-6 pl-2 font-display text-[15px] font-medium text-sf-ink transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary"
                 >
                     <span
                         class="grid size-9 place-items-center rounded-full border border-sf-line-strong bg-sf-tint text-sf-primary"
@@ -312,7 +321,10 @@ const hasContactChannel = computed(
             </div>
         </section>
 
-        <div class="mt-12 rounded-2xl border border-sf-line bg-white p-7">
+        <div
+            v-reveal
+            class="mt-12 rounded-2xl border border-sf-line bg-white p-7"
+        >
             <h2 class="font-display text-xl font-semibold text-sf-ink">
                 Order Summary
             </h2>
@@ -363,13 +375,13 @@ const hasContactChannel = computed(
             </div>
         </div>
 
-        <div class="mt-12 flex justify-center">
+        <div v-reveal class="mt-12 flex justify-center">
             <Link
                 :href="catalog()"
-                class="inline-flex items-center gap-2.5 rounded-full bg-sf-primary px-9 py-4 font-display text-base font-medium text-white transition-colors duration-200 ease-out hover:bg-sf-primary-deep"
+                class="sf-cta inline-flex items-center gap-2.5 rounded-full bg-sf-primary px-9 py-4 font-display text-base font-medium text-white transition duration-sf-fast ease-sf hover:bg-sf-primary-deep hover:shadow-[0_10px_24px_-10px_rgba(50,70,160,0.7)] motion-safe:hover:-translate-y-0.5"
             >
                 Continue shopping
-                <ArrowRight class="size-4" />
+                <ArrowRight class="sf-arrow size-4" />
             </Link>
         </div>
     </div>
