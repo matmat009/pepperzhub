@@ -3,7 +3,6 @@ import { Form, Head } from '@inertiajs/vue3';
 import { ArrowRight } from '@lucide/vue';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
-import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
@@ -87,18 +86,16 @@ defineProps<{
                         wrapper-class="col-span-2 mt-2"
                         class="h-12 rounded-lg border-sf-serenity-blue/75 px-4 pr-12 text-base shadow-none placeholder:text-slate-400 focus-visible:border-sf-primary focus-visible:ring-sf-primary/20 dark:border-sf-serenity-blue/45 dark:bg-white/[0.04]"
                     />
-                    <TextLink
-                        v-if="canResetPassword && resetPasswordUrl"
-                        :href="resetPasswordUrl"
-                        class="col-start-2 row-start-1 text-sm font-medium text-blue-600 no-underline hover:text-blue-700 hover:underline focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-sf-primary/25 focus-visible:outline-none dark:text-blue-300 dark:hover:text-blue-200"
-                    >
-                        Forgot password?
-                    </TextLink>
                 </div>
                 <div id="password-error" aria-live="polite">
                     <InputError :message="errors.password" />
                 </div>
             </Field>
+
+            <p class="text-sm text-slate-600 dark:text-muted-foreground">
+                Forgotten your password? Contact the authorized system
+                maintainer.
+            </p>
 
             <Field orientation="horizontal" class="pt-0.5">
                 <FieldLabel

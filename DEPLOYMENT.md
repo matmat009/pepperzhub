@@ -169,6 +169,23 @@ deliberately not web-reachable (§5).
 
 ### Caching, on a stable deploy
 
+Password-login throttling uses the configured Laravel cache. The current
+database cache is shared when every application instance uses the same central
+database; multi-instance deployments must otherwise use a shared cache such as
+Redis. A process-local or per-host file cache would let requests evade the
+limits by reaching another instance.
+
+The login limiter keys requests using Laravel's resolved client IP. When the
+application is deployed behind a reverse proxy or load balancer, configure only
+the actual proxy addresses as trusted proxies so `Request::ip()` resolves the
+real client consistently. Do not trust arbitrary forwarded headers.
+
+The password stage permits five failures per normalized-email/client-IP pair
+over 15 minutes and 20 failures per client IP over one hour. Ordinary expiry is
+automatic. For exceptional operator support, run
+`php artisan admin:clear-login-throttle` only through SSH or a protected hosting
+console; it clears the two prompted keys and does not bypass the password or 2FA.
+
 ```bash
 php artisan config:cache
 php artisan route:cache

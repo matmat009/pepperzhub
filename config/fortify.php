@@ -128,7 +128,9 @@ return [
     */
 
     'limiters' => [
-        'login' => 'login',
+        // Password failures are counted inside the Fortify pipeline so valid
+        // credentials and the fifth failed attempt are not blocked prematurely.
+        'login' => null,
         /* @chisel-2fa */
         'two-factor' => 'two-factor',
         /* @end-chisel-2fa */
