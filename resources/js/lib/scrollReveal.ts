@@ -24,24 +24,37 @@ export type RevealVariant =
 const REVEALED = 'data-sf-revealed';
 
 /**
- * Roughly an eighth of the element, matching the CSS reveal's own intent: far
- * enough in to read as a response to scrolling, not so far that a section
- * announces itself only once you are already reading it.
+ * A quarter of the element. Later than it sounds, and deliberately so: at an
+ * eighth the reveal had usually finished before the eye arrived, which read as
+ * content appearing rather than animating.
  */
-const RATIO = 0.12;
+const RATIO = 0.25;
 
 /**
  * Observing at several ratios rather than one is a correctness fix, not a
- * refinement. An element taller than `viewport / 0.12` can never reach a 12%
+ * refinement. An element taller than `viewport / RATIO` can never reach a 25%
  * ratio — a one-column product grid on a phone is exactly that — so a lone
- * 0.12 threshold would leave it at `opacity: 0` for the whole visit. The low
- * stops give the callback a chance to fire while the coverage rule below
- * decides whether enough of the viewport is filled to count.
+ * threshold would leave it at `opacity: 0` for the whole visit. The low stops
+ * give the callback a chance to fire while the coverage rule below decides
+ * whether enough of the viewport is filled to count.
+ *
+ * The spacing carries as much weight as the values. The callback only runs
+ * when the ratio crosses a listed stop, so coverage can only ever be judged at
+ * one of them, and each stop has to sit within `1 / RATIO` of the next. At the
+ * 5x gap these used to have, raising RATIO to 0.25 stranded every element
+ * between four and five root-heights tall: it crosses 0.05, falls short of the
+ * coverage bar, and never crosses anything again. Spaced 3x, the rule holds
+ * down to elements ~50x the root height. Raising RATIO past ~0.33 means
+ * re-checking them.
  */
-const THRESHOLDS = [0, 0.05, RATIO, 0.3];
+const THRESHOLDS = [0, 0.02, 0.06, 0.18, RATIO, 0.5];
 
-/** Trails the fold slightly, so a reveal reads as deliberate rather than eager. */
-const ROOT_MARGIN = '0px 0px -8% 0px';
+/**
+ * Holds the trigger back from the fold by nearly a fifth of the viewport, so a
+ * section is properly inside the window before it starts. This is the half of
+ * the delay that behaves the same whatever height the element happens to be.
+ */
+const ROOT_MARGIN = '0px 0px -18% 0px';
 
 let observer: IntersectionObserver | null = null;
 
@@ -56,8 +69,8 @@ const reveal = (el: Element) => {
 };
 
 /**
- * Either an eighth of the element is on screen, or the element covers an
- * eighth of the viewport. The second clause is what rescues anything taller
+ * Either a quarter of the element is on screen, or the element covers a
+ * quarter of the viewport. The second clause is what rescues anything taller
  * than the screen; the first is what keeps a short element from revealing on
  * its first stray pixel.
  */

@@ -276,7 +276,7 @@
     --sf-motion-collapse-in: 220ms;
     /* Closing is shorter than opening — a panel on its way out is not news. */
     --sf-motion-collapse-out: 170ms;
-    --sf-motion-reveal: 350ms;
+    --sf-motion-reveal: 450ms;
     --sf-motion-stagger: 50ms;
     --sf-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
