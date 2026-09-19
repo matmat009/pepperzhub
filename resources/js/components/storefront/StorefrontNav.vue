@@ -3,7 +3,6 @@ import { Link } from '@inertiajs/vue3';
 import { Menu, ShoppingCart, X } from '@lucide/vue';
 import { useWindowScroll } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
-import BrandWordmark from '@/components/storefront/BrandWordmark.vue';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { useStorefrontCart } from '@/composables/useStorefrontCart';
 import { home } from '@/routes';
@@ -96,27 +95,61 @@ const cartCurrent = computed<AriaCurrent>(() =>
 </script>
 
 <template>
-    <header class="sticky top-0 z-30 px-5 pt-3.5 pb-2 sm:px-10">
+    <!--
+        Two shapes, one bar. At the top of the page the header is a flat
+        full-bleed rectangle; past the threshold it collapses into the floating
+        pill. `scrolled` is a position-based computed, so scrolling back up
+        reverses it — there is no one-shot latch anywhere in here.
+
+        Both the header and bar are transparent at the top, allowing each
+        page's own background to continue behind the navigation. The Home
+        page's single background wash already extends upward through this
+        space, while pages without a wash naturally reveal the layout's white
+        surface. The wrapper keeps the content and floating pill capped at the
+        same width they have today.
+    -->
+    <header
+        class="sticky top-0 z-30 bg-transparent pt-3.5 pb-2 transition-[padding] duration-sf-ui ease-sf motion-reduce:transition-none"
+        :class="scrolled ? 'px-5 sm:px-10' : 'px-0'"
+    >
         <div class="mx-auto max-w-[1680px]">
             <!--
-                The scrolled state is colour and shadow only. Height, padding
-                and position stay exactly where they are, so nothing below the
-                nav moves when the page does.
+                Only shape and colour change between the two states. `h-16` and
+                the vertical padding above are fixed in both, and `border` stays
+                applied with only its colour switching, so the box never
+                resizes and nothing below the nav moves when the page scrolls.
+
+                The unscrolled shadow is the scrolled one at zero alpha rather
+                than `shadow-none`: same geometry, so the two interpolate
+                cleanly instead of relying on the browser's none-to-shadow
+                fallback. `backdrop-blur-[0px]` is there for the same reason.
             -->
             <div
-                class="sf-enter-down flex h-16 items-center justify-between gap-4 rounded-full border pr-3 pl-5 backdrop-blur-[10px] transition-[background-color,border-color,box-shadow] duration-sf-ui ease-sf sm:pl-[22px]"
+                class="sf-enter-down flex h-16 items-center justify-between gap-4 border pr-3 pl-5 transition-[border-radius,background-color,border-color,box-shadow,backdrop-filter] duration-sf-ui ease-sf motion-reduce:transition-none sm:pl-[22px]"
                 :class="
                     scrolled
-                        ? 'border-sf-line-strong bg-white/96 shadow-[0_14px_36px_rgba(30,35,60,0.14)]'
-                        : 'border-sf-line bg-white/92 shadow-[0_10px_30px_rgba(30,35,60,0.08)]'
+                        ? 'rounded-full border-sf-line-strong bg-white/96 shadow-[0_14px_36px_rgba(30,35,60,0.14)] backdrop-blur-[10px]'
+                        : 'rounded-none border-transparent bg-transparent shadow-[0_14px_36px_rgba(30,35,60,0)] backdrop-blur-[0px]'
                 "
             >
                 <Link
                     :href="home()"
-                    class="flex min-w-0 flex-1 items-center"
+                    class="flex min-w-0 flex-1 items-center gap-3"
                     aria-label="PepperzzHub home"
                 >
-                    <BrandWordmark :emblem="34" />
+                    <img
+                        src="/images/branding/pepperzhub-navbar-logo.png"
+                        alt="PepperzzHub"
+                        width="1763"
+                        height="892"
+                        class="h-11 w-auto shrink-0 object-contain"
+                    />
+                    <span
+                        class="font-display text-[18px] font-semibold tracking-[-0.02em] whitespace-nowrap"
+                    >
+                        <span class="text-sf-rose-deep">Pepperzz</span
+                        ><span class="text-sf-primary-deep">Hub</span>
+                    </span>
                 </Link>
 
                 <nav class="hidden items-center gap-1 lg:flex">
@@ -185,9 +218,22 @@ const cartCurrent = computed<AriaCurrent>(() =>
             leave-active-class="transition duration-sf-fast ease-sf motion-reduce:transition-opacity"
             leave-to-class="-translate-y-2 opacity-0 motion-reduce:translate-y-0"
         >
+            <!--
+                The panel inherited its inset from the header's padding, which
+                now collapses to zero at the top of the page — so it carries its
+                own margin to stand in for it, and keeps the same gap from the
+                viewport edge in both states.
+
+                Explicit `mx-0` rather than the `mx-auto` this used to have:
+                below `lg` the panel is block-level and `max-w-[1680px]` never
+                binds, so `auto` already resolved to zero — but `auto` does not
+                interpolate, and this margin has to animate when the state
+                flips while the menu is open.
+            -->
             <div
                 v-if="menuOpen"
-                class="mx-auto mt-2.5 flex max-w-[1680px] flex-col rounded-xl border border-sf-line bg-white p-2.5 shadow-[0_24px_56px_rgba(30,35,60,0.18)] lg:hidden"
+                class="mt-2.5 flex max-w-[1680px] flex-col rounded-xl border border-sf-line bg-white p-2.5 shadow-[0_24px_56px_rgba(30,35,60,0.18)] transition-[margin] duration-sf-ui ease-sf motion-reduce:transition-none lg:hidden"
+                :class="scrolled ? 'mx-0' : 'mx-5 sm:mx-10'"
             >
                 <Link
                     v-for="link in links"
