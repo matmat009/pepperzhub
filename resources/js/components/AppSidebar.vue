@@ -22,9 +22,6 @@ import {
     SidebarContent,
     SidebarFooter,
     SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard, home } from '@/routes';
 import {
@@ -134,36 +131,36 @@ const navSecondary = [
 <template>
     <Sidebar :collapsible="collapsible" :variant="variant">
         <div class="admin-sidebar-wash flex h-full min-h-0 flex-col">
-            <SidebarHeader>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton
-                            as-child
-                            class="data-[slot=sidebar-menu-button]:!p-1.5"
-                        >
-                            <Link
-                                :href="home()"
-                                aria-label="PepperzHub storefront"
-                            >
-                                <img
-                                    src="/images/branding/pepperzhub-emblem.png"
-                                    alt="PepperzHub"
-                                    width="1024"
-                                    height="519"
-                                    class="size-4 shrink-0 object-contain"
-                                />
-                                <img
-                                    src="/images/branding/pepperzhub-wordmark.png"
-                                    alt=""
-                                    aria-hidden="true"
-                                    width="523"
-                                    height="98"
-                                    class="h-4 w-auto max-w-[7.5rem] object-contain group-data-[collapsible=icon]:hidden"
-                                />
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
+            <SidebarHeader class="gap-0 overflow-visible p-0">
+                <Link
+                    :href="home()"
+                    aria-label="PepperzHub storefront"
+                    class="flex min-h-[116px] w-full flex-col items-center justify-center overflow-visible rounded-md px-4 py-3 outline-none group-data-[collapsible=icon]:min-h-12 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:py-2 focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+                >
+                    <img
+                        src="/images/branding/pepperzhub-navbar-logo.png"
+                        alt=""
+                        aria-hidden="true"
+                        width="1763"
+                        height="892"
+                        class="h-auto w-[105px] object-contain group-data-[collapsible=icon]:w-8"
+                    />
+                    <span
+                        class="mt-1 text-xl leading-none font-semibold whitespace-nowrap group-data-[collapsible=icon]:hidden"
+                    >
+                        <span class="text-sf-rose">Pepperz</span
+                        ><span class="text-sf-primary">Hub</span>
+                    </span>
+                    <span
+                        class="mt-1.5 pl-[0.35em] text-[8px] leading-none font-medium tracking-[0.35em] text-muted-foreground uppercase group-data-[collapsible=icon]:hidden"
+                    >
+                        Admin Panel
+                    </span>
+                </Link>
+                <hr
+                    aria-hidden="true"
+                    class="mx-4 my-2 h-px border-0 bg-gradient-to-r from-sf-serenity-blue/30 via-sidebar-border to-sf-rose/25 group-data-[collapsible=icon]:hidden"
+                />
             </SidebarHeader>
             <SidebarContent>
                 <NavMain :items="navMain" />
