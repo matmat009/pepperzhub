@@ -101,83 +101,71 @@ const usps = [
             class="home-background-wash pointer-events-none absolute inset-x-0 -top-24 -bottom-24 -z-10"
         />
 
-        <section
-            class="relative flex w-full flex-col items-center px-5 pt-16 pb-24 text-center sm:px-10"
-        >
+        <section class="relative w-full pt-10 pb-28 sm:pt-12">
             <div
-                class="mx-auto flex w-full max-w-[1680px] flex-col items-center"
+                class="mx-auto grid w-full max-w-[1680px] items-center gap-12 px-5 sm:px-10 md:grid-cols-[minmax(0,1.15fr)_minmax(16rem,0.85fr)] md:gap-8 lg:gap-16 lg:px-16 xl:gap-24 xl:px-20"
             >
-                <!--
-                    The hero's arrival order: emblem, wordmark block, headline,
-                    promise, call to action, reassurances. One 50ms step apart,
-                    so the last of it has settled inside 600ms — and every one
-                    of them is clickable from the first frame, because opacity
-                    and transform do not gate hit testing.
-                -->
+                <!-- One restrained entrance for the complete reading path. -->
+                <div class="sf-enter flex min-w-0 flex-col items-start">
+                    <div
+                        class="flex items-center gap-4 text-[11px] font-semibold tracking-[0.38em] text-sf-primary-deep uppercase sm:text-xs"
+                    >
+                        <span
+                            aria-hidden="true"
+                            class="h-px w-10 bg-sf-primary/45 sm:w-12"
+                        />
+                        <span>Peptide Solutions</span>
+                        <span
+                            aria-hidden="true"
+                            class="h-px w-10 bg-sf-primary/45 sm:w-12"
+                        />
+                    </div>
+
+                    <h1
+                        class="mt-6 font-display text-[clamp(3.25rem,6vw,6.5rem)] leading-[0.98] font-medium tracking-[-0.04em] text-sf-ink"
+                    >
+                        <span class="block text-sf-ink"> Better Science. </span>
+                        <span class="mt-1 block text-sf-primary italic">
+                            Better you.
+                        </span>
+                    </h1>
+
+                    <p
+                        class="mt-5 font-display text-[clamp(1.25rem,2.1vw,1.75rem)] leading-[1.35] text-sf-primary-deep italic"
+                    >
+                        Peptides that work. Results that matter.
+                    </p>
+
+                    <p
+                        class="mt-4 max-w-[680px] text-[15px] leading-[1.75] text-sf-muted sm:text-[17px]"
+                    >
+                        Premium quality peptides for a healthier, stronger you —
+                        backed by science and a commitment to your wellness
+                        journey.
+                    </p>
+
+                    <Link
+                        :href="catalog()"
+                        class="sf-cta mt-8 inline-flex min-h-13 items-center gap-3 rounded-full bg-sf-primary px-9 py-3.5 text-[17px] font-medium text-white shadow-[0_8px_22px_rgba(50,70,160,0.28)] transition duration-sf-fast ease-sf hover:bg-sf-primary-deep hover:shadow-[0_12px_30px_rgba(50,70,160,0.38)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sf-primary motion-safe:hover:-translate-y-0.5"
+                    >
+                        Browse peptides
+                        <ArrowRight
+                            class="sf-arrow size-[17px]"
+                            aria-hidden="true"
+                        />
+                    </Link>
+                </div>
+
                 <img
-                    src="/images/branding/pepperzhub-emblem.png"
-                    alt="PepperzzHub"
-                    class="sf-enter w-[260px] max-w-full"
+                    src="/images/storefront/research-with-labels.png"
+                    alt="Tirzepatide 10 mg and Semaglutide 5 mg research vials"
+                    width="992"
+                    height="1586"
+                    draggable="false"
+                    fetchpriority="high"
+                    decoding="async"
+                    class="sf-enter sf-delay-2 mx-auto h-auto max-h-[38rem] w-full max-w-[30rem] object-contain select-none md:max-h-[32rem] md:max-w-full lg:max-h-[36rem] xl:max-h-[40rem]"
                 />
-
-                <div
-                    class="sf-enter sf-delay-1 mt-7 flex flex-col items-center gap-4"
-                >
-                    <div
-                        class="font-display text-5xl leading-none font-medium tracking-[-0.015em]"
-                    >
-                        <span class="text-sf-rose">Pepperzz</span
-                        ><span class="text-sf-primary">Hub</span>
-                    </div>
-
-                    <div class="flex w-[300px] max-w-full items-center gap-3.5">
-                        <span class="h-px flex-1 bg-sf-rule" />
-                        <span class="size-2.5 rotate-45 bg-sf-rose" />
-                        <span class="h-px flex-1 bg-sf-rule" />
-                    </div>
-
-                    <div
-                        class="font-body text-sm font-medium tracking-[0.42em] text-sf-muted uppercase"
-                    >
-                        Peptide Solutions
-                    </div>
-                </div>
-
-                <h1
-                    class="sf-enter sf-delay-2 mt-11 font-display text-[clamp(2.5rem,5.5vw,5rem)] leading-[1.08] font-medium tracking-[-0.02em] text-balance text-sf-ink"
-                >
-                    Better Science.
-                    <span class="text-sf-primary italic">Better you.</span>
-                </h1>
-                <p
-                    class="sf-enter sf-delay-3 mt-5 text-2xl leading-[1.6] text-sf-muted italic"
-                >
-                    Peptides that work. Results that matter.
-                </p>
-
-                <Link
-                    :href="catalog()"
-                    class="sf-cta sf-enter sf-delay-4 mt-10 inline-flex items-center gap-3 rounded-full bg-sf-primary px-10 py-4 text-[17px] font-medium text-white shadow-[0_8px_22px_rgba(50,70,160,0.28)] transition duration-sf-fast ease-sf hover:bg-sf-primary-deep hover:shadow-[0_12px_30px_rgba(50,70,160,0.38)] motion-safe:hover:-translate-y-0.5"
-                >
-                    Browse peptides
-                    <ArrowRight class="sf-arrow size-[17px]" />
-                </Link>
-
-                <div
-                    class="sf-enter sf-delay-5 mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[15px] text-sf-muted"
-                >
-                    <span class="flex items-center gap-2.5">
-                        <ShieldCheck class="size-[17px] text-sf-primary" />
-                        Premium Quality
-                    </span>
-                    <span
-                        class="hidden h-4.5 w-px bg-sf-line-strong sm:block"
-                    />
-                    <span class="flex items-center gap-2.5">
-                        <TestTube class="size-[17px] text-sf-primary" />
-                        Lab Tested
-                    </span>
-                </div>
             </div>
         </section>
 

@@ -877,3 +877,61 @@ Blocked with the full-view comparison. The header/divider, outlined Reviews link
 - Run combined source/implementation comparisons and resolve any P0/P1/P2 differences.
 
 final result: blocked
+
+---
+
+# Homepage Hero Design QA
+
+- Source visual truth: inline reference image supplied in the conversation; implementation brief at `C:\Users\mathe\.codex\attachments\272f1edf-bcf8-4ef9-ba9a-04b5bd064573\pasted-text.txt`.
+- Implementation: storefront homepage hero in `resources/js/pages/storefront/Home.vue`.
+- Implementation screenshot: unavailable because no in-app or connected browser was available.
+- Intended desktop comparison viewport: 1344 × 690 CSS pixels, matching the supplied reference image's displayed dimensions.
+- Source pixels: 1344 × 690 as supplied in the conversation.
+- Implementation pixels: unavailable.
+- Device scale factor: unavailable.
+- State: homepage at the top of the page, transparent navbar over the shared gradient.
+
+## Full-view comparison evidence
+
+Blocked. The source image was visible in the conversation, but the required browser-rendered implementation capture could not be produced. No visual comparison was made from code or memory.
+
+## Focused-region comparison evidence
+
+Blocked. A focused comparison of headline typography, two-column spacing, vial scale, compact trust indicators, and feature-panel alignment requires a rendered implementation screenshot.
+
+## Required fidelity surfaces
+
+- Fonts and typography: not visually verified.
+- Spacing and layout rhythm: not visually verified.
+- Colors and visual tokens: not visually verified.
+- Image quality and asset fidelity: the required PNG is referenced directly and its source/destination SHA-256 hashes match, but rendered sharpness, scale, and transparency halos were not visually verified.
+- Copy and content: verified from source code against the supplied brief.
+- Responsive behavior: desktop/tablet/mobile classes are present, but rendered breakpoints were not visually verified.
+
+## Primary interactions and browser checks
+
+- Products CTA: route helper is preserved; browser interaction was not tested.
+- Navbar scroll transformation: implementation was not changed; browser interaction was not tested.
+- Browser console errors: not checked because no browser was available.
+
+## Findings
+
+- [P1] Visual fidelity cannot be established.
+  - Location: homepage hero.
+  - Evidence: no browser-rendered implementation screenshot is available for comparison with the reference.
+  - Impact: typography, spacing, responsive composition, and image scale may still require refinement.
+  - Fix: open the homepage in an available browser, capture desktop/tablet/mobile states, compare the desktop capture with the source image, and iterate on all P0/P1/P2 differences.
+
+## Comparison history
+
+- Initial pass: blocked before visual comparison because no supported browser connection was available.
+
+## Implementation checklist
+
+- Capture the homepage at the matching desktop viewport.
+- Compare the source and implementation together.
+- Test tablet and mobile breakpoints for overflow and overlap.
+- Verify the CTA and navbar scroll transformation.
+- Check the console for runtime errors.
+
+final result: blocked
