@@ -124,11 +124,11 @@ const usps = [
                     </div>
 
                     <h1
-                        class="mt-6 font-display text-[clamp(3.25rem,6vw,6.5rem)] leading-[0.98] font-medium tracking-[-0.04em] text-sf-ink"
+                        class="mt-6 overflow-visible font-display text-[clamp(3.25rem,6vw,6.5rem)] leading-[0.98] font-medium tracking-[-0.04em] text-sf-ink"
                     >
                         <span class="block text-sf-ink"> Better Science. </span>
                         <span
-                            class="hero-better-you mt-1 block text-sf-rose-mid italic"
+                            class="hero-better-you mt-1 -mb-[0.17em] inline-block overflow-visible pb-[0.1em] leading-[1.05] text-sf-rose-mid italic"
                         >
                             Better you.
                         </span>
@@ -369,11 +369,11 @@ const usps = [
 
         <div class="relative z-10 mx-auto w-full max-w-[1680px] px-5 sm:px-10">
             <div
-                class="grid items-center gap-10 px-7 sm:px-12 lg:grid-cols-[minmax(0,1fr)_clamp(17rem,27vw,23rem)] lg:px-16 xl:gap-14 xl:px-24"
+                class="flex items-center justify-center px-7 sm:px-12 lg:px-16 xl:px-24"
             >
                 <div
                     v-reveal="'stagger'"
-                    class="flex min-w-0 flex-col items-center text-center"
+                    class="mx-auto flex w-full max-w-4xl min-w-0 flex-col items-center text-center"
                 >
                     <div
                         class="flex items-center justify-center gap-4 text-[11px] font-semibold tracking-[0.34em] text-sf-primary uppercase sm:text-xs"
@@ -421,24 +421,6 @@ const usps = [
                             Track Order
                         </Link>
                     </div>
-                </div>
-
-                <!--
-                    Fade and a 0.98 settle, once. No float, no parallax, no
-                    tint: the vials stay in the foreground layer above the
-                    section's gradient, and nothing here touches their glass or
-                    their caps.
-                -->
-                <div
-                    v-reveal="'scale-in'"
-                    aria-hidden="true"
-                    class="relative mx-auto h-[270px] w-full max-w-[320px] sm:h-[320px] lg:h-[370px] lg:max-w-none"
-                >
-                    <img
-                        src="/images/storefront/research-vials.png"
-                        alt=""
-                        class="absolute inset-0 size-full object-contain object-bottom"
-                    />
                 </div>
             </div>
         </div>
