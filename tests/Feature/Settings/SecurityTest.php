@@ -130,8 +130,7 @@ class SecurityTest extends TestCase
         $this->assertGreaterThanOrEqual(6, substr_count($source, "\n                    disabled"));
     }
 
-    /* @chisel-password-confirmation */
-    public function test_security_page_requires_password_confirmation_when_enabled()
+    public function test_security_page_does_not_require_password_confirmation(): void
     {
         $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
 
@@ -145,9 +144,17 @@ class SecurityTest extends TestCase
         $response = $this->actingAs($user)
             ->get(route('security.edit'));
 
-        $response->assertRedirect(route('password.confirm'));
+        $response
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('settings/Security'));
     }
-    /* @end-chisel-password-confirmation */
+
+    public function test_security_page_requires_authentication(): void
+    {
+        $this->get(route('security.edit'))
+            ->assertRedirect(route('login'));
+    }
 
     public function test_security_page_renders_without_two_factor_when_feature_is_disabled()
     {

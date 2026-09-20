@@ -12,7 +12,7 @@ import {
     Tags,
     Truck,
 } from '@lucide/vue';
-import { IconInnerShadowTop, IconSettings } from '@tabler/icons-vue';
+import { IconSettings } from '@tabler/icons-vue';
 import { computed } from 'vue';
 import NavMain from '@/components/NavMain.vue';
 import NavSecondary from '@/components/NavSecondary.vue';
@@ -48,7 +48,6 @@ withDefaults(defineProps<SidebarProps>(), {
 });
 
 const page = usePage();
-const appName = computed(() => page.props.name);
 const user = computed(() => page.props.auth.user);
 
 const navMain: NavMainItem[] = [
@@ -142,11 +141,25 @@ const navSecondary = [
                             as-child
                             class="data-[slot=sidebar-menu-button]:!p-1.5"
                         >
-                            <Link :href="home()">
-                                <IconInnerShadowTop class="!size-5" />
-                                <span class="text-base font-semibold">{{
-                                    appName
-                                }}</span>
+                            <Link
+                                :href="home()"
+                                aria-label="PepperzHub storefront"
+                            >
+                                <img
+                                    src="/images/branding/pepperzhub-emblem.png"
+                                    alt="PepperzHub"
+                                    width="1024"
+                                    height="519"
+                                    class="size-4 shrink-0 object-contain"
+                                />
+                                <img
+                                    src="/images/branding/pepperzhub-wordmark.png"
+                                    alt=""
+                                    aria-hidden="true"
+                                    width="523"
+                                    height="98"
+                                    class="h-4 w-auto max-w-[7.5rem] object-contain group-data-[collapsible=icon]:hidden"
+                                />
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
