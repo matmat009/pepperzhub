@@ -127,7 +127,9 @@ const usps = [
                         class="mt-6 font-display text-[clamp(3.25rem,6vw,6.5rem)] leading-[0.98] font-medium tracking-[-0.04em] text-sf-ink"
                     >
                         <span class="block text-sf-ink"> Better Science. </span>
-                        <span class="mt-1 block text-sf-primary italic">
+                        <span
+                            class="hero-better-you mt-1 block text-sf-rose-mid italic"
+                        >
                             Better you.
                         </span>
                     </h1>
@@ -148,7 +150,7 @@ const usps = [
 
                     <Link
                         :href="catalog()"
-                        class="sf-cta mt-8 inline-flex min-h-13 items-center gap-3 rounded-full bg-sf-primary px-9 py-3.5 text-[17px] font-medium text-white shadow-[0_8px_22px_rgba(50,70,160,0.28)] transition duration-sf-fast ease-sf hover:bg-sf-primary-deep hover:shadow-[0_12px_30px_rgba(50,70,160,0.38)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sf-primary motion-safe:hover:-translate-y-0.5"
+                        class="hero-primary-cta sf-cta mt-8 inline-flex min-h-13 items-center gap-3 rounded-full px-9 py-3.5 text-[17px] font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sf-primary"
                     >
                         Browse peptides
                         <ArrowRight
@@ -444,6 +446,70 @@ const usps = [
 </template>
 
 <style scoped>
+.hero-better-you {
+    color: var(--sf-rose-mid);
+    text-shadow: 0 3px 14px
+        color-mix(in oklab, var(--sf-rose-mid) 18%, transparent);
+}
+
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+    .hero-better-you {
+        background-image: linear-gradient(
+            to bottom,
+            var(--sf-rose) 0%,
+            var(--sf-rose-mid) 100%
+        );
+        background-clip: text;
+        color: transparent;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+}
+
+.hero-primary-cta {
+    background-color: var(--sf-primary);
+    background-image: linear-gradient(
+        to bottom,
+        color-mix(in oklab, var(--sf-primary) 94%, white) 0%,
+        var(--sf-primary) 52%,
+        var(--sf-primary-deep) 100%
+    );
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.28),
+        0 10px 24px color-mix(in oklab, var(--sf-primary) 28%, transparent);
+    transition:
+        transform var(--sf-motion-fast) var(--sf-ease),
+        box-shadow var(--sf-motion-fast) var(--sf-ease),
+        filter var(--sf-motion-fast) var(--sf-ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .hero-primary-cta:hover {
+        filter: brightness(1.04);
+        transform: translateY(-2px);
+        box-shadow:
+            inset 0 1px 0 rgb(255 255 255 / 0.34),
+            0 14px 30px color-mix(in oklab, var(--sf-primary) 34%, transparent);
+    }
+}
+
+.hero-primary-cta:active {
+    filter: brightness(0.99);
+    transform: translateY(0);
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.22),
+        0 6px 16px color-mix(in oklab, var(--sf-primary) 22%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-primary-cta,
+    .hero-primary-cta:hover,
+    .hero-primary-cta:active {
+        transform: none;
+        transition-property: box-shadow, filter;
+    }
+}
+
 .home-background-wash {
     background:
         linear-gradient(
