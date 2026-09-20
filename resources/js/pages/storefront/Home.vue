@@ -101,16 +101,16 @@ const usps = [
             class="home-background-wash pointer-events-none absolute inset-x-0 -top-24 -bottom-24 -z-10"
         />
 
-        <section class="relative w-full pt-10 pb-28 sm:pt-12">
+        <section class="relative w-full pt-10 pb-20 sm:pt-12 sm:pb-24 md:pb-28">
             <div
-                class="mx-auto grid w-full max-w-[1680px] items-center gap-12 px-5 sm:px-10 md:grid-cols-[minmax(0,1.15fr)_minmax(16rem,0.85fr)] md:gap-8 lg:gap-16 lg:px-16 xl:gap-24 xl:px-20"
+                class="mx-auto grid w-full max-w-[1680px] items-center gap-0 px-5 sm:px-10 md:grid-cols-[minmax(0,1.15fr)_minmax(16rem,0.85fr)] md:gap-8 lg:gap-16 lg:px-16 xl:gap-24 xl:px-20"
             >
                 <!-- One restrained entrance for the complete reading path. -->
                 <div
-                    class="sf-enter flex min-w-0 flex-col items-start lg:pl-6 xl:pl-8"
+                    class="sf-enter flex min-w-0 flex-col items-center text-center md:items-start md:text-left lg:pl-6 xl:pl-8"
                 >
                     <div
-                        class="flex items-center gap-3 text-[11px] font-semibold tracking-[0.3em] text-sf-primary-deep uppercase sm:gap-4 sm:text-xs sm:tracking-[0.38em]"
+                        class="flex items-center justify-center gap-3 text-[11px] font-semibold tracking-[0.3em] text-sf-primary-deep uppercase sm:gap-4 sm:text-xs sm:tracking-[0.38em] md:justify-start"
                     >
                         <span
                             aria-hidden="true"
@@ -141,7 +141,7 @@ const usps = [
                     </p>
 
                     <p
-                        class="mt-4 max-w-[680px] text-[15px] leading-[1.75] text-sf-muted sm:text-[17px]"
+                        class="mx-auto mt-4 max-w-[680px] text-[15px] leading-[1.75] text-sf-muted sm:text-[17px] md:mx-0"
                     >
                         Premium quality peptides for a healthier, stronger you,
                         backed by science and a commitment to your wellness
@@ -150,7 +150,7 @@ const usps = [
 
                     <Link
                         :href="catalog()"
-                        class="hero-primary-cta sf-cta mt-8 inline-flex min-h-13 items-center gap-3 rounded-full px-9 py-3.5 text-[17px] font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sf-primary"
+                        class="hero-primary-cta sf-cta mx-auto mt-8 inline-flex min-h-13 items-center gap-3 rounded-full px-9 py-3.5 text-[17px] font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-sf-primary md:mx-0"
                     >
                         Browse peptides
                         <ArrowRight
@@ -160,16 +160,18 @@ const usps = [
                     </Link>
                 </div>
 
-                <img
-                    src="/images/storefront/research-with-labels.png"
-                    alt="Tirzepatide 10 mg and Semaglutide 5 mg research vials"
-                    width="992"
-                    height="1586"
-                    draggable="false"
-                    fetchpriority="high"
-                    decoding="async"
-                    class="sf-enter sf-delay-2 mx-auto h-auto max-h-[38rem] w-full max-w-[30rem] object-contain select-none md:max-h-[32rem] md:max-w-full lg:max-h-[36rem] xl:max-h-[40rem]"
-                />
+                <div class="hidden min-w-0 items-center justify-center md:flex">
+                    <img
+                        src="/images/storefront/research-with-labels.png"
+                        alt="Tirzepatide 10 mg and Semaglutide 5 mg research vials"
+                        width="992"
+                        height="1586"
+                        draggable="false"
+                        fetchpriority="high"
+                        decoding="async"
+                        class="sf-enter sf-delay-2 mx-auto h-auto max-h-[38rem] w-full max-w-[30rem] object-contain select-none md:max-h-[32rem] md:max-w-full lg:max-h-[36rem] xl:max-h-[40rem]"
+                    />
+                </div>
             </div>
         </section>
 
