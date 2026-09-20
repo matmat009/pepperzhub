@@ -106,7 +106,9 @@ const usps = [
                 class="mx-auto grid w-full max-w-[1680px] items-center gap-12 px-5 sm:px-10 md:grid-cols-[minmax(0,1.15fr)_minmax(16rem,0.85fr)] md:gap-8 lg:gap-16 lg:px-16 xl:gap-24 xl:px-20"
             >
                 <!-- One restrained entrance for the complete reading path. -->
-                <div class="sf-enter flex min-w-0 flex-col items-start">
+                <div
+                    class="sf-enter flex min-w-0 flex-col items-start lg:pl-6 xl:pl-8"
+                >
                     <div
                         class="flex items-center gap-4 text-[11px] font-semibold tracking-[0.38em] text-sf-primary-deep uppercase sm:text-xs"
                     >
@@ -139,7 +141,7 @@ const usps = [
                     <p
                         class="mt-4 max-w-[680px] text-[15px] leading-[1.75] text-sf-muted sm:text-[17px]"
                     >
-                        Premium quality peptides for a healthier, stronger you —
+                        Premium quality peptides for a healthier, stronger you,
                         backed by science and a commitment to your wellness
                         journey.
                     </p>
