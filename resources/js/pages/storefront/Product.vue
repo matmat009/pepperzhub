@@ -183,7 +183,9 @@ const share = async () => {
     <Head :title="product.name" />
 
     <div class="mx-auto w-full max-w-[1680px] px-5 pt-8 pb-24 sm:px-10">
-        <div class="flex flex-wrap items-center gap-2 text-sm text-sf-subtle">
+        <div
+            class="flex min-w-0 flex-wrap items-center gap-2 text-sm text-sf-subtle"
+        >
             <Link
                 :href="home()"
                 class="transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
@@ -196,7 +198,9 @@ const share = async () => {
                 >{{ product.category || 'Products' }}</Link
             >
             <span>›</span>
-            <span class="text-sf-ink">{{ product.name }}</span>
+            <span class="min-w-0 break-words text-sf-ink">{{
+                product.name
+            }}</span>
         </div>
 
         <div class="mt-8 grid grid-cols-1 gap-12 lg:grid-cols-2">
@@ -227,7 +231,7 @@ const share = async () => {
                     <button
                         type="button"
                         aria-label="Copy link to this product"
-                        class="absolute top-4 right-4 grid size-10 place-items-center rounded-full border border-sf-line bg-white/90 text-sf-text backdrop-blur transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary"
+                        class="absolute top-4 right-4 grid size-11 place-items-center rounded-full border border-sf-line bg-white/90 text-sf-text backdrop-blur transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary xl:size-10"
                         @click="share"
                     >
                         <Share2 class="size-4" />
@@ -249,7 +253,7 @@ const share = async () => {
                         <button
                             type="button"
                             aria-label="Previous image"
-                            class="absolute top-1/2 left-4 grid size-10 -translate-y-1/2 place-items-center rounded-full border border-sf-line bg-white/90 text-sf-text backdrop-blur transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary"
+                            class="absolute top-1/2 left-4 grid size-11 -translate-y-1/2 place-items-center rounded-full border border-sf-line bg-white/90 text-sf-text backdrop-blur transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary xl:size-10"
                             @click="cycleImage(-1)"
                         >
                             <ChevronLeft class="size-4" />
@@ -257,7 +261,7 @@ const share = async () => {
                         <button
                             type="button"
                             aria-label="Next image"
-                            class="absolute top-1/2 right-4 grid size-10 -translate-y-1/2 place-items-center rounded-full border border-sf-line bg-white/90 text-sf-text backdrop-blur transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary"
+                            class="absolute top-1/2 right-4 grid size-11 -translate-y-1/2 place-items-center rounded-full border border-sf-line bg-white/90 text-sf-text backdrop-blur transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary xl:size-10"
                             @click="cycleImage(1)"
                         >
                             <ChevronRight class="size-4" />
@@ -297,7 +301,7 @@ const share = async () => {
                     {{ product.category }}
                 </div>
                 <h1
-                    class="mt-3 font-display text-[42px] leading-[1.15] font-medium tracking-[-0.02em] text-sf-ink"
+                    class="mt-3 font-display text-[clamp(2.25rem,11vw,2.625rem)] leading-[1.15] font-medium tracking-[-0.02em] break-words text-sf-ink sm:text-[42px]"
                 >
                     {{ product.name }}
                 </h1>
@@ -391,13 +395,15 @@ const share = async () => {
                         <div
                             v-for="detail in details"
                             :key="detail.id"
-                            class="flex items-baseline justify-between gap-6 py-3"
+                            class="flex items-start justify-between gap-4 py-3 sm:items-baseline sm:gap-6"
                         >
-                            <dt class="text-[15px] text-sf-subtle">
+                            <dt
+                                class="min-w-0 text-[15px] break-words text-sf-subtle"
+                            >
                                 {{ detail.label }}
                             </dt>
                             <dd
-                                class="text-right text-[15px] font-medium text-sf-ink"
+                                class="max-w-[62%] text-right text-[15px] font-medium break-words text-sf-ink"
                             >
                                 {{ detail.value }}
                             </dd>
@@ -429,13 +435,15 @@ const share = async () => {
                         <div
                             v-for="row in protocolSummary"
                             :key="row.label"
-                            class="flex items-baseline justify-between gap-6 py-3"
+                            class="flex items-start justify-between gap-4 py-3 sm:items-baseline sm:gap-6"
                         >
-                            <dt class="text-[15px] text-sf-subtle">
+                            <dt
+                                class="min-w-0 text-[15px] break-words text-sf-subtle"
+                            >
                                 {{ row.label }}
                             </dt>
                             <dd
-                                class="text-right text-[15px] font-medium text-sf-ink"
+                                class="max-w-[62%] text-right text-[15px] font-medium break-words text-sf-ink"
                             >
                                 {{ row.value }}
                             </dd>
@@ -475,7 +483,7 @@ const share = async () => {
                             type="button"
                             aria-label="Decrease quantity"
                             :disabled="quantity <= 1"
-                            class="grid size-9 place-items-center rounded-full text-sf-text transition-colors duration-sf-fast ease-sf hover:bg-sf-tint hover:text-sf-primary disabled:opacity-40"
+                            class="grid size-11 place-items-center rounded-full text-sf-text transition-colors duration-sf-fast ease-sf hover:bg-sf-tint hover:text-sf-primary disabled:opacity-40 xl:size-9"
                             @click="step(-1)"
                         >
                             <Minus class="size-4" />
@@ -490,7 +498,7 @@ const share = async () => {
                             type="button"
                             aria-label="Increase quantity"
                             :disabled="quantity >= stock"
-                            class="grid size-9 place-items-center rounded-full text-sf-text transition-colors duration-sf-fast ease-sf hover:bg-sf-tint hover:text-sf-primary disabled:opacity-40"
+                            class="grid size-11 place-items-center rounded-full text-sf-text transition-colors duration-sf-fast ease-sf hover:bg-sf-tint hover:text-sf-primary disabled:opacity-40 xl:size-9"
                             @click="step(1)"
                         >
                             <Plus class="size-4" />
@@ -498,11 +506,11 @@ const share = async () => {
                     </div>
                 </div>
 
-                <div class="mt-6 flex flex-wrap gap-3">
+                <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                     <button
                         type="button"
                         :disabled="outOfStock"
-                        class="flex-1 rounded-full bg-sf-primary px-8 py-4 font-display text-base font-medium text-white shadow-[0_6px_16px_-8px_rgba(50,70,160,0.55)] transition duration-sf-fast ease-sf hover:bg-sf-primary-deep hover:shadow-[0_10px_22px_-10px_rgba(50,70,160,0.7)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0"
+                        class="w-full flex-1 rounded-full bg-sf-primary px-8 py-4 font-display text-base font-medium text-white shadow-[0_6px_16px_-8px_rgba(50,70,160,0.55)] transition duration-sf-fast ease-sf hover:bg-sf-primary-deep hover:shadow-[0_10px_22px_-10px_rgba(50,70,160,0.7)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0 sm:w-auto"
                         @click="addToCart"
                     >
                         {{ outOfStock ? 'Out of stock' : 'Add to cart' }}
@@ -510,7 +518,7 @@ const share = async () => {
                     <button
                         type="button"
                         :disabled="outOfStock"
-                        class="flex-1 rounded-full border-2 border-sf-primary bg-white px-8 py-4 font-display text-base font-medium text-sf-primary transition-colors duration-sf-fast ease-sf hover:border-sf-primary-deep hover:bg-sf-tint hover:text-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary disabled:cursor-not-allowed disabled:opacity-40"
+                        class="w-full flex-1 rounded-full border-2 border-sf-primary bg-white px-8 py-4 font-display text-base font-medium text-sf-primary transition-colors duration-sf-fast ease-sf hover:border-sf-primary-deep hover:bg-sf-tint hover:text-sf-primary-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
                         @click="buyNow"
                     >
                         Buy now

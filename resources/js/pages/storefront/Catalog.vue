@@ -157,8 +157,8 @@ const pickCategory = (category: string) => {
                 Products ({{ filtered.length }})
             </h2>
 
-            <div class="flex flex-wrap items-center gap-3">
-                <label class="relative">
+            <div class="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+                <label class="relative w-full sm:w-auto">
                     <Search
                         class="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-sf-subtle"
                     />
@@ -167,24 +167,26 @@ const pickCategory = (category: string) => {
                         type="search"
                         placeholder="Search peptides"
                         aria-label="Search peptides"
-                        class="w-56 rounded-full border border-sf-line-strong py-2.5 pr-4 pl-10 text-sm text-sf-ink transition-colors duration-sf-ui ease-sf outline-none focus:border-sf-primary"
+                        class="w-full rounded-full border border-sf-line-strong py-2.5 pr-4 pl-10 text-base text-sf-ink transition-colors duration-sf-ui ease-sf outline-none focus:border-sf-primary sm:w-56 sm:text-sm"
                     />
                 </label>
 
                 <button
                     type="button"
-                    class="inline-flex items-center gap-2 rounded-full border border-sf-line-strong px-4 py-2.5 text-sm font-medium text-sf-text transition-colors duration-sf-fast ease-sf hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary lg:hidden"
+                    class="inline-flex min-h-11 items-center gap-2 rounded-full border border-sf-line-strong px-4 py-2.5 text-sm font-medium text-sf-text transition-colors duration-sf-fast ease-sf hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary lg:hidden"
                     @click="drawerOpen = true"
                 >
                     Filters
                     <SlidersHorizontal class="size-4" />
                 </button>
 
-                <label class="flex items-center gap-2 text-sm text-sf-subtle">
+                <label
+                    class="flex min-w-0 flex-1 items-center gap-2 text-sm text-sf-subtle sm:flex-none"
+                >
                     Sort By
                     <select
                         v-model="sort"
-                        class="rounded-full border border-sf-line-strong px-4 py-2.5 text-sm text-sf-ink transition-colors duration-sf-ui ease-sf outline-none focus:border-sf-primary"
+                        class="min-w-0 flex-1 rounded-full border border-sf-line-strong px-4 py-2.5 text-base text-sf-ink transition-colors duration-sf-ui ease-sf outline-none focus:border-sf-primary sm:flex-none sm:text-sm"
                     >
                         <option value="featured">Featured</option>
                         <option value="price-asc">Price: Low to High</option>
@@ -226,7 +228,7 @@ const pickCategory = (category: string) => {
                 class="shrink-0 lg:block lg:w-56"
                 :class="
                     drawerOpen
-                        ? 'sf-drawer fixed inset-y-0 left-0 z-80 w-72 overflow-y-auto bg-white p-6 shadow-2xl'
+                        ? 'sf-drawer fixed inset-y-0 left-0 z-80 w-72 max-w-[calc(100vw-1rem)] overflow-y-auto bg-white p-6 shadow-2xl'
                         : 'hidden lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:self-start lg:overflow-y-auto lg:pr-1'
                 "
             >
@@ -240,7 +242,7 @@ const pickCategory = (category: string) => {
                     <button
                         type="button"
                         aria-label="Close filters"
-                        class="grid size-8 place-items-center rounded-full border border-sf-line-strong text-sf-text transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary"
+                        class="grid size-11 place-items-center rounded-full border border-sf-line-strong text-sf-text transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary"
                         @click="drawerOpen = false"
                     >
                         <X class="size-4" />
@@ -252,7 +254,7 @@ const pickCategory = (category: string) => {
                         v-for="category in categoryTabs"
                         :key="category"
                         type="button"
-                        class="text-left text-[15px] transition-colors duration-sf-ui ease-sf hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="flex min-h-11 w-full items-center text-left text-[15px] transition-colors duration-sf-ui ease-sf hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary xl:min-h-0"
                         :class="
                             activeCategory === category
                                 ? 'font-semibold text-sf-primary'
@@ -267,7 +269,7 @@ const pickCategory = (category: string) => {
                 <div class="mt-8 border-t border-sf-line pt-6">
                     <button
                         type="button"
-                        class="flex w-full items-center justify-between font-display text-[15px] font-semibold text-sf-ink"
+                        class="flex min-h-11 w-full items-center justify-between font-display text-[15px] font-semibold text-sf-ink xl:min-h-0"
                         :aria-expanded="priceOpen"
                         aria-controls="catalog-filter-price"
                         @click="priceOpen = !priceOpen"
@@ -294,14 +296,14 @@ const pickCategory = (category: string) => {
                                 <label
                                     v-for="band in PRICE_BANDS"
                                     :key="band.id"
-                                    class="flex cursor-pointer items-center gap-2.5 text-[15px] text-sf-text"
+                                    class="flex min-h-11 cursor-pointer items-center gap-2.5 text-[15px] text-sf-text xl:min-h-0"
                                 >
                                     <input
                                         v-model="priceBand"
                                         type="radio"
                                         name="price-band"
                                         :value="band.id"
-                                        class="size-4 accent-sf-primary"
+                                        class="size-5 accent-sf-primary xl:size-4"
                                     />
                                     {{ band.label }}
                                 </label>
@@ -313,7 +315,7 @@ const pickCategory = (category: string) => {
                 <div class="mt-8 border-t border-sf-line pt-6">
                     <button
                         type="button"
-                        class="flex w-full items-center justify-between font-display text-[15px] font-semibold text-sf-ink"
+                        class="flex min-h-11 w-full items-center justify-between font-display text-[15px] font-semibold text-sf-ink xl:min-h-0"
                         :aria-expanded="formatOpen"
                         aria-controls="catalog-filter-format"
                         @click="formatOpen = !formatOpen"
@@ -332,22 +334,22 @@ const pickCategory = (category: string) => {
                         <div>
                             <div class="mt-4 flex flex-col gap-3">
                                 <label
-                                    class="flex cursor-pointer items-center gap-2.5 text-[15px] text-sf-text"
+                                    class="flex min-h-11 cursor-pointer items-center gap-2.5 text-[15px] text-sf-text xl:min-h-0"
                                 >
                                     <input
                                         v-model="singleVialOnly"
                                         type="checkbox"
-                                        class="size-4 accent-sf-primary"
+                                        class="size-5 accent-sf-primary xl:size-4"
                                     />
                                     Single Vial
                                 </label>
                                 <label
-                                    class="flex cursor-pointer items-center gap-2.5 text-[15px] text-sf-text"
+                                    class="flex min-h-11 cursor-pointer items-center gap-2.5 text-[15px] text-sf-text xl:min-h-0"
                                 >
                                     <input
                                         v-model="kitOnly"
                                         type="checkbox"
-                                        class="size-4 accent-sf-primary"
+                                        class="size-5 accent-sf-primary xl:size-4"
                                     />
                                     Kit
                                 </label>

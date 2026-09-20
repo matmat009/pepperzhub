@@ -125,7 +125,7 @@ const cartCurrent = computed<AriaCurrent>(() =>
                 fallback. `backdrop-blur-[0px]` is there for the same reason.
             -->
             <div
-                class="sf-enter-down flex h-16 items-center justify-between gap-4 border pr-3 pl-5 transition-[border-radius,background-color,border-color,box-shadow,backdrop-filter] duration-sf-ui ease-sf motion-reduce:transition-none sm:pl-[22px]"
+                class="sf-enter-down flex h-16 items-center justify-between gap-1 border pr-3 pl-5 transition-[border-radius,background-color,border-color,box-shadow,backdrop-filter] duration-sf-ui ease-sf motion-reduce:transition-none sm:gap-4 sm:pl-[22px]"
                 :class="
                     scrolled
                         ? 'rounded-full border-sf-line-strong bg-white/96 shadow-[0_14px_36px_rgba(30,35,60,0.14)] backdrop-blur-[10px]'
@@ -134,7 +134,7 @@ const cartCurrent = computed<AriaCurrent>(() =>
             >
                 <Link
                     :href="home()"
-                    class="flex min-w-0 flex-1 items-center gap-3"
+                    class="flex min-w-0 flex-none items-center gap-1 sm:flex-1 sm:gap-3"
                     aria-label="PepperzzHub home"
                 >
                     <img
@@ -142,17 +142,17 @@ const cartCurrent = computed<AriaCurrent>(() =>
                         alt="PepperzzHub"
                         width="1763"
                         height="892"
-                        class="h-11 w-auto shrink-0 object-contain"
+                        class="h-8 w-auto shrink-0 object-contain sm:h-11"
                     />
                     <span
-                        class="font-display text-[18px] font-semibold tracking-[-0.02em] whitespace-nowrap"
+                        class="font-display text-[14px] font-semibold tracking-[-0.02em] whitespace-nowrap sm:text-[18px]"
                     >
                         <span class="text-sf-rose-deep">Pepperzz</span
                         ><span class="text-sf-primary-deep">Hub</span>
                     </span>
                 </Link>
 
-                <nav class="hidden items-center gap-1 lg:flex">
+                <nav class="hidden items-center gap-1 xl:flex">
                     <Link
                         v-for="link in links"
                         :key="link.label"
@@ -174,12 +174,14 @@ const cartCurrent = computed<AriaCurrent>(() =>
                     </Link>
                 </nav>
 
-                <div class="flex flex-1 items-center justify-end gap-2">
+                <div
+                    class="flex flex-none items-center justify-end gap-1 sm:flex-1 sm:gap-2"
+                >
                     <button
                         type="button"
                         :aria-label="menuOpen ? 'Close menu' : 'Open menu'"
                         :aria-expanded="menuOpen"
-                        class="grid size-11 place-items-center rounded-full border border-sf-line-strong bg-white text-sf-ink transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary lg:hidden"
+                        class="grid size-11 place-items-center rounded-full border border-sf-line-strong bg-white text-sf-ink transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary xl:hidden"
                         @click="menuOpen = !menuOpen"
                     >
                         <component :is="menuOpen ? X : Menu" class="size-5" />
@@ -225,14 +227,14 @@ const cartCurrent = computed<AriaCurrent>(() =>
                 viewport edge in both states.
 
                 Explicit `mx-0` rather than the `mx-auto` this used to have:
-                below `lg` the panel is block-level and `max-w-[1680px]` never
+                below `xl` the panel is block-level and `max-w-[1680px]` never
                 binds, so `auto` already resolved to zero — but `auto` does not
                 interpolate, and this margin has to animate when the state
                 flips while the menu is open.
             -->
             <div
                 v-if="menuOpen"
-                class="mt-2.5 flex max-w-[1680px] flex-col rounded-xl border border-sf-line bg-white p-2.5 shadow-[0_24px_56px_rgba(30,35,60,0.18)] transition-[margin] duration-sf-ui ease-sf motion-reduce:transition-none lg:hidden"
+                class="mt-2.5 flex max-w-[1680px] flex-col rounded-xl border border-sf-line bg-white p-2.5 shadow-[0_24px_56px_rgba(30,35,60,0.18)] transition-[margin] duration-sf-ui ease-sf motion-reduce:transition-none xl:hidden"
                 :class="scrolled ? 'mx-0' : 'mx-5 sm:mx-10'"
             >
                 <Link

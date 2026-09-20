@@ -326,7 +326,7 @@ const STORAGE_GUIDELINES = [
                             v-model="searchQuery"
                             type="search"
                             placeholder="Search a product…"
-                            class="h-11 w-full rounded-full border border-sf-line-strong bg-white pr-4 pl-11 text-sm text-sf-ink transition-colors duration-sf-ui ease-sf outline-none placeholder:text-sf-subtle focus:border-sf-primary focus:ring-2 focus:ring-sf-primary/15"
+                            class="h-11 w-full rounded-full border border-sf-line-strong bg-white pr-4 pl-11 text-base text-sf-ink transition-colors duration-sf-ui ease-sf outline-none placeholder:text-sf-subtle focus:border-sf-primary focus:ring-2 focus:ring-sf-primary/15 sm:text-sm"
                         />
                     </label>
                 </div>
@@ -341,7 +341,7 @@ const STORAGE_GUIDELINES = [
                         :key="category"
                         type="button"
                         :aria-pressed="activeCategory === category"
-                        class="inline-flex min-h-9 items-center gap-2 rounded-full border px-4 py-2 text-[13px] transition-colors duration-sf-ui ease-sf focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 text-[13px] transition-colors duration-sf-ui ease-sf focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary xl:min-h-9"
                         :class="
                             activeCategory === category
                                 ? 'border-sf-primary bg-sf-primary font-semibold text-white'

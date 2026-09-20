@@ -208,7 +208,7 @@ const prices = computed(() => {
         -->
         <span
             v-if="product.category"
-            class="pointer-events-none absolute top-4 left-4 z-2 rounded-full border border-white/70 bg-white/90 px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] text-sf-ink uppercase shadow-[0_2px_8px_rgba(30,35,60,0.08)] backdrop-blur-sm"
+            class="pointer-events-none absolute top-4 left-4 z-2 max-w-[calc(100%-8rem)] rounded-full border border-white/70 bg-white/90 px-3 py-1.5 text-[11px] leading-snug font-semibold tracking-[0.14em] break-words text-sf-ink uppercase shadow-[0_2px_8px_rgba(30,35,60,0.08)] backdrop-blur-sm"
         >
             {{ product.category }}
         </span>

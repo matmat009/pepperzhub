@@ -214,7 +214,7 @@ const fieldClass =
                             >, or reach us at
                             <a
                                 :href="supportMailto"
-                                class="font-semibold text-sf-primary hover:text-sf-primary-hover"
+                                class="font-semibold break-all text-sf-primary hover:text-sf-primary-hover"
                                 >{{ settings.contact_email }}</a
                             ></template
                         >.
@@ -340,14 +340,16 @@ const fieldClass =
                     v-if="!cancelled"
                     class="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-sf-line bg-sf-tint p-5"
                 >
-                    <div class="flex items-center gap-3">
+                    <div class="flex min-w-0 items-start gap-3">
                         <Truck class="size-5 shrink-0 text-sf-primary" />
-                        <div>
-                            <div class="text-sm text-sf-subtle">
+                        <div class="min-w-0">
+                            <div class="text-sm break-words text-sf-subtle">
                                 {{ result?.courier }} ·
                                 {{ result?.shipping_region_label }}
                             </div>
-                            <div class="font-display font-semibold text-sf-ink">
+                            <div
+                                class="font-display font-semibold break-all text-sf-ink"
+                            >
                                 {{
                                     result?.tracking_number ??
                                     'Not yet assigned'
@@ -379,7 +381,7 @@ const fieldClass =
                             :href="result.tracking_url"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="inline-flex items-center gap-2 rounded-full bg-sf-primary px-4 py-2 text-sm font-medium text-white transition-colors duration-sf-fast ease-sf hover:bg-sf-primary-deep"
+                            class="inline-flex max-w-full items-center gap-2 rounded-full bg-sf-primary px-4 py-2 text-sm font-medium break-words text-white transition-colors duration-sf-fast ease-sf hover:bg-sf-primary-deep"
                         >
                             Track with {{ result.courier }}
                             <ExternalLink class="size-3.5" />
@@ -398,10 +400,11 @@ const fieldClass =
                         :key="`${item.product_name}-${item.variant_label}`"
                         class="flex items-start justify-between gap-4 py-3.5"
                     >
-                        <div>
-                            <span class="block font-medium text-sf-ink">{{
-                                item.product_name
-                            }}</span>
+                        <div class="min-w-0">
+                            <span
+                                class="block font-medium break-words text-sf-ink"
+                                >{{ item.product_name }}</span
+                            >
                             <span class="block text-sm text-sf-subtle"
                                 >{{ item.variant_label }} ×
                                 {{ item.quantity }}</span
@@ -429,7 +432,7 @@ const fieldClass =
                                 </li>
                             </ul>
                         </div>
-                        <span class="font-medium text-sf-ink">{{
+                        <span class="shrink-0 font-medium text-sf-ink">{{
                             formatPrice(item.line_total)
                         }}</span>
                     </div>
@@ -463,17 +466,17 @@ const fieldClass =
                 </div>
             </div>
 
-            <div class="flex flex-wrap gap-3">
+            <div class="flex flex-wrap justify-center gap-3 sm:justify-start">
                 <button
                     type="button"
-                    class="rounded-full border-2 border-sf-primary bg-white px-8 py-3.5 font-display font-medium text-sf-primary transition-colors duration-sf-fast ease-sf hover:border-sf-primary-deep hover:bg-sf-tint hover:text-sf-primary-deep"
+                    class="w-full rounded-full border-2 border-sf-primary bg-white px-8 py-3.5 font-display font-medium text-sf-primary transition-colors duration-sf-fast ease-sf hover:border-sf-primary-deep hover:bg-sf-tint hover:text-sf-primary-deep sm:w-auto"
                     @click="reset"
                 >
                     Track another order
                 </button>
                 <Link
                     :href="catalog()"
-                    class="rounded-full bg-sf-primary px-8 py-3.5 font-display font-medium text-white transition-colors duration-sf-fast ease-sf hover:bg-sf-primary-deep"
+                    class="w-full rounded-full bg-sf-primary px-8 py-3.5 text-center font-display font-medium text-white transition-colors duration-sf-fast ease-sf hover:bg-sf-primary-deep sm:w-auto"
                 >
                     Continue shopping
                 </Link>

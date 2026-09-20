@@ -155,7 +155,7 @@ const hasContactChannel = computed(
                 <Clock class="size-9.5 stroke-[1.8]" />
             </span>
             <h1
-                class="sf-enter sf-delay-1 mt-6 font-display text-[40px] leading-[1.15] font-medium tracking-[-0.02em] text-balance text-sf-ink"
+                class="sf-enter sf-delay-1 mt-6 font-display text-[34px] leading-[1.15] font-medium tracking-[-0.02em] text-balance text-sf-ink sm:text-[40px]"
             >
                 {{
                     cancelled
@@ -175,16 +175,20 @@ const hasContactChannel = computed(
             >
                 We've received your order and payment proof. We'll verify your
                 payment and reach out via
-                <span v-if="hasHandle" class="font-semibold text-sf-ink">{{
-                    order.social_handle
-                }}</span>
+                <span
+                    v-if="hasHandle"
+                    class="font-semibold break-all text-sf-ink"
+                    >{{ order.social_handle }}</span
+                >
                 {{ hasHandle ? 'or' : '' }}
-                <span class="font-semibold text-sf-ink">{{ order.phone }}</span>
+                <span class="font-semibold break-all text-sf-ink">{{
+                    order.phone
+                }}</span>
                 shortly.
             </p>
 
             <div
-                class="sf-enter sf-delay-3 mt-7 rounded-full border border-sf-line bg-sf-tint px-6 py-3 font-display text-lg font-semibold text-sf-ink"
+                class="sf-enter sf-delay-3 mt-7 max-w-full rounded-full border border-sf-line bg-sf-tint px-6 py-3 font-display text-base font-semibold break-all text-sf-ink sm:text-lg"
             >
                 Order {{ order.order_number }}
             </div>
@@ -332,18 +336,19 @@ const hasContactChannel = computed(
                 <div
                     v-for="item in order.items"
                     :key="`${item.product_name}-${item.variant_label}`"
-                    class="flex items-center justify-between gap-4 py-3.5"
+                    class="flex items-start justify-between gap-4 py-3.5"
                 >
-                    <span>
-                        <span class="block font-medium text-sf-ink">{{
-                            item.product_name
-                        }}</span>
+                    <span class="min-w-0">
+                        <span
+                            class="block font-medium break-words text-sf-ink"
+                            >{{ item.product_name }}</span
+                        >
                         <span class="block text-sm text-sf-subtle"
                             >{{ item.variant_label }} ×
                             {{ item.quantity }}</span
                         >
                     </span>
-                    <span class="font-medium text-sf-ink">{{
+                    <span class="shrink-0 font-medium text-sf-ink">{{
                         formatPrice(item.line_total)
                     }}</span>
                 </div>

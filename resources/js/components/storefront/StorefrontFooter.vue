@@ -56,7 +56,7 @@ const openLegal = (title: string) => {
         <div
             class="mx-auto grid max-w-[1680px] grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-12 px-5 pt-16 pb-14 sm:px-10"
         >
-            <div class="max-w-[360px]">
+            <div class="max-w-[360px] min-w-0">
                 <BrandWordmark :emblem="42" size="md" />
                 <p class="mt-5 text-[15px] leading-[1.7] text-sf-muted">
                     Peptides that work. Results that matter.
@@ -139,18 +139,18 @@ const openLegal = (title: string) => {
                 <div class="mt-5 flex flex-col gap-3.5 text-[15px]">
                     <Link
                         :href="home()"
-                        class="text-sf-muted transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
+                        class="inline-flex min-h-11 items-center text-sf-muted transition-colors duration-sf-fast ease-sf hover:text-sf-primary xl:min-h-0"
                         >Home</Link
                     >
                     <Link
                         :href="catalog()"
-                        class="text-sf-muted transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
+                        class="inline-flex min-h-11 items-center text-sf-muted transition-colors duration-sf-fast ease-sf hover:text-sf-primary xl:min-h-0"
                         >Products</Link
                     >
                     <a
                         v-if="settings.contact_email"
                         :href="`mailto:${settings.contact_email}`"
-                        class="text-sf-muted transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
+                        class="inline-flex min-h-11 items-center text-sf-muted transition-colors duration-sf-fast ease-sf hover:text-sf-primary xl:min-h-0"
                         >Contact</a
                     >
                 </div>
@@ -164,21 +164,21 @@ const openLegal = (title: string) => {
                     <a
                         v-if="settings.contact_email"
                         :href="`mailto:${settings.contact_email}`"
-                        class="flex items-center gap-3 text-sf-muted transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
+                        class="flex min-w-0 items-center gap-3 break-all text-sf-muted transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
                     >
                         <Mail class="size-[17px] shrink-0 text-sf-primary" />
                         {{ settings.contact_email }}
                     </a>
                     <span
                         v-if="settings.contact_phone"
-                        class="flex items-center gap-3 text-sf-muted"
+                        class="flex min-w-0 items-center gap-3 break-words text-sf-muted"
                     >
                         <Phone class="size-[17px] shrink-0 text-sf-rose-mid" />
                         {{ settings.contact_phone }}
                     </span>
                     <span
                         v-if="settings.contact_address"
-                        class="flex items-center gap-3 text-sf-muted"
+                        class="flex min-w-0 items-start gap-3 break-words text-sf-muted"
                     >
                         <MapPin class="size-[17px] shrink-0 text-sf-primary" />
                         {{ settings.contact_address }}
@@ -215,7 +215,7 @@ const openLegal = (title: string) => {
             <div
                 class="mx-auto flex max-w-[1680px] flex-wrap items-center justify-between gap-5 px-5 py-5 text-sm text-sf-subtle sm:px-10"
             >
-                <span>
+                <span class="w-full text-center sm:w-auto sm:text-left">
                     © 2026
                     <span class="font-semibold">
                         <span class="text-sf-rose">Pepperzz</span
@@ -223,26 +223,32 @@ const openLegal = (title: string) => {
                     </span>
                     . All rights reserved.
                 </span>
-                <span class="flex items-center gap-[18px]">
+                <span
+                    class="flex w-full flex-wrap items-center justify-center gap-x-[18px] gap-y-1 sm:w-auto sm:justify-start"
+                >
                     <button
                         type="button"
-                        class="text-sf-subtle transition-colors duration-sf-fast ease-sf hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="min-h-11 text-sf-subtle transition-colors duration-sf-fast ease-sf hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary xl:min-h-0"
                         @click="openLegal('Privacy Policy')"
                     >
                         Privacy Policy
                     </button>
-                    <span class="size-1 rounded-full bg-sf-line-strong" />
+                    <span
+                        class="hidden size-1 rounded-full bg-sf-line-strong sm:block"
+                    />
                     <button
                         type="button"
-                        class="text-sf-subtle transition-colors duration-sf-fast ease-sf hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="min-h-11 text-sf-subtle transition-colors duration-sf-fast ease-sf hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary xl:min-h-0"
                         @click="openLegal('Terms of Service')"
                     >
                         Terms of Service
                     </button>
-                    <span class="size-1 rounded-full bg-sf-line-strong" />
+                    <span
+                        class="hidden size-1 rounded-full bg-sf-line-strong sm:block"
+                    />
                     <button
                         type="button"
-                        class="text-sf-subtle transition-colors duration-sf-fast ease-sf hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="min-h-11 text-sf-subtle transition-colors duration-sf-fast ease-sf hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary xl:min-h-0"
                         @click="openLegal('Shipping Policy')"
                     >
                         Shipping Policy

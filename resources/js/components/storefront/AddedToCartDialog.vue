@@ -66,7 +66,7 @@ const open = computed({
                 <button
                     type="button"
                     aria-label="Close"
-                    class="grid size-8 shrink-0 place-items-center rounded-full border border-sf-line-strong bg-white text-sf-muted transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                    class="grid size-11 shrink-0 place-items-center rounded-full border border-sf-line-strong bg-white text-sf-muted transition-colors duration-sf-fast ease-sf hover:border-sf-primary hover:text-sf-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary xl:size-8"
                     @click="dismissAdded"
                 >
                     <X class="size-4" />
@@ -91,11 +91,13 @@ const open = computed({
 
                 <span class="min-w-0 flex-1">
                     <span
-                        class="block truncate font-display text-base font-semibold text-sf-ink"
+                        class="block font-display text-base font-semibold break-words text-sf-ink"
                     >
                         {{ justAdded.productName }}
                     </span>
-                    <span class="mt-0.5 block text-sm text-sf-subtle">
+                    <span
+                        class="mt-0.5 block text-sm break-words text-sf-subtle"
+                    >
                         {{ justAdded.variantLabel }}
                     </span>
                     <span

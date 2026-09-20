@@ -467,7 +467,7 @@ const onPhoneInput = (event: Event) => {
 };
 
 const fieldClass =
-    'w-full rounded-xl border border-sf-rule bg-white px-4 py-3 text-[15px] text-sf-ink outline-none transition-colors duration-sf-ui ease-sf placeholder:text-sf-subtle focus:border-sf-primary';
+    'w-full rounded-xl border border-sf-rule bg-white px-4 py-3 text-base text-sf-ink outline-none transition-colors duration-sf-ui ease-sf placeholder:text-sf-subtle focus:border-sf-primary sm:text-[15px]';
 </script>
 
 <template>
@@ -491,7 +491,7 @@ const fieldClass =
         </h1>
 
         <form
-            class="mt-8 grid grid-cols-1 gap-16 lg:grid-cols-[1fr_420px]"
+            class="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_420px] lg:gap-16"
             @submit.prevent="placeOrder"
         >
             <!--
@@ -680,14 +680,16 @@ const fieldClass =
                                     region, index
                                 ) in selectedCourier.regions"
                                 :key="region.id"
-                                class="flex cursor-pointer items-center justify-between gap-4 rounded-xl border px-5 py-4 transition-colors duration-sf-ui ease-sf"
+                                class="flex cursor-pointer items-start justify-between gap-3 rounded-xl border px-4 py-4 transition-colors duration-sf-ui ease-sf sm:items-center sm:gap-4 sm:px-5"
                                 :class="
                                     form.shipping_region_id === region.id
                                         ? 'border-sf-primary bg-sf-tint'
                                         : 'border-sf-line-strong bg-white hover:border-sf-primary/50'
                                 "
                             >
-                                <span class="flex items-center gap-3">
+                                <span
+                                    class="flex min-w-0 flex-1 items-start gap-3"
+                                >
                                     <!--
                                         Only the first radio carries the id:
                                         it is the group's focus target, and a
@@ -703,21 +705,21 @@ const fieldClass =
                                         v-model="form.shipping_region_id"
                                         type="radio"
                                         :value="region.id"
-                                        class="size-4 accent-sf-primary"
+                                        class="mt-0.5 size-5 shrink-0 accent-sf-primary sm:size-4"
                                     />
-                                    <span>
+                                    <span class="min-w-0">
                                         <span
-                                            class="block text-[15px] font-medium text-sf-ink"
+                                            class="block text-[15px] font-medium break-words text-sf-ink"
                                             >{{ region.name }}</span
                                         >
                                         <span
-                                            class="block text-sm text-sf-subtle"
+                                            class="block text-sm break-words text-sf-subtle"
                                             >{{ region.note }}</span
                                         >
                                     </span>
                                 </span>
                                 <span
-                                    class="font-display font-semibold text-sf-primary-soft"
+                                    class="shrink-0 font-display font-semibold text-sf-primary-soft"
                                     >{{ formatPrice(region.rate) }}</span
                                 >
                             </label>
@@ -945,7 +947,7 @@ const fieldClass =
 
                         <DialogContent
                             :show-close-button="false"
-                            class="sf-dialog h-[min(88vh,900px)] max-w-[calc(100%-1.5rem)] grid-rows-[1fr] overflow-hidden rounded-xl border-sf-line bg-white p-3 sm:max-w-5xl sm:p-5"
+                            class="sf-dialog h-[min(88dvh,900px)] max-w-[calc(100%-1.5rem)] grid-rows-[1fr] overflow-hidden rounded-xl border-sf-line bg-white p-3 sm:max-w-5xl sm:p-5"
                         >
                             <DialogTitle class="sr-only">
                                 Payment proof preview
@@ -1104,7 +1106,7 @@ const fieldClass =
                             class="flex items-center gap-3"
                         >
                             <span
-                                class="relative block size-20 shrink-0 overflow-hidden rounded-lg border border-sf-line bg-white"
+                                class="relative block size-16 shrink-0 overflow-hidden rounded-lg border border-sf-line bg-white sm:size-20"
                             >
                                 <img
                                     v-if="line.image_url"
@@ -1119,7 +1121,7 @@ const fieldClass =
                             </span>
                             <span class="min-w-0 flex-1">
                                 <span
-                                    class="block truncate text-[15px] font-medium text-sf-ink"
+                                    class="block text-[15px] leading-snug font-medium break-words text-sf-ink"
                                     >{{ line.product_name }}</span
                                 >
                                 <span class="block text-sm text-sf-subtle"
@@ -1127,7 +1129,9 @@ const fieldClass =
                                     {{ line.quantity }}</span
                                 >
                             </span>
-                            <span class="font-medium text-sf-ink">
+                            <span
+                                class="shrink-0 text-sm font-medium text-sf-ink sm:text-base"
+                            >
                                 {{ formatPrice(line.line_total) }}
                             </span>
                         </div>

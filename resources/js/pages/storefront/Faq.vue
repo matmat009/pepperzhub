@@ -121,7 +121,7 @@ const whatsappLink = computed(() => {
                     v-model="search"
                     type="search"
                     placeholder="Search a question..."
-                    class="h-12 w-full rounded-full border border-sf-rule bg-white/95 pr-5 pl-12 text-sm text-sf-ink shadow-[0_6px_20px_rgba(30,35,60,0.04)] transition-colors duration-sf-ui ease-sf outline-none placeholder:text-sf-subtle focus:border-sf-primary focus:ring-2 focus:ring-sf-primary/15"
+                    class="h-12 w-full rounded-full border border-sf-rule bg-white/95 pr-5 pl-12 text-base text-sf-ink shadow-[0_6px_20px_rgba(30,35,60,0.04)] transition-colors duration-sf-ui ease-sf outline-none placeholder:text-sf-subtle focus:border-sf-primary focus:ring-2 focus:ring-sf-primary/15 sm:text-sm"
                 />
             </label>
         </div>
@@ -142,7 +142,7 @@ const whatsappLink = computed(() => {
                     v-for="category in FAQ_CATEGORIES"
                     :key="category"
                     type="button"
-                    class="min-h-10 rounded-full border px-5 py-2 text-sm font-medium transition-colors duration-sf-ui ease-sf focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                    class="min-h-11 rounded-full border px-5 py-2 text-sm font-medium transition-colors duration-sf-ui ease-sf focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary xl:min-h-10"
                     :class="
                         activeCategory === category
                             ? 'border-sf-primary bg-sf-primary text-white'
@@ -259,7 +259,7 @@ const whatsappLink = computed(() => {
             </div>
 
             <section
-                class="mt-16 grid gap-8 rounded-2xl bg-[linear-gradient(110deg,var(--color-sf-hero-blue)_0%,#fff_50%,var(--color-sf-hero-rose)_100%)] px-7 py-10 sm:px-10 lg:grid-cols-[1fr_252px] lg:items-center lg:gap-14"
+                class="mt-16 grid gap-8 rounded-2xl bg-[linear-gradient(110deg,var(--color-sf-hero-blue)_0%,#fff_50%,var(--color-sf-hero-rose)_100%)] px-5 py-10 sm:px-10 lg:grid-cols-[1fr_252px] lg:items-center lg:gap-14"
                 aria-labelledby="faq-support-heading"
             >
                 <div>

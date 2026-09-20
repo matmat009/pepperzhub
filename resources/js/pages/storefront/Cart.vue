@@ -148,7 +148,9 @@ const wellClass = (index: number) =>
                         </Link>
 
                         <div class="flex min-w-0 flex-1 flex-col">
-                            <div class="flex items-start justify-between gap-4">
+                            <div
+                                class="flex flex-col items-start gap-2 min-[400px]:flex-row min-[400px]:justify-between min-[400px]:gap-4"
+                            >
                                 <div class="min-w-0">
                                     <div
                                         v-if="line.product_category"
@@ -158,7 +160,7 @@ const wellClass = (index: number) =>
                                     </div>
                                     <Link
                                         :href="show(line.product_slug)"
-                                        class="mt-0.5 block truncate font-display text-lg font-semibold text-sf-ink transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
+                                        class="mt-0.5 block font-display text-lg leading-snug font-semibold break-words text-sf-ink transition-colors duration-sf-fast ease-sf hover:text-sf-primary"
                                     >
                                         {{ line.product_name }}
                                     </Link>
@@ -194,7 +196,9 @@ const wellClass = (index: number) =>
                                     </ul>
                                 </div>
 
-                                <div class="shrink-0 text-right">
+                                <div
+                                    class="shrink-0 text-left min-[400px]:text-right"
+                                >
                                     <div
                                         class="font-display text-lg font-semibold text-sf-ink"
                                     >
@@ -215,7 +219,7 @@ const wellClass = (index: number) =>
                                     <button
                                         type="button"
                                         aria-label="Decrease quantity"
-                                        class="grid size-7 place-items-center rounded-full text-sf-text transition-colors duration-sf-fast ease-sf hover:bg-sf-tint hover:text-sf-primary"
+                                        class="grid size-10 place-items-center rounded-full text-sf-text transition-colors duration-sf-fast ease-sf hover:bg-sf-tint hover:text-sf-primary xl:size-7"
                                         @click="
                                             setQuantity(
                                                 line.variant_id,
@@ -235,7 +239,7 @@ const wellClass = (index: number) =>
                                         type="button"
                                         aria-label="Increase quantity"
                                         :disabled="line.quantity >= line.stock"
-                                        class="grid size-7 place-items-center rounded-full text-sf-text transition-colors duration-sf-fast ease-sf hover:bg-sf-tint hover:text-sf-primary disabled:cursor-not-allowed disabled:opacity-40"
+                                        class="grid size-10 place-items-center rounded-full text-sf-text transition-colors duration-sf-fast ease-sf hover:bg-sf-tint hover:text-sf-primary disabled:cursor-not-allowed disabled:opacity-40 xl:size-7"
                                         @click="
                                             setQuantity(
                                                 line.variant_id,
@@ -308,7 +312,7 @@ const wellClass = (index: number) =>
                     </Link>
 
                     <div
-                        class="mt-4 flex items-center justify-center gap-1.5 text-xs text-sf-subtle"
+                        class="mt-4 flex items-center justify-center gap-1.5 text-center text-xs text-sf-subtle"
                     >
                         <Lock class="size-3.5" />
                         Manual payment · Bank transfer or QR

@@ -577,6 +577,24 @@
     visibility: visible;
 }
 
+/*
+ * Storefront dialogs keep a thumb-sized close target on narrow touch screens.
+ * The visual icon stays the same size; only its transparent hit area grows.
+ */
+.sf-dialog > [data-slot='dialog-close'] {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+}
+
+@media (min-width: 80rem) {
+    .sf-dialog > [data-slot='dialog-close'] {
+        width: 2rem;
+        height: 2rem;
+    }
+}
+
 [data-sf-motion] .sf-collapse {
     transition:
         grid-template-rows var(--sf-motion-collapse-out) var(--sf-ease),

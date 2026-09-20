@@ -151,7 +151,7 @@ const resetFilter = () => {
                         :key="filter.value"
                         type="button"
                         :aria-pressed="activeFilter === filter.value"
-                        class="min-h-10 rounded-full border px-4 py-2 text-[13px] transition-colors duration-sf-ui ease-sf focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary"
+                        class="min-h-11 rounded-full border px-4 py-2 text-[13px] transition-colors duration-sf-ui ease-sf focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sf-primary xl:min-h-10"
                         :class="
                             activeFilter === filter.value
                                 ? 'border-sf-primary bg-sf-primary font-semibold text-white'
@@ -340,7 +340,7 @@ const resetFilter = () => {
     <Dialog v-model:open="reviewOpen">
         <DialogContent
             v-if="activeReview"
-            class="sf-dialog max-h-[calc(100vh-2rem)] max-w-[720px] overflow-y-auto border-sf-line-strong bg-white p-0"
+            class="sf-dialog max-h-[calc(100dvh-2rem)] max-w-[720px] overflow-y-auto border-sf-line-strong bg-white p-0"
         >
             <div class="p-5 sm:p-7">
                 <DialogHeader class="pr-8 text-left">

@@ -110,21 +110,21 @@ const usps = [
                     class="sf-enter flex min-w-0 flex-col items-start lg:pl-6 xl:pl-8"
                 >
                     <div
-                        class="flex items-center gap-4 text-[11px] font-semibold tracking-[0.38em] text-sf-primary-deep uppercase sm:text-xs"
+                        class="flex items-center gap-3 text-[11px] font-semibold tracking-[0.3em] text-sf-primary-deep uppercase sm:gap-4 sm:text-xs sm:tracking-[0.38em]"
                     >
                         <span
                             aria-hidden="true"
-                            class="h-px w-10 bg-sf-primary/45 sm:w-12"
+                            class="h-px w-6 bg-sf-primary/45 sm:w-12"
                         />
                         <span>Peptide Solutions</span>
                         <span
                             aria-hidden="true"
-                            class="h-px w-10 bg-sf-primary/45 sm:w-12"
+                            class="h-px w-6 bg-sf-primary/45 sm:w-12"
                         />
                     </div>
 
                     <h1
-                        class="mt-6 overflow-visible font-display text-[clamp(3.25rem,6vw,6.5rem)] leading-[0.98] font-medium tracking-[-0.04em] text-sf-ink"
+                        class="mt-6 overflow-visible font-display text-[clamp(2.5rem,12.5vw,3.25rem)] leading-[0.98] font-medium tracking-[-0.04em] text-sf-ink sm:text-[clamp(3.25rem,6vw,6.5rem)]"
                     >
                         <span class="block text-sf-ink"> Better Science. </span>
                         <span
@@ -369,18 +369,18 @@ const usps = [
 
         <div class="relative z-10 mx-auto w-full max-w-[1680px] px-5 sm:px-10">
             <div
-                class="flex items-center justify-center px-7 sm:px-12 lg:px-16 xl:px-24"
+                class="flex items-center justify-center px-0 sm:px-12 lg:px-16 xl:px-24"
             >
                 <div
                     v-reveal="'stagger'"
                     class="mx-auto flex w-full max-w-4xl min-w-0 flex-col items-center text-center"
                 >
                     <div
-                        class="flex items-center justify-center gap-4 text-[11px] font-semibold tracking-[0.34em] text-sf-primary uppercase sm:text-xs"
+                        class="flex items-center justify-center gap-3 text-[11px] font-semibold tracking-[0.3em] text-sf-primary uppercase sm:gap-4 sm:text-xs sm:tracking-[0.34em]"
                     >
-                        <span class="h-px w-10 bg-sf-primary/40 sm:w-14" />
+                        <span class="h-px w-6 bg-sf-primary/40 sm:w-14" />
                         <span>Ready to explore</span>
-                        <span class="h-px w-10 bg-sf-primary/40 sm:w-14" />
+                        <span class="h-px w-6 bg-sf-primary/40 sm:w-14" />
                     </div>
 
                     <h2

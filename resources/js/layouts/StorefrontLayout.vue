@@ -47,7 +47,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div class="flex min-h-screen flex-col bg-white font-body text-sf-text">
+    <div
+        class="flex min-h-screen flex-col overflow-x-clip bg-white font-body text-sf-text"
+    >
         <StorefrontNav />
         <main class="flex flex-1 flex-col">
             <div :key="pageKey" class="sf-page flex flex-1 flex-col">
