@@ -19,6 +19,7 @@ declare module '@inertiajs/core' {
         sharedPageProps: {
             name: string;
             auth: Auth;
+            adminDarkModeEnabled: boolean;
             sidebarOpen: boolean;
             /** App\Models\ProductVariant::LOW_STOCK_THRESHOLD, shared on every response. */
             lowStockThreshold: number;

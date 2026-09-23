@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import {
     IconDotsVertical,
     IconLogout,
@@ -37,8 +37,10 @@ const props = defineProps<{
 
 const { isMobile } = useSidebar();
 const { getInitials } = useInitials();
+const page = usePage();
 
 const showAvatar = computed(() => Boolean(props.user.avatar));
+const adminDarkModeEnabled = computed(() => page.props.adminDarkModeEnabled);
 
 const handleLogout = () => {
     router.flushAll();
@@ -134,7 +136,7 @@ const handleLogout = () => {
                                 Security
                             </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem as-child>
+                        <DropdownMenuItem v-if="adminDarkModeEnabled" as-child>
                             <Link
                                 class="block w-full cursor-pointer"
                                 :href="editAppearance()"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import AppearanceTabs from '@/components/AppearanceTabs.vue';
 import Heading from '@/components/Heading.vue';
 import { edit } from '@/routes/appearance';
@@ -14,6 +15,9 @@ defineOptions({
         ],
     },
 });
+
+const page = usePage();
+const adminDarkModeEnabled = computed(() => page.props.adminDarkModeEnabled);
 </script>
 
 <template>
@@ -25,8 +29,12 @@ defineOptions({
         <Heading
             variant="small"
             title="Appearance settings"
-            description="Update the appearance settings for your account"
+            :description="
+                adminDarkModeEnabled
+                    ? 'Update the appearance settings for your account'
+                    : 'Light mode is currently enforced by configuration'
+            "
         />
-        <AppearanceTabs />
+        <AppearanceTabs v-if="adminDarkModeEnabled" />
     </div>
 </template>

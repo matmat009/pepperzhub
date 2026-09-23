@@ -45,6 +45,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'adminDarkModeEnabled' => (bool) config('pepperzhub.admin_dark_mode_enabled'),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             /*
              * The navbar badge needs the cart count on every storefront page,

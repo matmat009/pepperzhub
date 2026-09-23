@@ -1,6 +1,9 @@
 @php
     $component = $page['component'] ?? '';
-    $forceLightTheme = str_starts_with($component, 'storefront/') || str_starts_with($component, 'auth/');
+    $adminDarkModeEnabled = (bool) config('pepperzhub.admin_dark_mode_enabled');
+    $forceLightTheme = ! $adminDarkModeEnabled
+        || str_starts_with($component, 'storefront/')
+        || str_starts_with($component, 'auth/');
     $themeScope = $forceLightTheme ? 'forced-light' : 'admin';
 @endphp
 

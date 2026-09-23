@@ -12,7 +12,7 @@ export type UseAppearanceReturn = {
     updateAppearance: (value: Appearance) => void;
 };
 
-let activeThemeScope: ThemeScope = 'admin';
+const activeThemeScope = ref<ThemeScope>('admin');
 
 const applyResolvedTheme = (value: ResolvedAppearance): void => {
     document.documentElement.classList.toggle('dark', value === 'dark');
@@ -24,7 +24,7 @@ export function updateTheme(value: Appearance): void {
         return;
     }
 
-    if (activeThemeScope === 'forced-light') {
+    if (activeThemeScope.value === 'forced-light') {
         applyResolvedTheme('light');
 
         return;
@@ -87,7 +87,7 @@ export function applyThemeScope(scope: ThemeScope): void {
         return;
     }
 
-    activeThemeScope = scope;
+    activeThemeScope.value = scope;
     document.documentElement.dataset.themeScope = scope;
 
     if (scope === 'forced-light') {
@@ -129,6 +129,10 @@ export function useAppearance(): UseAppearanceReturn {
     });
 
     const resolvedAppearance = computed<ResolvedAppearance>(() => {
+        if (activeThemeScope.value === 'forced-light') {
+            return 'light';
+        }
+
         if (appearance.value === 'system') {
             return prefersDark() ? 'dark' : 'light';
         }
@@ -137,6 +141,10 @@ export function useAppearance(): UseAppearanceReturn {
     });
 
     function updateAppearance(value: Appearance) {
+        if (activeThemeScope.value === 'forced-light') {
+            return;
+        }
+
         appearance.value = value;
 
         // Store in localStorage for client-side persistence...
