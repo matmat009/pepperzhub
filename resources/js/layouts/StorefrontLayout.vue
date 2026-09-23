@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted } from 'vue';
 import AddedToCartDialog from '@/components/storefront/AddedToCartDialog.vue';
 import StorefrontFooter from '@/components/storefront/StorefrontFooter.vue';
 import StorefrontNav from '@/components/storefront/StorefrontNav.vue';
+import { applyThemeScope } from '@/composables/useAppearance';
 import { vReveal } from '@/lib/scrollReveal';
 
 /**
@@ -15,6 +16,8 @@ import { vReveal } from '@/lib/scrollReveal';
  */
 
 const page = usePage();
+
+applyThemeScope('forced-light');
 
 /**
  * Inertia keeps this layout mounted across a visit — the nav, the footer and

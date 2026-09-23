@@ -4,14 +4,29 @@ import type { Appearance, ResolvedAppearance } from '@/types';
 
 export type { Appearance, ResolvedAppearance };
 
+export type ThemeScope = 'admin' | 'forced-light';
+
 export type UseAppearanceReturn = {
     appearance: Ref<Appearance>;
     resolvedAppearance: ComputedRef<ResolvedAppearance>;
     updateAppearance: (value: Appearance) => void;
 };
 
+let activeThemeScope: ThemeScope = 'admin';
+
+const applyResolvedTheme = (value: ResolvedAppearance): void => {
+    document.documentElement.classList.toggle('dark', value === 'dark');
+    document.documentElement.style.colorScheme = value;
+};
+
 export function updateTheme(value: Appearance): void {
     if (typeof window === 'undefined') {
+        return;
+    }
+
+    if (activeThemeScope === 'forced-light') {
+        applyResolvedTheme('light');
+
         return;
     }
 
@@ -21,12 +36,9 @@ export function updateTheme(value: Appearance): void {
         );
         const systemTheme = mediaQueryList.matches ? 'dark' : 'light';
 
-        document.documentElement.classList.toggle(
-            'dark',
-            systemTheme === 'dark',
-        );
+        applyResolvedTheme(systemTheme);
     } else {
-        document.documentElement.classList.toggle('dark', value === 'dark');
+        applyResolvedTheme(value);
     }
 }
 
@@ -70,14 +82,34 @@ const handleSystemThemeChange = () => {
     updateTheme(currentAppearance || 'system');
 };
 
+export function applyThemeScope(scope: ThemeScope): void {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    activeThemeScope = scope;
+    document.documentElement.dataset.themeScope = scope;
+
+    if (scope === 'forced-light') {
+        applyResolvedTheme('light');
+
+        return;
+    }
+
+    updateTheme(getStoredAppearance() || 'system');
+}
+
 export function initializeTheme(): void {
     if (typeof window === 'undefined') {
         return;
     }
 
-    // Initialize theme from saved preference or default to system...
-    const savedAppearance = getStoredAppearance();
-    updateTheme(savedAppearance || 'system');
+    const initialScope: ThemeScope =
+        document.documentElement.dataset.themeScope === 'forced-light'
+            ? 'forced-light'
+            : 'admin';
+
+    applyThemeScope(initialScope);
 
     // Set up system theme change listener...
     mediaQuery()?.addEventListener('change', handleSystemThemeChange);

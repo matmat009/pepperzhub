@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { applyThemeScope } from '@/composables/useAppearance';
 import { home } from '@/routes';
 
 defineProps<{
     title?: string;
     description?: string;
 }>();
+
+applyThemeScope('forced-light');
 </script>
 
 <template>

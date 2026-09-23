@@ -1,21 +1,39 @@
+@php
+    $component = $page['component'] ?? '';
+    $forceLightTheme = str_starts_with($component, 'storefront/') || str_starts_with($component, 'auth/');
+    $themeScope = $forceLightTheme ? 'forced-light' : 'admin';
+@endphp
+
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"  @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+<html
+    lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+    data-theme-scope="{{ $themeScope }}"
+    @class(['dark' => ! $forceLightTheme && ($appearance ?? 'system') === 'dark'])
+    @style(['color-scheme: light' => $forceLightTheme])
+>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        {{-- Inline script to detect system dark mode preference and apply it immediately --}}
+        {{-- Resolve the first paint before CSS or Vue can expose the saved admin theme. --}}
         <script>
             (function() {
-                const appearance = '{{ $appearance ?? "system" }}';
+                const root = document.documentElement;
+                const forceLight = @json($forceLightTheme);
+                const appearance = @json($appearance ?? 'system');
 
-                if (appearance === 'system') {
-                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (forceLight) {
+                    root.classList.remove('dark');
+                    root.style.colorScheme = 'light';
 
-                    if (prefersDark) {
-                        document.documentElement.classList.add('dark');
-                    }
+                    return;
                 }
+
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const useDark = appearance === 'dark' || (appearance === 'system' && prefersDark);
+
+                root.classList.toggle('dark', useDark);
+                root.style.colorScheme = useDark ? 'dark' : 'light';
             })();
         </script>
 
@@ -23,10 +41,12 @@
         <style>
             html {
                 background-color: oklch(1 0 0);
+                color-scheme: light;
             }
 
             html.dark {
                 background-color: oklch(0.145 0 0);
+                color-scheme: dark;
             }
         </style>
 
